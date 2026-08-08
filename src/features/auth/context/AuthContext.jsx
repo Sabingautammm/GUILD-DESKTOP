@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getCurrentUser, logout as logoutApi } from "../../../services/api/authApi";
 
 const AuthContext = createContext(null);
@@ -38,6 +38,10 @@ export function AuthProvider({ children }) {
     setGuild(null);
     setIsAuthenticated(false);
   }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   // Only compute membership role for clarity of use
   const role = membership ? membership.role : "free";
