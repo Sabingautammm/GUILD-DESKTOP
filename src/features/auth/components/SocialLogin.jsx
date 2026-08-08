@@ -37,14 +37,23 @@ export default function SocialLogin() {
     if (GOOGLE_CLIENT_ID) {
       await loadGsiScript();
       return new Promise((resolve, reject) => {
+        let settled = false;
+        const finish = (fn, value) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          fn(value);
+        };
+        // GIS popup may be dismissed or blocked — never let the button hang forever
+        const timer = setTimeout(() => finish(reject, new Error("Google sign-in timed out. Please try again.")), 15000);
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           ux_mode: "popup",
           callback: (response) => {
             if (!response?.credential) {
-              reject(new Error("Google sign-in was cancelled."));
+              finish(reject, new Error("Google sign-in was cancelled."));
             } else {
-              resolve(response.credential);
+              finish(resolve, response.credential);
             }
           },
         });
@@ -57,8 +66,16 @@ export default function SocialLogin() {
   const handleGoogle = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+    let idToken;
     try {
-      const idToken = await signInWithGoogle();
+      // Script load / popup dismissal / timeout failures surface here
+      idToken = await signInWithGoogle();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Google sign-in failed.");
+      setIsSubmitting(false);
+      return;
+    }
+    try {
       await toast.promise(googleLogin(idToken), {
         loading: "Connecting to Google…",
         success: "Signed in with Google",

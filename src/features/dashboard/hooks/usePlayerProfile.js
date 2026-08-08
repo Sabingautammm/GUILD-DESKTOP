@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import { getMyProfile } from "../services/playerApi";
 
-export function usePlayerProfile() {
+export function usePlayerProfile({ enabled = true } = {}) {
   const [player, setPlayer] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(enabled);
   const [error, setError] = useState(null);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    if (!enabled) {
+      setPlayer(null);
+      setError(null);
+      setIsLoading(false);
+      return undefined;
+    }
     let cancelled = false;
     setIsLoading(true);
     setError(null);
@@ -26,7 +32,7 @@ export function usePlayerProfile() {
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, enabled]);
 
   const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
   return { player, isLoading, error, refetch };

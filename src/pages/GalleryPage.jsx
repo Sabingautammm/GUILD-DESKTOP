@@ -87,9 +87,10 @@ export default function GalleryPage({ reelOnly = false }) {
           value={guildUid}
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, "");
-            if (v) searchParams.set("guildUid", v);
-            else searchParams.delete("guildUid");
-            setSearchParams(searchParams);
+            const next = new URLSearchParams(searchParams);
+            if (v) next.set("guildUid", v);
+            else next.delete("guildUid");
+            setSearchParams(next, { replace: true });
           }}
           placeholder="Filter by Guild UID"
           inputMode="numeric"
@@ -99,9 +100,10 @@ export default function GalleryPage({ reelOnly = false }) {
           value={playerUid}
           onChange={(e) => {
             const v = e.target.value.replace(/\D/g, "");
-            if (v) searchParams.set("playerUid", v);
-            else searchParams.delete("playerUid");
-            setSearchParams(searchParams);
+            const next = new URLSearchParams(searchParams);
+            if (v) next.set("playerUid", v);
+            else next.delete("playerUid");
+            setSearchParams(next, { replace: true });
           }}
           placeholder="Filter by Player UID"
           inputMode="numeric"

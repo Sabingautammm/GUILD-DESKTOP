@@ -28,7 +28,7 @@ export async function apiFetch(path, options = {}) {
     });
   } catch (err) {
     clearTimeout(timeoutId);
-    if (err instanceof DOMException && err.name === "AbortError") {
+    if (err && (err.name === "AbortError" || err instanceof DOMException)) {
       throw new ApiError("That took too long. Please try again.", 0);
     }
     throw new ApiError("Can't reach the server. Check your connection.", 0);

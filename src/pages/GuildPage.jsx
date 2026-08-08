@@ -11,7 +11,7 @@ export default function GuildPage() {
   const { guildUid } = useParams();
   const toast = useToast();
   const navigate = useNavigate();
-  const { isAuthenticated, membership, refresh } = useAuth();
+  const { isAuthenticated, membership, role, refresh } = useAuth();
 
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -147,7 +147,7 @@ export default function GuildPage() {
                 Sign in to apply
               </button>
             )}
-            {amMember && (
+            {amMember && (role === "leader" || role === "acting_leader" || role === "officer") && (
               <button onClick={() => navigate("/admin/members")} className="rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-5 py-2 text-sm font-bold text-[#17120D] hover:brightness-105 flex items-center gap-2">
                 <FiShield className="text-xs" /> Admin dashboard
               </button>
@@ -181,7 +181,10 @@ export default function GuildPage() {
           <ul className="divide-y divide-[#F3EADA]">
             {roster.map((m) => (
               <li key={m._id} className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3 min-w-0">
+                <button
+                  onClick={() => m.userId?._id && navigate(`/members/${m.userId._id}`)}
+                  className="flex items-center gap-3 min-w-0 text-left flex-1"
+                >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
                     {m.userId?.name?.charAt(0).toUpperCase() || "?"}
                   </span>
@@ -189,7 +192,8 @@ export default function GuildPage() {
                     <p className="text-sm font-semibold text-[#17120D] truncate">{m.userId?.name ?? "Player"}</p>
                     <p className="text-[11px] text-slate-400">{ROLE_LABEL[m.role] ?? m.role}</p>
                   </div>
-                </div>
+                  <FiArrowRight className="ml-auto text-xs text-slate-300" />
+                </button>
               </li>
             ))}
           </ul>
@@ -219,7 +223,7 @@ export default function GuildPage() {
         </div>
       )}
 
-      {amMember && (
+      {(role === "leader" || role === "acting_leader" || role === "officer") && (
         <button onClick={() => navigate("/admin/members")} className="flex items-center gap-2 text-sm font-semibold text-[#B9660B] hover:underline">
           Admin dashboard <FiArrowRight className="text-xs" />
         </button>

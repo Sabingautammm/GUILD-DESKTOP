@@ -23,6 +23,10 @@ export function moderateMedia(mediaId, approvalStatus) {
   });
 }
 
+export function getPendingMedia() {
+  return apiFetch("/media/pending");
+}
+
 export function toggleReaction(mediaId) {
   return apiFetch(`/media/${mediaId}/react`, { method: "POST" });
 }
