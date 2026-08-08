@@ -1,0 +1,61 @@
+import { NavLink, useNavigate } from "react-router-dom";
+import { FiBell } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../features/auth/context/AuthContext";
+import { getUnreadCount } from "../../services/api/notificationApi";
+
+const logo = "/Logo-removebg-preview.png";
+
+export default function MobileHeader() {
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setUnread(0);
+      return;
+    }
+    let cancelled = false;
+    getUnreadCount()
+      .then((d) => !cancelled && setUnread(d.unread ?? 0))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-[#FFFDF7] border-b border-[#E9DCC0]">
+      <div className="flex h-full items-center justify-between px-5">
+        <NavLink to="/" className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center">
+            <img src={logo} alt="logo" className="h-full w-full object-contain" />
+          </div>
+        </NavLink>
+
+        <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <button
+              onClick={() => navigate("/notifications")}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-600 hover:bg-[#17120D]/5"
+            >
+              <FiBell className="text-xl" />
+              {unread > 0 && (
+                <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white px-1">
+                  {unread}
+                </span>
+              )}
+            </button>
+          )}
+          <NavLink
+            to={isAuthenticated ? "/onboarding" : "/login"}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#FFD873] to-[#B9660B] text-sm font-bold text-[#17120D]"
+          >
+            {user?.name?.charAt(0).toUpperCase() || "?"}
+          </NavLink>
+        </div>
+      </div>
+    </header>
+  );
+}
