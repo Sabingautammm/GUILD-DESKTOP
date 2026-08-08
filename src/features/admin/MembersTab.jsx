@@ -105,9 +105,9 @@ export default function MembersTab() {
                       <button
                         disabled={busyId === m.userId?._id}
                         onClick={() =>
-                          run(processMemberAction("kick", m.userId._id), {
+                          run(processMemberAction("reject_join", m.userId._id), {
                             loading: "Rejecting…",
-                            success: "Application rejected",
+                            success: role === "officer" ? "Submitted to Officer vote" : "Application rejected",
                           })
                         }
                         className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50"

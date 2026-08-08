@@ -87,14 +87,14 @@ export default function MediaCard({ media, onChanged }) {
             {media.reactions?.length ?? 0}
           </button>
           <span className="text-xs text-slate-400">
-            {new Date(media.createdAt).toLocaleDateString()}
+            {media.createdAt ? new Date(media.createdAt).toLocaleDateString() : "Recently"}
           </span>
         </div>
 
         {media.comments && media.comments.length > 0 && (
           <ul className="mt-3 space-y-1.5">
-            {media.comments.map((c, i) => (
-              <li key={i} className="text-xs text-slate-600">
+            {media.comments.map((c) => (
+              <li key={c._id ?? c.userId?.toString?.() ?? c.createdAt} className="text-xs text-slate-600">
                 <span className="font-semibold text-[#17120D]">{c.userId?.name ?? "Player"}</span>{" "}
                 {c.text}
               </li>

@@ -34,7 +34,7 @@ export default function GalleryPage({ reelOnly = false }) {
       type: reelOnly ? "video" : undefined,
     };
     getGallery(params)
-      .then((d) => !cancelled && setMedia(d))
+      .then((d) => !cancelled && setMedia(Array.isArray(d) ? d : []))
       .catch((err) => !cancelled && setError(err instanceof ApiError ? err.message : "Could not load gallery."))
       .finally(() => !cancelled && setIsLoading(false));
     return () => {

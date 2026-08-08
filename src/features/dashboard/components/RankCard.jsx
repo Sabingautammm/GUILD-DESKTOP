@@ -6,7 +6,7 @@ export default function RankingCard({ icon: Icon, title, rank, subtitle, emptyLa
       </span>
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-wide text-[#6B5B45]">{title}</p>
-        {rank !== null ? (
+        {rank != null ? (
           <p className="text-2xl font-bold text-[#17120D] leading-tight">#{rank.toLocaleString()}</p>
         ) : (
           <p className="text-sm font-medium text-[#B3A488] leading-tight">{emptyLabel}</p>

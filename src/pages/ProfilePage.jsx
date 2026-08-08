@@ -39,9 +39,9 @@ export default function ProfilePage() {
         method: "PUT",
         body: JSON.stringify({ newPassword: password }),
       });
-      toast.success("Password updated", "Use it next time you log in as Leader.");
-      setPassword("");
-      setConfirm("");
+      toast.success("Password updated", "This session is now signed out. Please sign in again.");
+      await logout();
+      navigate("/login", { replace: true });
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Could not update password.");
     } finally {

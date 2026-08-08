@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     try {
       const data = await getCurrentUser();
       setUser(data.user);
-      setMembership(data.membership);
+      setMembership(data.membership || data.pendingMembership || null);
       setGuild(data.guild);
       setIsAuthenticated(true);
     } catch {

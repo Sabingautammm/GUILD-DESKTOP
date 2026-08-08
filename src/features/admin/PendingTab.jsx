@@ -113,9 +113,9 @@ export default function PendingTab() {
                       </div>
                       {a.votes && a.votes.length > 0 && (
                         <div className="mt-3 flex gap-2">
-                          {a.votes.map((v, i) => (
+                          {a.votes.map((v) => (
                             <span
-                              key={i}
+                              key={v.officerUserId ?? v.votedAt}
                               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                                 v.vote === "approve" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"
                               }`}

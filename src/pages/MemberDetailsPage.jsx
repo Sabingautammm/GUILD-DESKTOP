@@ -65,7 +65,7 @@ export default function MemberDetailsPage() {
             <p className="text-[10px] uppercase tracking-wide text-white/50">Status</p>
           </div>
           <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-lg font-bold">{new Date(member.joinDate).toLocaleDateString()}</p>
+            <p className="text-lg font-bold">{new Date(member.joinDate ?? member.createdAt ?? Date.now()).toLocaleDateString()}</p>
             <p className="text-[10px] uppercase tracking-wide text-white/50">Joined</p>
           </div>
         </div>

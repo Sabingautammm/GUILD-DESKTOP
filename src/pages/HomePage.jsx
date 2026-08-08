@@ -22,8 +22,8 @@ export default function HomePage() {
     Promise.all([getGuildLeaderboard(), getGallery({ limit: 3 })])
       .then(([g, m]) => {
         if (cancelled) return;
-        setTopGuilds(g.slice(0, 5));
-        setPreviewMedia(m.slice(0, 3));
+        setTopGuilds(Array.isArray(g) ? g.slice(0, 5) : []);
+        setPreviewMedia(Array.isArray(m) ? m.slice(0, 3) : []);
       })
       .catch((err) => !cancelled && setFeedError(err instanceof Error ? err.message : null));
     return () => {

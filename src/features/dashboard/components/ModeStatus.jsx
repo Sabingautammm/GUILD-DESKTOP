@@ -20,10 +20,10 @@ export default function ModeStatsCard({ icon: Icon, title, stats, rankPointsIcon
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Metric icon={FiCalendar} label="Matches" value={stats.matches.toLocaleString()} />
-        <Metric icon={FiActivity} label="K/D" value={stats.kd.toFixed(2)} />
-        <Metric icon={FiTarget} label="Headshot" value={`${stats.headshotRate.toFixed(1)}%`} />
-        <Metric icon={FiAward} label="Win Rate" value={`${stats.winRate.toFixed(1)}%`} />
+        <Metric icon={FiCalendar} label="Matches" value={(stats.matches ?? 0).toLocaleString()} />
+        <Metric icon={FiActivity} label="K/D" value={(stats.kd ?? 0).toFixed(2)} />
+        <Metric icon={FiTarget} label="Headshot" value={`${(stats.headshotRate ?? 0).toFixed(1)}%`} />
+        <Metric icon={FiAward} label="Win Rate" value={`${(stats.winRate ?? 0).toFixed(1)}%`} />
       </div>
     </div>
   );

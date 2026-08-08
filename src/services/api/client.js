@@ -1,6 +1,16 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL?.trim()
   ? import.meta.env.VITE_API_URL : "/api";
 
+// Fail loudly in production if the API URL wasn't configured at build time —
+// silently hitting the SPA rewrite would return index.html for every API call.
+if (import.meta.env.PROD && !import.meta.env.VITE_API_URL?.trim()) {
+  console.error(
+    "[client] VITE_API_URL is not set! In this production build every API call",
+    "will hit vercel.json's rewrite and return HTML, breaking the app.",
+    "Set VITE_API_URL=https://<your-backend-host>.com/api and redeploy."
+  );
+}
+
 export class ApiError extends Error {
   constructor(message, status, fieldErrors) {
     super(message);

@@ -15,8 +15,8 @@ export default function LeaderboardPage() {
     Promise.all([getGuildLeaderboard(), getPlayerLeaderboard()])
       .then(([g, p]) => {
         if (cancelled) return;
-        setGuilds(g);
-        setPlayers(p);
+        setGuilds(Array.isArray(g) ? g : []);
+        setPlayers(Array.isArray(p) ? p : []);
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not load leaderboards.");

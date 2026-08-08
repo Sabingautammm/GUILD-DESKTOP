@@ -15,7 +15,7 @@ export default function MembersPage() {
   useEffect(() => {
     let cancelled = false;
     getGuildLeaderboard()
-      .then((d) => !cancelled && setGuilds(d))
+      .then((d) => !cancelled && setGuilds(Array.isArray(d) ? d : []))
       .catch((err) => !cancelled && setError(err instanceof Error ? err.message : "Could not load guilds."))
       .finally(() => !cancelled && setIsLoading(false));
     return () => {
