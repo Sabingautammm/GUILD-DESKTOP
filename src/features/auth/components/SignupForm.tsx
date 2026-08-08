@@ -13,85 +13,79 @@ function SignupForm({ isSignUp }: SignupFormProps) {
         isSignUp ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
-      <p className="text-xs font-semibold tracking-wide text-indigo-500 uppercase mb-1">
-        Start building in minutes
-      </p>
+    
 
-      <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
+      <h1 className="text-xl sm:text-2xl font-bold text-[#17120D] mb-6">
         Create your account
       </h1>
 
       {/* Full Name */}
-      <label className="block text-xs font-medium text-slate-600 mb-1">
+      <label className="block text-xs font-medium text-[#6B5B45] mb-1">
         Full name
       </label>
 
       <div className="relative mb-4">
-        <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B3A488]" />
 
         <input
           type="text"
-          placeholder="Ada Lovelace"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition"
+          placeholder="Enter Your name"
+          className="w-full rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] pl-9 pr-3 py-2.5 text-sm text-[#17120D] outline-none transition-colors duration-200 focus:border-[#E3A012] focus:ring-2 focus:ring-[#E3A012]/15"
         />
       </div>
 
       {/* Email */}
-      <label className="block text-xs font-medium text-slate-600 mb-1">
+      <label className="block text-xs font-medium text-[#6B5B45] mb-1">
         Email address
       </label>
 
       <div className="relative mb-4">
-        <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#B3A488]" />
 
         <input
           type="email"
           placeholder="you@company.com"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 py-2.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition"
+          className="w-full rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] pl-9 pr-3 py-2.5 text-sm text-[#17120D] outline-none transition-colors duration-200 focus:border-[#E3A012] focus:ring-2 focus:ring-[#E3A012]/15"
         />
       </div>
 
       {/* Password */}
-      <label className="block text-xs font-medium text-slate-600 mb-1">
+      <label className="block text-xs font-medium text-[#6B5B45] mb-1">
         Password
       </label>
 
       <PasswordInput placeholder="At least 8 characters" />
 
-      <p className="text-[11px] text-slate-400 mb-3">
+      <p className="text-[11px] text-[#B3A488] mb-3">
         Use 8+ characters with a number or symbol
       </p>
 
       {/* Terms */}
-      <label className="flex items-start gap-2 text-xs text-slate-500 mb-5">
+      <label className="flex items-start gap-2 text-xs text-[#6B5B45] mb-5">
         <input
           type="checkbox"
-          className="mt-0.5 rounded border-slate-300"
+          className="mt-0.5 rounded border-[#EDE1CB]"
+          style={{ accentColor: "#E3A012" }}
         />
 
         <span>
           I agree to the{" "}
-          <a
-            href="#"
-            className="text-indigo-500 hover:underline"
-          >
+          <a href="#" className="text-[#B9660B] hover:underline">
             Terms
           </a>{" "}
           and{" "}
-          <a
-            href="#"
-            className="text-indigo-500 hover:underline"
-          >
+          <a href="#" className="text-[#B9660B] hover:underline">
             Privacy Policy
           </a>
         </span>
       </label>
 
       {/* Signup Button */}
-      <button className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 hover:opacity-90 transition">
+      <button className="w-full rounded-lg bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] py-2.5 text-sm font-semibold text-[#17120D] shadow-md shadow-[#E3A012]/25 transition-all duration-200 hover:shadow-lg hover:shadow-[#E3A012]/35">
         Create account
       </button>
-      <SocialLogin/>
+
+      <SocialLogin />
     </div>
   );
 }

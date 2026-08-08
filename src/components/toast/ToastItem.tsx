@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ToastRecord, ToastType } from "./Types";
-
+import { IoCloseSharp } from "react-icons/io5";
 // Rule 5 — Color coding: complete class strings (not template-built) so Tailwind's
 // scanner includes them in the build. Don't refactor these into `border-${color}-500`.
 const STYLE: Record<
@@ -124,7 +124,7 @@ export function ToastItem({ toast, onClose }: { toast: ToastRecord; onClose: () 
           aria-label="Dismiss"
           className="shrink-0 w-5 h-5 rounded-md flex items-center justify-center text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors"
         >
-          X
+       <IoCloseSharp />
         </button>
       </div>
 
