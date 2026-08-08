@@ -19,12 +19,12 @@ export const TOAST_DURATIONS: Record<ToastType, number> = {
   info: 4000,
   success: 5000,
   warning: 7000,
-  error: Infinity,
+  error: 4000,
   loading: Infinity,
 };
 
 /** Rule 3 — Stacking: never show more than this many at once. */
-export const MAX_VISIBLE_TOASTS = 3;
+export const MAX_VISIBLE_TOASTS = 2;
 
 export interface PromiseMessages<T> {
   loading: string;
