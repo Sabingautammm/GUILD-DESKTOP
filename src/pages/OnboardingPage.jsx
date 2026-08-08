@@ -30,13 +30,24 @@ export default function OnboardingPage() {
   }
 
   if (membership) {
+    const isPending = membership.status === "pending_approval";
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <p className="text-lg font-bold text-[#17120D]">You're all set!</p>
+        <p className="text-lg font-bold text-[#17120D]">{isPending ? "Application pending" : "You're all set!"}</p>
         <p className="text-sm text-slate-600 mt-2">
-          You're an active member of guild{" "}
-          <span className="font-mono font-semibold">{membership.guildUid}</span>
-          {membership.role !== "member" && membership.role !== "pending" && ` (as ${membership.role.replace("_", " ")})`}.
+          {isPending ? (
+            <>
+              Your application to guild{" "}
+              <span className="font-mono font-semibold">{membership.guildUid}</span> is awaiting approval by the guild
+              leaders. You'll be able to play the moment it's approved.
+            </>
+          ) : (
+            <>
+              You're an active member of guild{" "}
+              <span className="font-mono font-semibold">{membership.guildUid}</span>
+              {membership.role !== "member" && ` (as ${membership.role.replace("_", " ")})`}.
+            </>
+          )}
         </p>
         <button onClick={() => navigate("/")} className="mt-4 rounded-lg bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873]">
           Go to dashboard

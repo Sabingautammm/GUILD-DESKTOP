@@ -8,9 +8,11 @@ import RankingCard from "../features/dashboard/components/RankCard";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
 import { getGuildLeaderboard } from "../services/api/leaderboardApi";
 import { getGallery } from "../services/api/mediaApi";
+import { useAuth } from "../features/auth/context/AuthContext";
 
 export default function HomePage() {
-  const { player, isLoading, error, refetch } = usePlayerProfile();
+  const { isAuthenticated } = useAuth();
+  const { player, isLoading, error, refetch } = usePlayerProfile({ enabled: isAuthenticated });
   const [topGuilds, setTopGuilds] = useState([]);
   const [previewMedia, setPreviewMedia] = useState([]);
   const [feedError, setFeedError] = useState(null);
@@ -28,6 +30,38 @@ export default function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
+        <section className="rounded-2xl bg-gradient-to-br from-[#17120D] via-[#2A2118] to-[#17120D] p-8 sm:p-10 text-center">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#FFD873]">GUILD · Fantasy Memberships</p>
+          <h1 className="mt-3 text-3xl sm:text-4xl font-black text-white">
+            Find your guild, <span className="text-[#FFD873]">rule it or join it.</span>
+          </h1>
+          <p className="mt-3 text-sm text-white/70 max-w-md mx-auto">
+            Create a guild community with your UID, apply to join existing ones, and climb the leaderboard with your squad.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              to="/login"
+              className="rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-6 py-2.5 text-sm font-bold text-[#17120D] hover:brightness-105"
+            >
+              Get started with Google
+            </Link>
+            <Link
+              to="/leaderboard"
+              className="rounded-full border border-white/25 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              Browse leaderboards
+            </Link>
+          </div>
+        </section>
+        <LeagueTable topGuilds={topGuilds} feedError={feedError} />
+        <MediaPreviewCard previewMedia={previewMedia} feedError={feedError} />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <HomepageSkeleton />;
@@ -85,76 +119,88 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
-            Top Guilds
-          </h2>
-          <Link to="/leaderboard" className="text-xs font-semibold text-[#B9660B] hover:underline">
-            View all →
-          </Link>
-        </div>
-        {feedError ? (
-          <p className="text-xs text-slate-400">{feedError}</p>
-        ) : topGuilds.length === 0 ? (
-          <p className="text-xs text-slate-400">No guilds on the leaderboard yet.</p>
-        ) : (
-          <ul className="divide-y divide-[#F3EADA]">
-            {topGuilds.map((g, i) => (
-              <li key={g._id}>
-                <Link to={`/guild/${g.guildUid}`} className="flex items-center gap-3 py-2.5 group">
-                  <span className={`w-6 text-center text-xs font-bold ${i < 3 ? "text-[#E3A012]" : "text-slate-300"}`}>
-                    {i + 1}
-                  </span>
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E3A012]/10 text-xs font-bold text-[#B9660B]">
-                    {g.name.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm font-semibold text-[#17120D] truncate group-hover:underline">
-                      {g.name}
-                    </span>
-                    <span className="block text-[10px] font-mono text-slate-400">UID {g.guildUid}</span>
-                  </span>
-                  <span className="text-sm font-bold text-[#17120D]">{g.score.toLocaleString()}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <LeagueTable topGuilds={topGuilds} feedError={feedError} />
 
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
-            Latest Media
-          </h2>
-          <Link to="/gallery" className="text-xs font-semibold text-[#B9660B] hover:underline">
-            Open gallery →
-          </Link>
-        </div>
-        {feedError ? (
-          <p className="text-xs text-slate-400">{feedError}</p>
-        ) : previewMedia.length === 0 ? (
-          <p className="text-xs text-slate-400">No approved media yet. Uploads appear after admin approval.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {previewMedia.map((m) => (
-              <Link
-                key={m._id}
-                to="/gallery"
-                className="aspect-video rounded-lg bg-black overflow-hidden flex items-center justify-center"
-              >
-                {m.type === "video" ? (
-                  <video src={m.url} className="w-full h-full object-contain" muted playsInline />
-                ) : (
-                  <img src={m.url} alt="Media preview" className="w-full h-full object-contain" />
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+      <MediaPreviewCard previewMedia={previewMedia} feedError={feedError} />
     </div>
+  );
+}
+
+function LeagueTable({ topGuilds, feedError }) {
+  return (
+    <section className="rounded-xl border border-[#EDE1CB] bg-white p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
+          Top Guilds
+        </h2>
+        <Link to="/leaderboard" className="text-xs font-semibold text-[#B9660B] hover:underline">
+          View all →
+        </Link>
+      </div>
+      {feedError ? (
+        <p className="text-xs text-slate-400">{feedError}</p>
+      ) : topGuilds.length === 0 ? (
+        <p className="text-xs text-slate-400">No guilds on the leaderboard yet.</p>
+      ) : (
+        <ul className="divide-y divide-[#F3EADA]">
+          {topGuilds.map((g, i) => (
+            <li key={g._id}>
+              <Link to={`/guild/${g.guildUid}`} className="flex items-center gap-3 py-2.5 group">
+                <span className={`w-6 text-center text-xs font-bold ${i < 3 ? "text-[#E3A012]" : "text-slate-300"}`}>
+                  {i + 1}
+                </span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E3A012]/10 text-xs font-bold text-[#B9660B]">
+                  {g.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm font-semibold text-[#17120D] truncate group-hover:underline">
+                    {g.name}
+                  </span>
+                  <span className="block text-[10px] font-mono text-slate-400">UID {g.guildUid}</span>
+                </span>
+                <span className="text-sm font-bold text-[#17120D]">{g.score.toLocaleString()}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function MediaPreviewCard({ previewMedia, feedError }) {
+  return (
+    <section className="rounded-xl border border-[#EDE1CB] bg-white p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
+          Latest Media
+        </h2>
+        <Link to="/gallery" className="text-xs font-semibold text-[#B9660B] hover:underline">
+          Open gallery →
+        </Link>
+      </div>
+      {feedError ? (
+        <p className="text-xs text-slate-400">{feedError}</p>
+      ) : previewMedia.length === 0 ? (
+        <p className="text-xs text-slate-400">No approved media yet. Uploads appear after admin approval.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {previewMedia.map((m) => (
+            <Link
+              key={m._id}
+              to="/gallery"
+              className="aspect-video rounded-lg bg-black overflow-hidden flex items-center justify-center"
+            >
+              {m.type === "video" ? (
+                <video src={m.url} className="w-full h-full object-contain" muted playsInline />
+              ) : (
+                <img src={m.url} alt="Media preview" className="w-full h-full object-contain" />
+              )}
+            </Link>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

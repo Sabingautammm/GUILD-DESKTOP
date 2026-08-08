@@ -151,11 +151,11 @@ export default function TransferTab() {
         </div>
       )}
 
-      {isLeader && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">I am the new leader (setup)</h2>
-<p className="text-xs text-slate-500">
-            You received the one-time token via your notification list. Enter it here with your new Leader password to swap roles.
+      <div className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">I am the new leader (setup)</h2>
+          <p className="text-xs text-slate-500">
+            Got a leadership transfer token? Anyone in the guild who holds it can complete the setup here — the token
+            only works for the guild member it was issued to. Enter it with your new Leader password to swap roles.
           </p>
           <form onSubmit={handleComplete} className="space-y-3">
             <input
@@ -180,7 +180,6 @@ export default function TransferTab() {
             </button>
           </form>
         </div>
-      )}
 
       {isActingLeader && (
         <div className="rounded-xl border border-amber-200 bg-[#FFFBEF] p-6 space-y-3">
@@ -200,7 +199,10 @@ export default function TransferTab() {
       )}
 
       {!isLeader && !isActingLeader && (
-        <p className="text-xs text-slate-400">Transfer controls are Leader-only; claim requires the Acting Leader role.</p>
+        <p className="text-xs text-slate-400">
+          Only the Leader can initiate a transfer. If you were issued a transfer token, use the setup panel above; claim
+          requires the Acting Leader role.
+        </p>
       )}
     </section>
   );

@@ -1,13 +1,15 @@
 import { Routes, Route, NavLink } from "react-router-dom";
-import { FiUsers, FiClock, FiActivity, FiShield } from "react-icons/fi";
+import { FiUsers, FiClock, FiActivity, FiShield, FiImage } from "react-icons/fi";
 import { useAuth } from "../features/auth/context/AuthContext";
 import MembersTab from "../features/admin/MembersTab";
 import PendingTab from "../features/admin/PendingTab";
 import ActivityTab from "../features/admin/ActivityTab";
 import TransferTab from "../features/admin/TransferTab";
+import MediaTab from "../features/admin/MediaTab";
 
 const tabs = [
   { key: "members", label: "Members", icon: FiUsers, path: "/admin/members" },
+  { key: "media", label: "Media", icon: FiImage, path: "/admin/media" },
   { key: "pending", label: "Pending Actions", icon: FiClock, path: "/admin/pending" },
   { key: "activity", label: "Activity", icon: FiActivity, path: "/admin/activity" },
   { key: "transfer", label: "Leadership", icon: FiShield, path: "/admin/transfer" },
@@ -48,13 +50,14 @@ export default function AdminPage() {
 
       {!canLead && (
         <p className="mb-4 rounded-lg bg-[#FFFBEF] border border-[#E3A012]/30 px-4 py-3 text-xs text-[#8a5200]">
-          As an Officer you can act on kick/join/re-apply via the consensus queue and moderate media. Actively
+          As an Officer you can act on kick/join/re-apply via the consensus queue and moderate media directly.
         </p>
       )}
 
       <Routes>
         <Route path="/" element={<MembersTab />} />
         <Route path="/members" element={<MembersTab />} />
+        <Route path="/media" element={<MediaTab />} />
         <Route path="/pending" element={<PendingTab />} />
         <Route path="/activity" element={<ActivityTab />} />
         <Route path="/transfer" element={<TransferTab />} />

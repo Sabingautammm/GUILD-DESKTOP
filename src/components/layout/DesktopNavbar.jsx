@@ -47,7 +47,7 @@ function useUnreadCount() {
 export default function DesktopNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, isAdmin } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const navRef = useRef(null);
   const itemRefs = useRef({});
@@ -168,9 +168,11 @@ export default function DesktopNavbar() {
                   <NavLink to="/onboarding" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                     Join / Create Guild
                   </NavLink>
-                  <NavLink to="/admin/members" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                    Admin Dashboard
-                  </NavLink>
+                  {isAdmin && (
+                    <NavLink to="/admin/members" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                      Admin Dashboard
+                    </NavLink>
+                  )}
                   <button
                     onClick={() => {
                       logout();

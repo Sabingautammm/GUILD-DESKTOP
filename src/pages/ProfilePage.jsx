@@ -37,7 +37,7 @@ export default function ProfilePage() {
     try {
       await apiFetch("/auth/change-password", {
         method: "PUT",
-        body: JSON.stringify({ currentPassword: password }),
+        body: JSON.stringify({ newPassword: password }),
       });
       toast.success("Password updated", "Use it next time you log in as Leader.");
       setPassword("");
