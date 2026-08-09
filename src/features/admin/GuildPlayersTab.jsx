@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiLoader, FiAlertCircle, FiUserPlus, FiSearch, FiTrash2, FiHash } from "react-icons/fi";
-import { getGuildPlayers, addPlayerByGameUid, removeGuildPlayer } from "../../services/api/adminApi";
+import { getGuildPlayers, searchGuildPlayer, addPlayerByGameUid, removeGuildPlayer } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
 import { useAuth } from "../../features/auth/context/AuthContext";
@@ -48,6 +48,8 @@ export default function GuildPlayersTab() {
   const [form, setForm] = useState({ game: GAMES[0], gameUid: "", inGameName: "" });
   const [formError, setFormError] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState(null);
 
   const reload = () => {
     let cancelled = false;
@@ -70,19 +72,33 @@ export default function GuildPlayersTab() {
 
   useEffect(() => reload(), []);
 
-  const runAdd = async () => {
+  const runSearch = async () => {
     setFormError("");
     if (!/^\d+$/.test(form.gameUid.trim())) {
       setFormError("Game UID must be numeric.");
       return;
     }
+    setSearching(true);
+    setSearchResult(null);
+    try {
+      const result = await searchGuildPlayer({ game: form.game, gameUid: form.gameUid.trim() });
+      setSearchResult(result);
+    } catch (err) {
+      setFormError(err instanceof ApiError ? err.message : "Could not search for player.");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const runAdd = async (inGameName) => {
+    setFormError("");
     setBusyId("__add__");
     try {
       await toast.promise(
         addPlayerByGameUid({
           game: form.game,
           gameUid: form.gameUid.trim(),
-          inGameName: form.inGameName.trim(),
+          inGameName: inGameName || form.inGameName.trim(),
         }),
         {
           loading: "Adding player…",
@@ -92,6 +108,7 @@ export default function GuildPlayersTab() {
         }
       );
       setForm({ game: GAMES[0], gameUid: "", inGameName: "" });
+      setSearchResult(null);
       setShowAddForm(false);
       reload();
     } catch {
@@ -158,11 +175,14 @@ export default function GuildPlayersTab() {
 
         {showAddForm && (
           <div className="rounded-lg bg-[#FAF6EE] border border-[#EDE1CB] p-4 space-y-3">
-            <label className="text-xs font-semibold text-slate-800">Add a player by their in-game UID</label>
-            <div className="grid sm:grid-cols-3 gap-3">
+            <label className="text-xs font-semibold text-slate-800">Find a player by their in-game UID</label>
+            <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-3">
               <select
                 value={form.game}
-                onChange={(e) => setForm((f) => ({ ...f, game: e.target.value }))}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, game: e.target.value }));
+                  setSearchResult(null);
+                }}
                 className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 {GAMES.map((g) => (
@@ -176,26 +196,112 @@ export default function GuildPlayersTab() {
                 <input
                   inputMode="numeric"
                   value={form.gameUid}
-                  onChange={(e) => setForm((f) => ({ ...f, gameUid: e.target.value.replace(/\D/g, "") }))}
+                  onChange={(e) => {
+                    setForm((f) => ({ ...f, gameUid: e.target.value.replace(/\D/g, "") }));
+                    setSearchResult(null);
+                  }}
                   placeholder="Game UID (required)"
                   className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
-              <input
-                value={form.inGameName}
-                onChange={(e) => setForm((f) => ({ ...f, inGameName: e.target.value }))}
-                placeholder="In-Game Name (optional)"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
+              <button
+                onClick={runSearch}
+                disabled={searching || !form.gameUid.trim()}
+                className="rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+              >
+                {searching ? "Searching…" : "Search Player"}
+              </button>
             </div>
+
             {formError && <p className="text-xs text-red-500">{formError}</p>}
-            <button
-              onClick={runAdd}
-              disabled={busyId === "__add__"}
-              className="rounded-lg bg-[#B9660B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
-            >
-              {busyId === "__add__" ? "Adding…" : "Add Player"}
-            </button>
+
+            {searchResult && (
+              <div className="rounded-lg border border-[#E3A012]/30 bg-white p-4 space-y-3">
+                {searchResult.found ? (
+                  <>
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#17120D]">{searchResult.user.inGameName || searchResult.user.name}</p>
+                        <p className="text-[11px] text-slate-400">
+                          {searchResult.user.game} · UID {searchResult.user.gameUid}
+                        </p>
+                      </div>
+                      {searchResult.inRoster && (
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+                          Already in this guild's roster
+                        </span>
+                      )}
+                      {!searchResult.inRoster && searchResult.addable && (
+                        <span className="rounded-full bg-green-600/10 px-2.5 py-1 text-[10px] font-semibold text-green-700">
+                          Free Player
+                        </span>
+                      )}
+                      {!searchResult.inRoster && !searchResult.addable && (
+                        <span className="rounded-full bg-red-600/10 px-2.5 py-1 text-[10px] font-semibold text-red-700">
+                          Already in a guild
+                        </span>
+                      )}
+                    </div>
+
+                    {!searchResult.inRoster && !searchResult.addable && searchResult.currentGuild && (
+                      <p className="text-xs text-slate-500">
+                        Currently <span className="font-semibold text-[#17120D]">{searchResult.currentGuild.name}</span> as{" "}
+                        <span className="font-semibold text-[#17120D]">{ROLE_LABEL[searchResult.currentGuild.role] ?? searchResult.currentGuild.role}</span>.
+                        This player must leave that guild before being added here.
+                      </p>
+                    )}
+
+                    {searchResult.inRoster && (
+                      <p className="text-xs text-slate-500">This Game UID is already on this guild's roster.</p>
+                    )}
+
+                    {!searchResult.inRoster && searchResult.addable && (
+                      <button
+                        onClick={() => runAdd(searchResult.user.inGameName)}
+                        disabled={busyId === "__add__"}
+                        className="rounded-lg bg-[#B9660B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                      >
+                        {busyId === "__add__" ? "Adding…" : "Add to Guild"}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <p className="text-sm font-bold text-[#17120D]">No App User Found</p>
+                        <p className="text-[11px] text-slate-400">
+                          This player has not created an account in the application. You can still add them to the guild
+                          roster as a game-only player — they can link their account later.
+                        </p>
+                      </div>
+                      {searchResult.inRoster && (
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+                          Already in roster
+                        </span>
+                      )}
+                    </div>
+                    {!searchResult.inRoster && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <input
+                          value={form.inGameName}
+                          onChange={(e) => setForm((f) => ({ ...f, inGameName: e.target.value }))}
+                          placeholder="In-Game Name (optional)"
+                          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        <button
+                          onClick={() => runAdd(form.inGameName.trim())}
+                          disabled={busyId === "__add__"}
+                          className="rounded-lg bg-[#B9660B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                        >
+                          {busyId === "__add__" ? "Adding…" : "Add as game-only player"}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 

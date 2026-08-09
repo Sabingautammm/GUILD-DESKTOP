@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiShield, FiUsers, FiLoader, FiAlertCircle, FiArrowRight } from "react-icons/fi";
-import { getGuildProfile, getPrivateGuildView, applyToGuild, leaveGuild, disbandGuild } from "../services/api/guildApi";
+import { FiShield, FiUsers, FiLoader, FiAlertCircle, FiArrowRight, FiEdit3, FiCheck, FiX } from "react-icons/fi";
+import { getGuildProfile, getPrivateGuildView, updateGuild, applyToGuild, leaveGuild, disbandGuild } from "../services/api/guildApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -17,6 +17,12 @@ export default function GuildPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmingDisband, setConfirmingDisband] = useState(false);
+  const [activeTab, setActiveTab] = useState("players");
+  const [editingIntro, setEditingIntro] = useState(false);
+  const [editingHistory, setEditingHistory] = useState(false);
+  const [introDraft, setIntroDraft] = useState("");
+  const [historyDraft, setHistoryDraft] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const amMember = membership && membership.guildUid === guildUid;
 
@@ -75,6 +81,42 @@ export default function GuildPage() {
       navigate("/");
     } catch {
       // toast handles it
+    }
+  };
+
+  const canEditGuild = role === "leader" || role === "acting_leader";
+
+  const saveIntro = async () => {
+    setSaving(true);
+    try {
+      await toast.promise(updateGuild(guildUid, { introduction: introDraft.trim() }), {
+        loading: "Saving introduction…",
+        success: "Guild introduction updated",
+        error: (err) => (err instanceof ApiError ? err.message : "Could not save introduction."),
+      });
+      setEditingIntro(false);
+      setData((d) => (d ? { ...d, guild: { ...d.guild, introduction: introDraft.trim() } } : d));
+    } catch {
+      // toast handled it
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveHistory = async () => {
+    setSaving(true);
+    try {
+      await toast.promise(updateGuild(guildUid, { history: historyDraft.trim() }), {
+        loading: "Saving history…",
+        success: "Guild history updated",
+        error: (err) => (err instanceof ApiError ? err.message : "Could not save history."),
+      });
+      setEditingHistory(false);
+      setData((d) => (d ? { ...d, guild: { ...d.guild, history: historyDraft.trim() } } : d));
+    } catch {
+      // toast handled it
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -161,44 +203,169 @@ export default function GuildPage() {
         </div>
       </div>
 
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45] mb-4">Leadership</h2>
-        <div className="flex flex-wrap gap-3">
-          {leader && <RoleChip member={leader} label="Leader" />}
-          {officers.length > 0 && officers.map((m) => <RoleChip key={m._id} member={m} label={ROLE_LABEL[m.role]} />)}
-          {!leader && <p className="text-xs text-slate-400">No leader assigned.</p>}
-        </div>
-      </section>
+      <div className="flex gap-1 overflow-x-auto rounded-full bg-[#17120D] p-1.5">
+        {[
+          { key: "players", label: "Guild Players" },
+          { key: "introduction", label: "Introduction" },
+          { key: "history", label: "History" },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setActiveTab(t.key)}
+            className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+              activeTab === t.key
+                ? "bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] text-[#17120D]"
+                : "text-[#B3A488] hover:text-[#FBF3E2]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Roster</h2>
-          <span className="text-xs text-slate-400">{roster.length} shown</span>
-        </div>
-        {roster.length === 0 ? (
-          <p className="text-xs text-slate-400">No members yet.{amMember && " Invite friends to apply!"}</p>
-        ) : (
-          <ul className="divide-y divide-[#F3EADA]">
-            {roster.map((m) => (
-              <li key={m._id} className="flex items-center justify-between py-3">
+      {activeTab === "players" && (
+        <>
+          <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45] mb-4">Leadership</h2>
+            <div className="flex flex-wrap gap-3">
+              {leader && <RoleChip member={leader} label="Leader" />}
+              {officers.length > 0 && officers.map((m) => <RoleChip key={m._id} member={m} label={ROLE_LABEL[m.role]} />)}
+              {!leader && <p className="text-xs text-slate-400">No leader assigned.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Roster</h2>
+              <span className="text-xs text-slate-400">{roster.length} shown</span>
+            </div>
+            {roster.length === 0 ? (
+              <p className="text-xs text-slate-400">No members yet.{amMember && " Invite friends to apply!"}</p>
+            ) : (
+              <ul className="divide-y divide-[#F3EADA]">
+                {roster.map((m) => (
+                  <li key={m._id} className="flex items-center justify-between py-3">
+                    <button
+                      onClick={() => m.userId?._id && navigate(`/members/${m.userId._id}`)}
+                      className="flex items-center gap-3 min-w-0 text-left flex-1"
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
+                        {m.userId?.name?.charAt(0).toUpperCase() || "?"}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#17120D] truncate">{m.userId?.name ?? "Player"}</p>
+                        <p className="text-[11px] text-slate-400">{ROLE_LABEL[m.role] ?? m.role}</p>
+                      </div>
+                      <FiArrowRight className="ml-auto text-xs text-slate-300" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      )}
+
+      {activeTab === "introduction" && (
+        <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Guild Introduction</h2>
+            {canEditGuild && !editingIntro && (
+              <button
+                onClick={() => {
+                  setIntroDraft(g.introduction || "");
+                  setEditingIntro(true);
+                }}
+                className="flex items-center gap-1.5 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                <FiEdit3 /> Edit
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-slate-400 mb-3">Slogan: {g.slogan}</p>
+          {editingIntro ? (
+            <div className="space-y-3">
+              <textarea
+                value={introDraft}
+                onChange={(e) => setIntroDraft(e.target.value)}
+                rows={5}
+                placeholder="Describe your guild — goals, community, activity…"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+              <div className="flex gap-2">
                 <button
-                  onClick={() => m.userId?._id && navigate(`/members/${m.userId._id}`)}
-                  className="flex items-center gap-3 min-w-0 text-left flex-1"
+                  onClick={saveIntro}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
-                    {m.userId?.name?.charAt(0).toUpperCase() || "?"}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#17120D] truncate">{m.userId?.name ?? "Player"}</p>
-                    <p className="text-[11px] text-slate-400">{ROLE_LABEL[m.role] ?? m.role}</p>
-                  </div>
-                  <FiArrowRight className="ml-auto text-xs text-slate-300" />
+                  <FiCheck /> {saving ? "Saving…" : "Save"}
                 </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                <button
+                  onClick={() => setEditingIntro(false)}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  <FiX /> Cancel
+                </button>
+              </div>
+            </div>
+          ) : g.introduction ? (
+            <p className="text-sm whitespace-pre-wrap text-[#17120D]">{g.introduction}</p>
+          ) : (
+            <p className="text-xs text-slate-400">No introduction yet.</p>
+          )}
+        </section>
+      )}
+
+      {activeTab === "history" && (
+        <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Guild History</h2>
+            {canEditGuild && !editingHistory && (
+              <button
+                onClick={() => {
+                  setHistoryDraft(g.history || "");
+                  setEditingHistory(true);
+                }}
+                className="flex items-center gap-1.5 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                <FiEdit3 /> Edit
+              </button>
+            )}
+          </div>
+          {editingHistory ? (
+            <div className="space-y-3">
+              <textarea
+                value={historyDraft}
+                onChange={(e) => setHistoryDraft(e.target.value)}
+                rows={6}
+                placeholder="The story of your guild…"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={saveHistory}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+                >
+                  <FiCheck /> {saving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  onClick={() => setEditingHistory(false)}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  <FiX /> Cancel
+                </button>
+              </div>
+            </div>
+          ) : g.history ? (
+            <p className="text-sm whitespace-pre-wrap text-[#17120D]">{g.history}</p>
+          ) : (
+            <p className="text-xs text-slate-400">No history recorded yet.</p>
+          )}
+        </section>
+      )}
 
       {membership?.role === "leader" && (
         <div className="rounded-xl border border-red-100 bg-red-50 p-5">

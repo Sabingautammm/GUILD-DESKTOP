@@ -66,6 +66,13 @@ export function getGuildPlayers() {
   return apiFetch("/admin/guild-players");
 }
 
+export function searchGuildPlayer(payload) {
+  return apiFetch("/admin/guild-players/search", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function addPlayerByGameUid(payload) {
   return apiFetch("/admin/guild-players", {
     method: "POST",
