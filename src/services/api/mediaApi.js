@@ -1,4 +1,4 @@
-import { apiFetch } from "./client";
+import { apiFetch, apiUpload } from "./client";
 
 export function getGallery(params = {}) {
   const qs = new URLSearchParams();
@@ -9,11 +9,22 @@ export function getGallery(params = {}) {
   return apiFetch(`/media${query ? `?${query}` : ""}`);
 }
 
-export function uploadMedia(payload) {
-  return apiFetch("/media", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export function uploadMediaFile(file, { category = "guild", visibility = "public" } = {}) {
+  const formData = new FormData();
+  formData.append("media", file);
+  formData.append("category", category);
+  formData.append("visibility", visibility);
+  return apiUpload("/media", formData);
+}
+
+export function uploadAvatarFile(file) {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  return apiUpload("/media/avatar", formData);
+}
+
+export function removeAvatar() {
+  return apiFetch("/media/avatar", { method: "DELETE" });
 }
 
 export function moderateMedia(mediaId, approvalStatus) {

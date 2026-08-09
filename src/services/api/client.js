@@ -22,18 +22,25 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, options = {}) {
-  const { timeoutMs = 10000, headers, ...rest } = options;
+  const { timeoutMs = 10000, headers, body, ...rest } = options;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   let response;
 
+  // FormData bodies must not set a Content-Type header — the browser needs to
+  // insert the multipart boundary itself. Plain objects are JSON-encoded.
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const requestHeaders = {
+    ...(!isFormData && { "Content-Type": "application/json" }),
+    ...headers,
+  };
+  const requestBody = isFormData ? body : body !== undefined ? JSON.stringify(body) : undefined;
+
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...rest,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
+      headers: requestHeaders,
+      body: requestBody,
       credentials: "include",
       signal: controller.signal,
     });
@@ -66,6 +73,11 @@ export async function apiFetch(path, options = {}) {
   }
 
   return data;
+}
+
+// Multipart file upload with a longer timeout (videos can take a while).
+export function apiUpload(path, formData, timeoutMs = 120000) {
+  return apiFetch(path, { method: "POST", body: formData, timeoutMs });
 }
 
 function defaultMessageForStatus(status) {

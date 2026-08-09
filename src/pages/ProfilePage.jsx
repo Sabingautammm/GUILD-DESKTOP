@@ -1,13 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2, FiUsers, FiArrowRight, FiImage, FiCamera } from "react-icons/fi";
+import { FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2, FiUsers, FiArrowRight, FiCamera, FiUpload, FiFile } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
+import { uploadAvatarFile, removeAvatar as removeAvatarApi } from "../services/api/mediaApi";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
 import { updateMyProfile } from "../features/dashboard/services/playerApi";
+
+const ACCEPT_AVATAR = "image/jpeg,image/png,image/webp";
+const AVATAR_MIMES = ["image/jpeg", "image/png", "image/webp"];
+const AVATAR_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2 MB
+
+function validateAvatarFile(file) {
+  if (!file) return { ok: false, message: "Please select an image." };
+  const mime = (file.type || "").toLowerCase();
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  if (!AVATAR_MIMES.includes(mime) || !AVATAR_EXTENSIONS.includes(ext)) {
+    return { ok: false, message: "Unsupported file type. Profile picture must be JPG, PNG or WEBP." };
+  }
+  if (file.size > MAX_AVATAR_SIZE) {
+    return { ok: false, message: "Profile picture is too large. Maximum allowed is 2 MB." };
+  }
+  return { ok: true };
+}
 
 const STAT_MODES = [
   { key: "brRank", title: "BR Rank Match", hasPoints: true, pointsLabel: "Points" },
@@ -70,9 +89,11 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingPw, setIsSavingPw] = useState(false);
 
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "");
-  const avatarTouchedRef = useRef(false);
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const avatarInputRef = useRef(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [avatarError, setAvatarError] = useState("");
 
   const [editingStats, setEditingStats] = useState(false);
   const [stats, setStats] = useState(null);
@@ -197,22 +218,41 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAvatarSelect = (e) => {
+    setAvatarError("");
+    const file = e.target.files?.[0] || null;
+    if (!file) return;
+
+    const result = validateAvatarFile(file);
+    if (!result.ok) {
+      setAvatarFile(null);
+      setAvatarPreview("");
+      setAvatarError(result.message);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+      return;
+    }
+
+    setAvatarFile(file);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
   const saveAvatar = async (e) => {
     e.preventDefault();
-    const url = avatarUrl.trim();
-    if (url && !/^https?:\/\//i.test(url)) {
-      toast.error("Invalid image URL", "Profile picture must start with http:// or https://.");
+    if (!avatarFile) {
+      setAvatarError("Please choose an image from your device.");
       return;
     }
     setIsSavingAvatar(true);
     try {
-      await toast.promise(updateMyProfile({ avatar: url }), {
-        loading: "Saving picture…",
+      await toast.promise(uploadAvatarFile(avatarFile), {
+        loading: "Uploading picture…",
         success: "Profile picture updated",
-        error: (err) => (err instanceof ApiError ? err.message : "Could not update profile picture."),
+        error: (err) => (err instanceof ApiError ? err.message : "Could not upload profile picture."),
       });
-      avatarTouchedRef.current = true;
       await refresh();
+      clearAvatarSelection();
+      toast.success("Profile picture updated");
     } catch {
       // toast handled it
     } finally {
@@ -220,17 +260,24 @@ export default function ProfilePage() {
     }
   };
 
+  const clearAvatarSelection = () => {
+    setAvatarFile(null);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview("");
+    setAvatarError("");
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  };
+
   const removeAvatar = async () => {
-    setAvatarUrl("");
     setIsSavingAvatar(true);
     try {
-      await toast.promise(updateMyProfile({ avatar: "" }), {
+      await toast.promise(removeAvatarApi(), {
         loading: "Removing picture…",
         success: "Profile picture removed",
         error: (err) => (err instanceof ApiError ? err.message : "Could not remove profile picture."),
       });
-      avatarTouchedRef.current = true;
       await refresh();
+      clearAvatarSelection();
     } catch {
       // toast handled it
     } finally {
@@ -238,13 +285,12 @@ export default function ProfilePage() {
     }
   };
 
-  // Sync the input when the user's avatar loads (or after a save) without
-  // overwriting what the user is currently typing.
+  // Clean up the object URL when the component unmounts or the preview changes.
   useEffect(() => {
-    if (user?.avatar !== undefined && !avatarTouchedRef.current) {
-      setAvatarUrl(user.avatar || "");
-    }
-  }, [user?.avatar]);
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -333,9 +379,9 @@ export default function ProfilePage() {
 
         <div className="flex flex-wrap items-center gap-4 rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] p-4">
           <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E3A012]/15 ring-2 ring-[#E3A012]/30">
-            {avatarUrl ? (
+            {avatarPreview || user?.avatar ? (
               <img
-                src={avatarUrl}
+                src={avatarPreview || user.avatar}
                 alt="Profile preview"
                 className="h-full w-full object-cover"
                 onError={(e) => { e.currentTarget.style.display = "none"; }}
@@ -345,35 +391,61 @@ export default function ProfilePage() {
             )}
           </span>
           <div className="min-w-0 flex-1 space-y-2">
-            <form onSubmit={saveAvatar} className="flex flex-col sm:flex-row gap-2">
-              <div className="relative flex-1 min-w-0">
-                <FiImage className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
-                <input
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="Profile picture URL (https://…)"
-                  className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                />
-              </div>
+            {!avatarFile ? (
               <button
-                type="submit"
-                disabled={isSavingAvatar}
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                className="flex items-center gap-2 rounded-lg border border-[#E3A012]/40 bg-[#FFFBEF] px-4 py-2 text-xs font-semibold text-[#8a5200] hover:bg-[#FFF6DC]"
+              >
+                <FiUpload /> Upload Profile Picture
+              </button>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FiFile className="text-[#B9660B] shrink-0" />
+                  <span className="text-xs font-semibold text-[#17120D] truncate">{avatarFile.name}</span>
+                  <span className="text-[11px] text-slate-400">{(avatarFile.size / 1024).toFixed(0)} KB</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={clearAvatarSelection}
+                    className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  >
+                    Change
+                  </button>
+                </div>
+              </div>
+            )}
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept={ACCEPT_AVATAR}
+              onChange={handleAvatarSelect}
+              className="hidden"
+            />
+            {avatarError && <p className="text-xs text-red-500">{avatarError}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={saveAvatar}
+                disabled={isSavingAvatar || !avatarFile}
                 className="flex items-center justify-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
               >
                 {isSavingAvatar ? <FiLoader className="animate-spin" /> : <FiCamera />}
                 Save picture
               </button>
-            </form>
-            {avatarUrl && (
-              <button
-                type="button"
-                onClick={removeAvatar}
-                disabled={isSavingAvatar}
-                className="text-[11px] font-semibold text-slate-400 hover:text-red-600 disabled:opacity-50"
-              >
-                Remove picture
-              </button>
-            )}
+              {user?.avatar && (
+                <button
+                  type="button"
+                  onClick={removeAvatar}
+                  disabled={isSavingAvatar}
+                  className="text-[11px] font-semibold text-slate-400 hover:text-red-600 disabled:opacity-50"
+                >
+                  Remove picture
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
