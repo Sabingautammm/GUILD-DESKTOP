@@ -61,3 +61,20 @@ export function claimLeadership() {
 export function getActivityLogs() {
   return apiFetch("/admin/activity");
 }
+
+export function getGuildPlayers() {
+  return apiFetch("/admin/guild-players");
+}
+
+export function addPlayerByGameUid(payload) {
+  return apiFetch("/admin/guild-players", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function removeGuildPlayer(playerId) {
+  return apiFetch(`/admin/guild-players/${playerId}`, {
+    method: "DELETE",
+  });
+}

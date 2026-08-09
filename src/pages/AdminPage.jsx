@@ -1,7 +1,8 @@
 import { Routes, Route, NavLink } from "react-router-dom";
-import { FiUsers, FiClock, FiActivity, FiShield, FiImage } from "react-icons/fi";
+import { FiUsers, FiClock, FiActivity, FiShield, FiImage, FiSearch } from "react-icons/fi";
 import { useAuth } from "../features/auth/context/AuthContext";
 import MembersTab from "../features/admin/MembersTab";
+import GuildPlayersTab from "../features/admin/GuildPlayersTab";
 import PendingTab from "../features/admin/PendingTab";
 import ActivityTab from "../features/admin/ActivityTab";
 import TransferTab from "../features/admin/TransferTab";
@@ -9,6 +10,7 @@ import MediaTab from "../features/admin/MediaTab";
 
 const tabs = [
   { key: "members", label: "Members", icon: FiUsers, path: "/admin/members" },
+  { key: "guild", label: "Guild Players", icon: FiSearch, path: "/admin/guild-players" },
   { key: "media", label: "Media", icon: FiImage, path: "/admin/media" },
   { key: "pending", label: "Pending Actions", icon: FiClock, path: "/admin/pending" },
   { key: "activity", label: "Activity", icon: FiActivity, path: "/admin/activity" },
@@ -54,15 +56,16 @@ export default function AdminPage() {
         </p>
       )}
 
-      <Routes>
-        <Route path="/" element={<MembersTab />} />
-        <Route path="/members" element={<MembersTab />} />
-        <Route path="/media" element={<MediaTab />} />
-        <Route path="/pending" element={<PendingTab />} />
-        <Route path="/activity" element={<ActivityTab />} />
-        <Route path="/transfer" element={<TransferTab />} />
-        <Route path="*" element={<MembersTab />} />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<MembersTab />} />
+          <Route path="/members" element={<MembersTab />} />
+          <Route path="/guild-players" element={<GuildPlayersTab />} />
+          <Route path="/media" element={<MediaTab />} />
+          <Route path="/pending" element={<PendingTab />} />
+          <Route path="/activity" element={<ActivityTab />} />
+          <Route path="/transfer" element={<TransferTab />} />
+          <Route path="*" element={<MembersTab />} />
+        </Routes>
     </div>
   );
 }

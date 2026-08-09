@@ -1,44 +1,17 @@
-import { useState } from "react";
 import LoginForm from "../features/auth/components/LoginForm";
-import SignupForm from "../features/auth/components/SignupForm";
-import Overlay from "../features/auth/components/Overlay";
 
 export default function AuthPage() {
-  const [isSignUp, setIsSignUp] = useState(false);
-
   return (
     <div className="min-h-[80vh] w-full flex items-center justify-center bg-slate-100 px-4 py-8 sm:px-6">
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl md:h-[560px]">
-        <div className="flex flex-col md:h-full md:flex-row">
-          <div className={`${isSignUp ? "hidden" : "flex"} w-full items-center justify-center px-6 py-10 sm:px-10 md:flex md:w-1/2`}>
-            <LoginForm isSignUp={isSignUp} />
-          </div>
-
-          <div className={`${isSignUp ? "flex" : "hidden"} w-full items-center justify-center px-6 py-10 sm:px-10 md:flex md:w-1/2`}>
-            <SignupForm isSignUp={isSignUp} />
-          </div>
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="bg-gradient-to-br from-[#17120D] via-[#3A2712] to-[#B9660B] px-6 py-8 text-center">
+          <h1 className="text-2xl font-black text-white">GUILD</h1>
+          <p className="mt-1 text-xs text-[#FFD873]/80 uppercase tracking-[0.2em]">
+            Rule it or join it
+          </p>
         </div>
-
-        <div className="hidden md:block">
-          <Overlay isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
-        </div>
-
-        <div className="border-t border-slate-100 px-6 py-4 text-center text-sm text-slate-500 md:hidden">
-          {isSignUp ? (
-            <>
-              Already have an account?{" "}
-              <button type="button" onClick={() => setIsSignUp(false)} className="font-medium text-indigo-500 hover:underline">
-                Sign in
-              </button>
-            </>
-          ) : (
-            <>
-              New here?{" "}
-              <button type="button" onClick={() => setIsSignUp(true)} className="font-medium text-indigo-500 hover:underline">
-                Create an account
-              </button>
-            </>
-          )}
+        <div className="px-6 py-8 flex items-center justify-center">
+          <LoginForm />
         </div>
       </div>
     </div>

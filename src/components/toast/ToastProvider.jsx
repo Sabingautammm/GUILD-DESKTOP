@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useRef, useState } from "react";
-import { ToastItem } from "./ToastItem";
-import { MAX_VISIBLE_TOASTS, TOAST_DURATIONS } from "./toastTypes";
+import { ToastContainer } from "./ToastContainer";
+import { TOAST_DURATIONS } from "./toastTypes";
 
 const ToastContext = createContext(null);
 
@@ -12,20 +12,25 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addToast = useCallback((type, title, description, opts = {}) => {
+  const dismissAll = useCallback(() => {
+    setToasts([]);
+  }, []);
+
+  const addToast = useCallback((type, message, description, opts = {}) => {
     const id = ++idCounter.current;
     const duration = opts.duration ?? TOAST_DURATIONS[type] ?? 4000;
-    setToasts((prev) => [...prev.slice(-MAX_VISIBLE_TOASTS + 1), { id, type, title, description, duration }]);
+    setToasts((prev) => [...prev, { id, type, message, description, duration, createdAt: Date.now() }]);
     return id;
   }, []);
 
   const toastApi = {
-    info: (title, desc, opts) => addToast("info", title, desc, opts),
-    success: (title, desc, opts) => addToast("success", title, desc, opts),
-    warning: (title, desc, opts) => addToast("warning", title, desc, opts),
-    error: (title, desc, opts) => addToast("error", title, desc, opts),
-    loading: (title, desc) => addToast("loading", title, desc, { duration: Infinity }),
+    info: (message, description, opts) => addToast("info", message, description, opts),
+    success: (message, description, opts) => addToast("success", message, description, opts),
+    warning: (message, description, opts) => addToast("warning", message, description, opts),
+    error: (message, description, opts) => addToast("error", message, description, opts),
+    loading: (message, description) => addToast("loading", message, description, { duration: Infinity }),
     dismiss,
+    dismissAll,
     promise: async (promise, messages) => {
       const id = addToast("loading", messages.loading, messages.loadingDescription);
       try {
@@ -39,7 +44,7 @@ export function ToastProvider({ children }) {
         dismiss(id);
         const errTitle = typeof messages.error === "function" ? messages.error(err) : messages.error;
         const errDesc = typeof messages.errorDescription === "function" ? messages.errorDescription(err) : messages.errorDescription;
-        addToast("error", errTitle, errDesc);
+        addToast("error", errTitle || "Something went wrong", errDesc);
         throw err;
       }
     },
@@ -48,11 +53,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toastApi}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full">
-        {toasts.map((t) => (
-          <ToastItem key={t.id} toast={t} onDismiss={dismiss} />
-        ))}
-      </div>
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </ToastContext.Provider>
   );
 }

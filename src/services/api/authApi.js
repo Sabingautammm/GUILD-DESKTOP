@@ -28,6 +28,31 @@ export function createGuild(payload) {
   });
 }
 
+export function selectGame(game) {
+  return apiFetch("/auth/onboarding/game", {
+    method: "POST",
+    body: JSON.stringify({ game }),
+  });
+}
+
+export function submitGameIdentity(gameUid, inGameName) {
+  return apiFetch("/auth/onboarding/game-identity", {
+    method: "POST",
+    body: JSON.stringify({ gameUid, inGameName }),
+  });
+}
+
+export function verifyLeaderPassword(password) {
+  return apiFetch("/auth/onboarding/verify-leader", {
+    method: "POST",
+    body: JSON.stringify({ password }),
+  });
+}
+
+export function completeOnboarding() {
+  return apiFetch("/auth/onboarding/complete", { method: "POST" });
+}
+
 export function getCurrentUser() {
   return apiFetch("/auth/me", { method: "GET" });
 }

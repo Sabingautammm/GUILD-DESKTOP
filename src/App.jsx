@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -13,11 +13,13 @@ import LeaderboardPage from "./pages/LeaderboardPage";
 import ReelPage from "./pages/ReelPage";
 import AdminPage from "./pages/AdminPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import ToastDemoPage from "./pages/ToastDemo";
 import { ToastProvider } from "./components/toast/ToastProvider";
 import { AuthProvider, useAuth } from "./features/auth/context/AuthContext";
 
 function AppRoutes() {
-  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading, user } = useAuth();
+  const needsOnboarding = isAuthenticated && !user?.onboardingCompleted;
 
   if (isLoading) {
     return (
@@ -29,19 +31,32 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <HomePage />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/gallery" element={<GalleryPage />} />
       <Route path="/reel" element={<ReelPage />} />
       <Route path="/guild" element={<MembersPage />} />
       <Route path="/guild/:guildUid" element={<GuildPage />} />
       <Route path="/login" element={<AuthPage />} />
+      <Route path="/toast-demo" element={<ToastDemoPage />} />
 
       <Route element={<ProtectedRoutes isAuthenticated={isAuthenticated} />}>
-        <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/members/:id" element={<MemberDetailsPage />} />
+        <Route
+          path="/onboarding"
+          element={needsOnboarding ? <OnboardingPage /> : <Navigate to="/" replace />}
+        />
+        <Route
+          path="/profile"
+          element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <ProfilePage />}
+        />
+        <Route
+          path="/notifications"
+          element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <NotificationsPage />}
+        />
+        <Route
+          path="/members/:id"
+          element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <MemberDetailsPage />}
+        />
         <Route element={<ProtectedRoutes isAuthenticated={isAuthenticated && isAdmin} />}>
           <Route path="/admin/*" element={<AdminPage />} />
         </Route>
