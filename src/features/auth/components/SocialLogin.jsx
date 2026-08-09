@@ -33,6 +33,7 @@ export default function SocialLogin() {
   const { refresh } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const googleBtnRef = useRef(null);
+  const gsiInitRef = useRef(false);
 
   const handleCredentialResponse = useCallback(async (credential) => {
     setIsSubmitting(true);
@@ -51,15 +52,20 @@ export default function SocialLogin() {
     }
   }, [navigate, refresh, toast]);
 
-  // Render Google's button into a hidden container, then click it
+  // Store latest callback in a ref so the GSI callback never goes stale
+  const cbRef = useRef(handleCredentialResponse);
+  cbRef.current = handleCredentialResponse;
+
+  // Render Google's button into a hidden container — runs once on mount
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
+    if (!GOOGLE_CLIENT_ID || gsiInitRef.current) return;
+    gsiInitRef.current = true;
     loadGsiScript().then(() => {
       if (!window.google?.accounts?.id || !googleBtnRef.current) return;
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: (response) => {
-          if (response?.credential) handleCredentialResponse(response.credential);
+          if (response?.credential) cbRef.current(response.credential);
         },
       });
       window.google.accounts.id.renderButton(googleBtnRef.current, {
@@ -69,7 +75,7 @@ export default function SocialLogin() {
         shape: "rectangular",
       });
     });
-  }, [handleCredentialResponse]);
+  }, []);
 
   const signInWithGoogle = async () => {
     if (isSubmitting) return;
