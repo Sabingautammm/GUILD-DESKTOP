@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { FiLoader } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -32,51 +32,12 @@ export default function SocialLogin() {
   const toast = useToast();
   const { refresh } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const googleBtnRef = useRef(null);
 
-  const signInWithGoogle = async () => {
-    if (GOOGLE_CLIENT_ID) {
-      await loadGsiScript();
-      return new Promise((resolve, reject) => {
-        let settled = false;
-        const finish = (fn, value) => {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          fn(value);
-        };
-        // GIS popup may be dismissed or blocked — never let the button hang forever
-        const timer = setTimeout(() => finish(reject, new Error("Google sign-in timed out. Please try again.")), 15000);
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          ux_mode: "popup",
-          callback: (response) => {
-            if (!response?.credential) {
-              finish(reject, new Error("Google sign-in was cancelled."));
-            } else {
-              finish(resolve, response.credential);
-            }
-          },
-        });
-        window.google.accounts.id.prompt();
-      });
-    }
-    return MOCK_GOOGLE_TOKEN;
-  };
-
-  const handleGoogle = async () => {
-    if (isSubmitting) return;
+  const handleCredentialResponse = useCallback(async (credential) => {
     setIsSubmitting(true);
-    let idToken;
     try {
-      // Script load / popup dismissal / timeout failures surface here
-      idToken = await signInWithGoogle();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Google sign-in failed.");
-      setIsSubmitting(false);
-      return;
-    }
-    try {
-      await toast.promise(googleLogin(idToken), {
+      await toast.promise(googleLogin(credential), {
         loading: "Connecting to Google…",
         success: "Signed in with Google",
         error: (err) => (err instanceof ApiError ? err.message : "Google sign-in failed."),
@@ -88,19 +49,63 @@ export default function SocialLogin() {
     } finally {
       setIsSubmitting(false);
     }
+  }, [navigate, refresh, toast]);
+
+  // Render Google's button into a hidden container, then click it
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+    loadGsiScript().then(() => {
+      if (!window.google?.accounts?.id || !googleBtnRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (response) => {
+          if (response?.credential) handleCredentialResponse(response.credential);
+        },
+      });
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        theme: "outline",
+        text: "continue_with",
+        size: "large",
+        shape: "rectangular",
+      });
+    });
+  }, [handleCredentialResponse]);
+
+  const signInWithGoogle = async () => {
+    if (isSubmitting) return;
+
+    // Dev-only: mock token when no client ID configured
+    if (!GOOGLE_CLIENT_ID) {
+      setIsSubmitting(true);
+      try {
+        await handleCredentialResponse(MOCK_GOOGLE_TOKEN);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
+    // Production: click the rendered Google button (opens a real popup, not One Tap)
+    // This works in Brave/Safari where 3P cookie-based One Tap is blocked.
+    if (googleBtnRef.current) {
+      const btn = googleBtnRef.current.querySelector("div[role='button']");
+      if (btn) btn.click();
+    }
   };
 
   return (
     <div className="flex items-center justify-center w-full my-4">
       <button
         type="button"
-        onClick={handleGoogle}
+        onClick={signInWithGoogle}
         disabled={isSubmitting}
         className="flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
       >
         {isSubmitting ? <FiLoader className="animate-spin text-red-500" /> : <FaGoogle className="text-red-500" />}
         Continue with Google
       </button>
+      {/* Hidden container for Google's rendered button — opens a real popup (not One Tap) */}
+      <div ref={googleBtnRef} className="sr-only" aria-hidden="true" />
     </div>
   );
 }
