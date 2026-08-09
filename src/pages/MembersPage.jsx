@@ -83,7 +83,7 @@ export default function MembersPage() {
               <p className="mt-3 text-xs text-slate-500 line-clamp-2">{g.slogan}</p>
 <div className="mt-3 flex items-center justify-between">
                 <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <FiUsers /> {g.members ?? "…"} active
+                  <FiUsers /> {g.memberCount ?? "…"} active
                 </span>
                 {isFree && (
                   <span className="rounded-full bg-[#E3A012]/15 px-2.5 py-1 text-[11px] font-bold text-[#8a5200]">

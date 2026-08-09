@@ -8,6 +8,7 @@ const TYPE_LABEL = {
   kick: "Kick player",
   approve_join: "Approve application",
   approve_reapply: "Approve re-application",
+  reject_join: "Reject application",
 };
 
 export default function PendingTab() {
