@@ -1,5 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL?.trim()
-  ? import.meta.env.VITE_API_URL : "/api";
+  ? import.meta.env.VITE_API_URL.replace(/\/+$/, '')
+  : '/api';
 
 // Fail loudly in production if the API URL wasn't configured at build time —
 // silently hitting the SPA rewrite would return index.html for every API call.
