@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";import { FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2, FiUsers, FiArrowRight } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2, FiUsers, FiArrowRight, FiImage, FiCamera } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
@@ -68,6 +69,10 @@ export default function ProfilePage() {
   const nameTouchedRef = useRef(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingPw, setIsSavingPw] = useState(false);
+
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || "");
+  const avatarTouchedRef = useRef(false);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
 
   const [editingStats, setEditingStats] = useState(false);
   const [stats, setStats] = useState(null);
@@ -192,12 +197,70 @@ export default function ProfilePage() {
     }
   };
 
+  const saveAvatar = async (e) => {
+    e.preventDefault();
+    const url = avatarUrl.trim();
+    if (url && !/^https?:\/\//i.test(url)) {
+      toast.error("Invalid image URL", "Profile picture must start with http:// or https://.");
+      return;
+    }
+    setIsSavingAvatar(true);
+    try {
+      await toast.promise(updateMyProfile({ avatar: url }), {
+        loading: "Saving picture…",
+        success: "Profile picture updated",
+        error: (err) => (err instanceof ApiError ? err.message : "Could not update profile picture."),
+      });
+      avatarTouchedRef.current = true;
+      await refresh();
+    } catch {
+      // toast handled it
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  const removeAvatar = async () => {
+    setAvatarUrl("");
+    setIsSavingAvatar(true);
+    try {
+      await toast.promise(updateMyProfile({ avatar: "" }), {
+        loading: "Removing picture…",
+        success: "Profile picture removed",
+        error: (err) => (err instanceof ApiError ? err.message : "Could not remove profile picture."),
+      });
+      avatarTouchedRef.current = true;
+      await refresh();
+    } catch {
+      // toast handled it
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  // Sync the input when the user's avatar loads (or after a save) without
+  // overwriting what the user is currently typing.
+  useEffect(() => {
+    if (user?.avatar !== undefined && !avatarTouchedRef.current) {
+      setAvatarUrl(user.avatar || "");
+    }
+  }, [user?.avatar]);
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <div className="flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E3A012]/10 text-2xl font-bold text-[#B9660B]">
-          {user?.name?.charAt(0).toUpperCase() || <FiUser />}
-        </span>
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user?.name}
+            className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-[#E3A012]/30"
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+          />
+        ) : (
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#E3A012]/10 text-2xl font-bold text-[#B9660B]">
+            {user?.name?.charAt(0).toUpperCase() || <FiUser />}
+          </span>
+        )}
         <div>
           <h1 className="text-2xl font-bold text-[#17120D]">{user?.name ?? "Player"}</h1>
           <p className="text-sm text-slate-500 flex items-center gap-1.5">
@@ -267,6 +330,53 @@ export default function ProfilePage() {
       {/* PERSONAL INFORMATION */}
       <section className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Personal Information</h2>
+
+        <div className="flex flex-wrap items-center gap-4 rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] p-4">
+          <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E3A012]/15 ring-2 ring-[#E3A012]/30">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Profile preview"
+                className="h-full w-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            ) : (
+              <FiUser className="text-2xl text-[#B9660B]" />
+            )}
+          </span>
+          <div className="min-w-0 flex-1 space-y-2">
+            <form onSubmit={saveAvatar} className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1 min-w-0">
+                <FiImage className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                <input
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="Profile picture URL (https://…)"
+                  className="w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSavingAvatar}
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+              >
+                {isSavingAvatar ? <FiLoader className="animate-spin" /> : <FiCamera />}
+                Save picture
+              </button>
+            </form>
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={removeAvatar}
+                disabled={isSavingAvatar}
+                className="text-[11px] font-semibold text-slate-400 hover:text-red-600 disabled:opacity-50"
+              >
+                Remove picture
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="text-xs font-semibold text-slate-700">Game</label>
