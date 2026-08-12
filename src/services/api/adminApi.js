@@ -11,21 +11,21 @@ export function getExMembers() {
 export function promoteMember(targetUserId, newRole) {
   return apiFetch("/admin/members/promote", {
     method: "POST",
-    body: JSON.stringify({ targetUserId, newRole }),
+    body: { targetUserId, newRole },
   });
 }
 
 export function processMemberAction(actionType, targetUserId) {
   return apiFetch("/admin/members/action", {
     method: "POST",
-    body: JSON.stringify({ actionType, targetUserId }),
+    body: { actionType, targetUserId },
   });
 }
 
 export function deleteExMember(targetUserId) {
   return apiFetch("/admin/members/ex/delete", {
     method: "POST",
-    body: JSON.stringify({ targetUserId }),
+    body: { targetUserId },
   });
 }
 
@@ -36,21 +36,21 @@ export function getPendingActions() {
 export function votePendingAction(actionId, vote) {
   return apiFetch(`/admin/pending-actions/${actionId}/vote`, {
     method: "POST",
-    body: JSON.stringify({ vote }),
+    body: { vote },
   });
 }
 
 export function initiateTransfer(targetUserId) {
   return apiFetch("/admin/transfer-leadership", {
     method: "POST",
-    body: JSON.stringify({ targetUserId }),
+    body: { targetUserId },
   });
 }
 
 export function completeTransfer(rawToken, newPassword) {
   return apiFetch("/admin/complete-leadership-transfer", {
     method: "POST",
-    body: JSON.stringify({ rawToken, newPassword }),
+    body: { rawToken, newPassword },
   });
 }
 
@@ -69,14 +69,14 @@ export function getGuildPlayers() {
 export function searchGuildPlayer(payload) {
   return apiFetch("/admin/guild-players/search", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 
 export function addPlayerByGameUid(payload) {
   return apiFetch("/admin/guild-players", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 

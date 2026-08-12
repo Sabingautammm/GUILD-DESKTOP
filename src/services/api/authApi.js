@@ -3,49 +3,49 @@ import { apiFetch } from "./client";
 export function googleLogin(idToken) {
   return apiFetch("/auth/google", {
     method: "POST",
-    body: JSON.stringify({ idToken }),
+    body: { idToken },
   });
 }
 
 export function leaderLogin(guildUid, password) {
   return apiFetch("/auth/admin-login", {
     method: "POST",
-    body: JSON.stringify({ guildUid, password }),
+    body: { guildUid, password },
   });
 }
 
 export function checkGuildUid(guildUid) {
   return apiFetch("/auth/onboarding/guild-uid", {
     method: "POST",
-    body: JSON.stringify({ guildUid }),
+    body: { guildUid },
   });
 }
 
 export function createGuild(payload) {
   return apiFetch("/auth/onboarding/create-guild", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 
 export function selectGame(game) {
   return apiFetch("/auth/onboarding/game", {
     method: "POST",
-    body: JSON.stringify({ game }),
+    body: { game },
   });
 }
 
 export function submitGameIdentity(gameUid, inGameName) {
   return apiFetch("/auth/onboarding/game-identity", {
     method: "POST",
-    body: JSON.stringify({ gameUid, inGameName }),
+    body: { gameUid, inGameName },
   });
 }
 
 export function verifyLeaderPassword(password) {
   return apiFetch("/auth/onboarding/verify-leader", {
     method: "POST",
-    body: JSON.stringify({ password }),
+    body: { password },
   });
 }
 

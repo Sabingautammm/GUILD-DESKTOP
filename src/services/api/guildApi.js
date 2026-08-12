@@ -11,7 +11,7 @@ export function getPrivateGuildView(guildUid) {
 export function updateGuild(guildUid, payload) {
   return apiFetch(`/guild/${guildUid}`, {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 
