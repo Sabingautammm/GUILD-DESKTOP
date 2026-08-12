@@ -15,6 +15,6 @@ export function markAllRead() {
 export function markRead(ids) {
   return apiFetch("/notifications/read", {
     method: "PUT",
-    body: JSON.stringify({ ids }),
+    body: { ids },
   });
 }

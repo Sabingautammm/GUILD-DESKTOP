@@ -30,7 +30,7 @@ export function removeAvatar() {
 export function moderateMedia(mediaId, approvalStatus) {
   return apiFetch(`/media/${mediaId}/moderate`, {
     method: "PUT",
-    body: JSON.stringify({ approvalStatus }),
+    body: { approvalStatus },
   });
 }
 
@@ -45,6 +45,6 @@ export function toggleReaction(mediaId) {
 export function addComment(mediaId, text) {
   return apiFetch(`/media/${mediaId}/comment`, {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: { text },
   });
 }
