@@ -17,6 +17,7 @@ export default function TransferTab() {
 
   const [rawToken, setRawToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmingTransfer, setConfirmingTransfer] = useState(null);
 
   const isLeader = role === "leader";
   const isActingLeader = role === "acting_leader";
@@ -51,6 +52,14 @@ export default function TransferTab() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleInitiateClick = () => {
+    const target = roster.find((m) => m.userId?._id === targetId);
+    setConfirmingTransfer({
+      name: target?.userId?.name ?? "this player",
+      onConfirm: handleInitiate,
+    });
   };
 
   const handleComplete = async (e) => {
@@ -140,7 +149,7 @@ export default function TransferTab() {
                 ))}
               </select>
               <button
-                onClick={handleInitiate}
+                onClick={handleInitiateClick}
                 disabled={busy || !targetId}
                 className="w-full rounded-lg bg-red-600 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
               >
@@ -203,6 +212,43 @@ export default function TransferTab() {
           Only the Leader can initiate a transfer. If you were issued a transfer token, use the setup panel above; claim
           requires the Acting Leader role.
         </p>
+      )}
+
+      {confirmingTransfer && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setConfirmingTransfer(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl border border-guild-700 bg-guild-900 p-6 shadow-2xl space-y-4"
+          >
+            <h3 className="text-lg font-display text-cream">Transfer leadership?</h3>
+            <p className="text-sm text-guild-400">
+              <b className="text-cream">{confirmingTransfer.name}</b> will become the new Guild Leader. You will be
+              signed out everywhere (session version bumped) once they complete setup. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  const { onConfirm } = confirmingTransfer;
+                  setConfirmingTransfer(null);
+                  onConfirm();
+                }}
+                disabled={busy}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                Transfer
+              </button>
+              <button
+                onClick={() => setConfirmingTransfer(null)}
+                className="flex-1 rounded-lg bg-guild-700 py-2 text-sm font-semibold text-guild-100 hover:bg-guild-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

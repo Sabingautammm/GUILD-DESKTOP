@@ -15,6 +15,7 @@ export default function MembersTab() {
   const [error, setError] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [busyId, setBusyId] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const canManage = role === "leader" || role === "acting_leader";
   const canPromoteOfficer = role === "leader" || role === "acting_leader";
@@ -37,6 +38,10 @@ export default function MembersTab() {
 
   const reload = () => setRefreshKey((k) => k + 1);
 
+  const askConfirm = ({ title, message, actionLabel, danger = false, fn, opts }) => {
+    setConfirmAction({ title, message, actionLabel, danger, fn, opts });
+  };
+
   const run = async (fn, opts) => {
     setBusyId(opts?.key ?? null);
     try {
@@ -51,6 +56,13 @@ export default function MembersTab() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const confirmAndRun = async () => {
+    if (!confirmAction) return;
+    const { fn, opts } = confirmAction;
+    setConfirmAction(null);
+    await run(fn, opts);
   };
 
   const active = rows.filter((r) => r.status === "active");
@@ -146,9 +158,12 @@ export default function MembersTab() {
                         <button
                           disabled={busyId === m.userId?._id}
                           onClick={() =>
-                            run(promoteMember(m.userId._id, "officer"), {
-                              loading: "Promoting…",
-                              success: "Promoted to Officer",
+                            askConfirm({
+                              title: "Promote to Officer?",
+                              message: `${m.userId?.name ?? "This player"} will become an Officer and get moderation powers.`,
+                              actionLabel: "Promote",
+                              fn: promoteMember(m.userId._id, "officer"),
+                              opts: { loading: "Promoting…", success: "Promoted to Officer" },
                             })
                           }
                           className="rounded-lg gold-gradient-bg px-3 py-1.5 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
@@ -159,7 +174,33 @@ export default function MembersTab() {
                       {canPromoteOfficer && m.role === "officer" && (
                         <button
                           disabled={busyId === m.userId?._id}
-                          onClick={() => run(promoteMember(m.userId._id, "member"), { loading: "Demoting…", success: "Demoted to Member" })}
+                          onClick={() =>
+                            askConfirm({
+                              title: "Demote to Member?",
+                              message: `${m.userId?.name ?? "This player"} will lose Officer moderation powers and become a regular Member.`,
+                              actionLabel: "Demote",
+                              fn: promoteMember(m.userId._id, "member"),
+                              opts: { loading: "Demoting…", success: "Demoted to Member" },
+                            })
+                          }
+                          className="rounded-lg border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
+                        >
+                          Demote
+                        </button>
+                      )}
+                      {role === "leader" && m.role === "acting_leader" && (
+                        <button
+                          disabled={busyId === m.userId?._id}
+                          onClick={() =>
+                            askConfirm({
+                              title: "Demote Acting Leader?",
+                              message: `${m.userId?.name ?? "This player"} will be demoted to Member and lose leadership powers.`,
+                              actionLabel: "Demote",
+                              danger: true,
+                              fn: promoteMember(m.userId._id, "member"),
+                              opts: { loading: "Demoting…", success: "Acting Leader demoted" },
+                            })
+                          }
                           className="rounded-lg border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
                         >
                           Demote
@@ -168,7 +209,15 @@ export default function MembersTab() {
                       {role === "leader" && m.role !== "leader" && m.role !== "acting_leader" && m.role !== "ex_member" && (
                         <button
                           disabled={busyId === m.userId?._id}
-                          onClick={() => run(promoteMember(m.userId._id, "acting_leader"), { loading: "Assigning…", success: "Acting Leader assigned" })}
+                          onClick={() =>
+                            askConfirm({
+                              title: "Make Acting Leader?",
+                              message: `${m.userId?.name ?? "This player"} will become Acting Leader with leadership powers (a previous Acting Leader, if any, will be demoted to Member).`,
+                              actionLabel: "Make Acting Leader",
+                              fn: promoteMember(m.userId._id, "acting_leader"),
+                              opts: { loading: "Assigning…", success: "Acting Leader assigned" },
+                            })
+                          }
                           className="rounded-lg border border-gold-500/50 bg-guild-800 px-3 py-1.5 text-xs font-bold text-gold-300 hover:bg-guild-700 disabled:opacity-50"
                         >
                           Make Acting Leader
@@ -178,9 +227,16 @@ export default function MembersTab() {
                         <button
                           disabled={busyId === m.userId?._id}
                           onClick={() =>
-                            run(processMemberAction("kick", m.userId._id), {
-                              loading: role === "officer" ? "Submitting to officer vote…" : "Removing…",
-                              success: role === "officer" ? "Submitted to officer vote" : "Member removed",
+                            askConfirm({
+                              title: "Kick player?",
+                              message: `${m.userId?.name ?? "This player"} will be removed from the guild. They can re-apply later.`,
+                              actionLabel: "Kick",
+                              danger: true,
+                              fn: processMemberAction("kick", m.userId._id),
+                              opts: {
+                                loading: role === "officer" ? "Submitting to officer vote…" : "Removing…",
+                                success: role === "officer" ? "Submitted to officer vote" : "Member removed",
+                              },
                             })
                           }
                           className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-600 disabled:opacity-50"
@@ -227,6 +283,37 @@ export default function MembersTab() {
             </div>
           )}
         </>
+      )}
+
+      {confirmAction && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setConfirmAction(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl border border-guild-700 bg-guild-900 p-6 shadow-2xl space-y-4"
+          >
+            <h3 className="text-lg font-display text-cream">{confirmAction.title}</h3>
+            <p className="text-sm text-guild-400">{confirmAction.message}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={confirmAndRun}
+                className={`flex-1 rounded-lg px-4 py-2 text-sm font-bold text-white hover:brightness-110 ${
+                  confirmAction.danger ? "bg-red-600 hover:bg-red-700" : "gold-gradient-bg text-guild-950"
+                }`}
+              >
+                {confirmAction.actionLabel}
+              </button>
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="flex-1 rounded-lg bg-guild-700 py-2 text-sm font-semibold text-guild-100 hover:bg-guild-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );
