@@ -337,6 +337,8 @@ export default function ProfilePage() {
   const [statsError, setStatsError] = useState("");
   const [savingStats, setSavingStats] = useState(false);
 
+  const [editingName, setEditingName] = useState(false);
+
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -387,6 +389,7 @@ export default function ProfilePage() {
         error: (err) => (err instanceof ApiError ? err.message : "Could not update profile."),
       });
       nameTouchedRef.current = true;
+      setEditingName(false);
       await Promise.all([refresh(), refetch()]);
     } catch {
       // toast handled it
@@ -637,38 +640,84 @@ export default function ProfilePage() {
       </SectionCard>
 
       {/* PERSONAL INFORMATION */}
-      <SectionCard icon={FiUser} title="Personal Information">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs font-bold text-guild-400">Game</label>
-            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
-              {user?.game || "&mdash;"}
-            </p>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
-            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
-              {user?.gameUid || "&mdash;"}
-            </p>
-          </div>
-          <form onSubmit={saveName} className="flex flex-col">
-            <label htmlFor="in-game-name" className="text-xs font-bold text-guild-400">In-Game Name</label>
-            <input
-              id="in-game-name"
-              value={inGameName}
-              onChange={(e) => setInGameName(e.target.value)}
-              placeholder="Your in-game name"
-              className="mt-1 w-full input-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
-            />
+      <SectionCard
+        icon={FiUser}
+        title="Personal Information"
+        action={
+          !editingName && (
             <button
-              type="submit"
-              disabled={isSaving || !inGameName.trim()}
-              className="mt-2 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
+              onClick={() => setEditingName(true)}
+              className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
             >
-              {isSaving ? "Saving&hellip;" : "Save name"}
+              <FiEdit3 /> Edit personal information
             </button>
+          )
+        }
+      >
+        {editingName ? (
+          <form onSubmit={saveName} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="text-xs font-bold text-guild-400">Game</label>
+              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
+                {user?.game || "&mdash;"}
+              </p>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
+              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
+                {user?.gameUid || "&mdash;"}
+              </p>
+            </div>
+            <div className="flex flex-col">
+              <label htmlFor="in-game-name" className="text-xs font-bold text-guild-400">In-Game Name</label>
+              <input
+                id="in-game-name"
+                value={inGameName}
+                onChange={(e) => setInGameName(e.target.value)}
+                placeholder="Your in-game name"
+                className="mt-1 w-full input-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="submit"
+                  disabled={isSaving || !inGameName.trim()}
+                  className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
+                >
+                  {isSaving ? <FiLoader className="animate-spin" /> : <FiCheck />} Save name
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingName(false)}
+                  disabled={isSaving}
+                  className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
+                >
+                  <FiX /> Cancel
+                </button>
+              </div>
+            </div>
           </form>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-bold text-guild-400">Game</label>
+              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
+                {user?.game || "&mdash;"}
+              </p>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
+              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
+                {user?.gameUid || "&mdash;"}
+              </p>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-guild-400">In-Game Name</label>
+              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
+                {user?.inGameName || user?.name || "&mdash;"}
+              </p>
+            </div>
+          </div>
+        )}
       </SectionCard>
 
       {/* SEASON STATISTICS */}
