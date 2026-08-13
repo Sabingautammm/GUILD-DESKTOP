@@ -3,6 +3,7 @@ import { FiBell } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 
 const logo = "/Logo-removebg-preview.png";
 
@@ -50,9 +51,20 @@ export default function MobileHeader() {
           )}
           <NavLink
             to={isAuthenticated ? "/profile" : "/login"}
-            className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950 ring-1 ring-gold-300/40"
+            className="flex h-10 w-10 items-center justify-center rounded-full ring-1 ring-gold-300/40"
           >
-            {user?.name?.charAt(0).toUpperCase() || "?"}
+            {user?.avatar ? (
+              <img
+                src={resolveMediaUrl(user.avatar)}
+                alt={user?.name || "avatar"}
+                className="h-10 w-10 rounded-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
+              />
+            ) : (
+              <span className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950">
+                {user?.name?.charAt(0).toUpperCase() || "?"}
+              </span>
+            )}
           </NavLink>
         </div>
       </div>
