@@ -6,6 +6,7 @@ import Navbar from "./components/layout/Navbar";
 import ProtectedRoutes from "./components/layout/ProtectedRoutes";
 import { ToastProvider } from "./components/toast/ToastProvider";
 import { AuthProvider, useAuth } from "./features/auth/context/AuthContext";
+import { Skeleton, SkeletonCard, FullPageSkeleton } from "./components/ui/Skeleton";
 
 // Heavy/route-level chunks load on demand to keep first paint fast.
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
@@ -22,8 +23,31 @@ const ToastDemoPage = lazy(() => import("./pages/ToastDemo"));
 
 function RouteFallback() {
   return (
-    <div className="min-h-[40vh] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-2 border-guild-700 border-t-gold-500" />
+    <div className="min-h-[40vh] flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl space-y-4">
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    </div>
+  );
+}
+
+function AppLoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-guild-950">
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-guild-950/90 backdrop-blur-xl border-b border-guild-700">
+        <div className="flex h-full items-center justify-between px-5">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+        </div>
+      </header>
+      <main className="flex-1 pt-16 pb-20 lg:pt-16 lg:pb-0 p-4 sm:p-6 lg:p-8">
+        <FullPageSkeleton />
+      </main>
     </div>
   );
 }
@@ -75,11 +99,7 @@ function AppRoutes() {
     isAuthenticated && !user?.onboardingCompleted && !membership;
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-guild-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-guild-700 border-t-gold-500" />
-      </div>
-    );
+    return <AppLoadingSkeleton />;
   }
 
   return (

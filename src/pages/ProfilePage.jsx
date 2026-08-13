@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2,
-  FiUsers, FiArrowRight, FiCamera, FiFile, FiHash, FiAward, FiLock,
+  FiUsers, FiArrowRight, FiCamera, FiFile, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle,
 } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
@@ -31,6 +31,197 @@ function validateAvatarFile(file) {
   }
   return { ok: true };
 }
+
+function AvatarUploadZone({
+  avatarSrc,
+  avatarFile,
+  avatarPreview,
+  isSavingAvatar,
+  avatarError,
+  onFileSelect,
+  onSave,
+  onRemove,
+  onClear,
+  inputRef,
+}) {
+  const [dragActive, setDragActive] = useState(false);
+  const dropZoneRef = useRef(null);
+
+  const handleDrag = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      onFileSelect(e.dataTransfer.files[0]);
+    }
+  }, [onFileSelect]);
+
+  useEffect(() => {
+    const el = dropZoneRef.current;
+    el?.addEventListener("dragenter", handleDrag);
+    el?.addEventListener("dragover", handleDrag);
+    el?.addEventListener("dragleave", handleDrag);
+    el?.addEventListener("drop", handleDrop);
+    return () => {
+      el?.removeEventListener("dragenter", handleDrag);
+      el?.removeEventListener("dragover", handleDrag);
+      el?.removeEventListener("dragleave", handleDrag);
+      el?.removeEventListener("drop", handleDrop);
+    };
+  }, [handleDrag, handleDrop]);
+
+  const isUploading = avatarFile || isSavingAvatar;
+
+  return (
+    <div className="relative" ref={dropZoneRef}>
+      {/* Main Avatar Display */}
+      <button
+        type="button"
+        onClick={() => !isUploading && inputRef.current?.click()}
+        disabled={isUploading}
+        className="group relative shrink-0"
+        aria-label="Change profile picture"
+      >
+        <span className="relative flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center overflow-hidden rounded-3xl bg-guild-800 ring-2 ring-gold-500/40 gold-glow transition-all duration-300 hover:ring-gold-500/80">
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt="Profile"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          ) : (
+            <FiUser className="text-4xl sm:text-5xl text-gold-400/50" />
+          )}
+          
+          {/* Upload Overlay */}
+          <span className="absolute inset-0 flex items-center justify-center bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex flex-col items-center gap-2 p-4 text-center">
+              <FiCamera className="text-2xl text-gold-300" />
+              <span className="text-sm font-semibold text-gold-100">Change Photo</span>
+              <span className="text-[10px] text-gold-300/70">Drag & drop or click to upload</span>
+            </div>
+          </span>
+          
+          {/* Drag Active State */}
+          {dragActive && !isUploading && (
+            <span className="absolute inset-0 flex items-center justify-center bg-gold-500/30 ring-2 ring-gold-500 animate-pulse">
+              <div className="flex flex-col items-center gap-2 text-gold-100">
+                <FiUploadCloud className="text-2xl" />
+                <span className="text-sm font-semibold">Drop to Upload</span>
+              </div>
+            </span>
+          )}
+        </span>
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPT_AVATAR}
+        onChange={(e) => e.target.files?.[0] && onFileSelect(e.target.files[0])}
+        className="hidden"
+      />
+
+      {/* Upload Preview & Actions */}
+      {isUploading && (
+        <div className="mt-4 rounded-xl border border-gold-500/30 bg-guild-800/90 p-4 space-y-3 animate-fade-up">
+          {avatarFile && (
+            <div className="flex flex-wrap items-center gap-3 p-3 rounded-lg bg-guild-900/50 border border-guild-700">
+              <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-guild-800">
+                {avatarPreview && (
+                  <img src={avatarPreview} alt="Preview" className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-cream truncate">{avatarFile.name}</p>
+                <p className="text-[10px] text-guild-500">{(avatarFile.size / 1024).toFixed(1)} KB</p>
+              </div>
+              <button
+                type="button"
+                onClick={onClear}
+                disabled={isSavingAvatar}
+                className="shrink-0 rounded-full border border-guild-600 px-3 py-1.5 text-[11px] font-semibold text-guild-300 hover:bg-guild-700 disabled:opacity-50 transition-colors"
+              >
+                <FiXCircle className="w-3 h-3 mr-1" /> Change
+              </button>
+            </div>
+          )}
+          
+          {avatarError && (
+            <p className="flex items-center gap-1.5 text-xs text-red-400 bg-red-950/30 border border-red-500/20 px-3 py-2 rounded-lg">
+              <FiAlertCircle className="w-4 h-4 shrink-0" />
+              {avatarError}
+            </p>
+          )}
+          
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={isSavingAvatar || !avatarFile}
+              className="flex items-center justify-center gap-1.5 rounded-lg gold-gradient-bg px-5 py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_4px_14px_-4px_rgba(227,160,18,0.5)]"
+            >
+              {isSavingAvatar ? (
+                <>
+                  <FiLoader className="animate-spin" />
+                  Uploading…
+                </>
+              ) : (
+                <>
+                  <FiCheck className="w-4 h-4" />
+                  Save Profile Picture
+                </>
+              )}
+            </button>
+            
+            {avatarSrc && !avatarFile && (
+              <button
+                type="button"
+                onClick={onRemove}
+                disabled={isSavingAvatar}
+                className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-950/20 px-5 py-2.5 text-sm font-semibold text-red-400 hover:bg-red-950/40 hover:border-red-500/50 disabled:opacity-50 transition-all"
+              >
+                <FiTrash2 className="w-4 h-4" />
+                Remove Picture
+              </button>
+            )}
+            
+            {!avatarFile && (
+              <button
+                type="button"
+                onClick={onClear}
+                disabled={isSavingAvatar}
+                className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-5 py-2.5 text-sm font-semibold text-guild-300 hover:bg-guild-800 disabled:opacity-50 transition-colors"
+              >
+                <FiXCircle className="w-4 h-4" />
+                Cancel
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Help Text */}
+      {!isUploading && (
+        <p className="mt-3 text-center text-[11px] text-guild-500">
+          JPG, PNG or WEBP · Max 2MB · Square aspect ratio recommended
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function ProfilePage() {
 
 const STAT_MODES = [
   { key: "brRank", title: "BR Rank Match", hasPoints: true, pointsLabel: "Points" },
@@ -249,9 +440,8 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAvatarSelect = (e) => {
+  const handleAvatarSelect = useCallback((file) => {
     setAvatarError("");
-    const file = e.target.files?.[0] || null;
     if (!file) return;
 
     const result = validateAvatarFile(file);
@@ -266,10 +456,9 @@ export default function ProfilePage() {
     setAvatarFile(file);
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(URL.createObjectURL(file));
-  };
+  }, []);
 
-  const saveAvatar = async (e) => {
-    e.preventDefault();
+  const saveAvatar = useCallback(async () => {
     if (!avatarFile) {
       setAvatarError("Please choose an image from your device.");
       return;
@@ -291,17 +480,17 @@ export default function ProfilePage() {
       avatarSavingRef.current = false;
       setIsSavingAvatar(false);
     }
-  };
+  }, [avatarFile, toast, refresh]);
 
-  const clearAvatarSelection = () => {
+  const clearAvatarSelection = useCallback(() => {
     setAvatarFile(null);
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview("");
     setAvatarError("");
     if (avatarInputRef.current) avatarInputRef.current.value = "";
-  };
+  }, [avatarPreview]);
 
-  const removeAvatar = async () => {
+  const removeAvatar = useCallback(async () => {
     if (avatarSavingRef.current) return;
     avatarSavingRef.current = true;
     setIsSavingAvatar(true);
@@ -319,7 +508,7 @@ export default function ProfilePage() {
       avatarSavingRef.current = false;
       setIsSavingAvatar(false);
     }
-  };
+  }, [toast, refresh, clearAvatarSelection]);
 
   // Clean up the object URL when the component unmounts or the preview changes.
   useEffect(() => {
@@ -337,34 +526,17 @@ export default function ProfilePage() {
         <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-gold-500/10 blur-3xl" />
         <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-gold-600/10 blur-3xl" />
         <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          <button
-            type="button"
-            onClick={() => avatarInputRef.current?.click()}
-            className="group relative shrink-0"
-            aria-label="Change profile picture"
-          >
-            <span className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl bg-guild-800 ring-2 ring-gold-500/40 gold-glow">
-              {avatarSrc ? (
-                <img
-                  src={avatarSrc}
-                  alt="Profile"
-                  className="h-full w-full object-cover"
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
-                />
-              ) : (
-                <FiUser className="text-3xl text-gold-400" />
-              )}
-              <span className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                <FiCamera className="text-xl text-gold-300" />
-              </span>
-            </span>
-          </button>
-          <input
-            ref={avatarInputRef}
-            type="file"
-            accept={ACCEPT_AVATAR}
-            onChange={handleAvatarSelect}
-            className="hidden"
+          <AvatarUploadZone
+            avatarSrc={avatarSrc}
+            avatarFile={avatarFile}
+            avatarPreview={avatarPreview}
+            isSavingAvatar={isSavingAvatar}
+            avatarError={avatarError}
+            onFileSelect={handleAvatarSelect}
+            onSave={saveAvatar}
+            onRemove={removeAvatar}
+            onClear={clearAvatarSelection}
+            inputRef={avatarInputRef}
           />
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
