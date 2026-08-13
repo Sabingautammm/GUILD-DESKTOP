@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { FiCheck, FiX, FiLoader, FiAlertCircle } from "react-icons/fi";
+import { SkeletonMediaGrid } from "../../components/ui/Skeleton";
 import { getPendingMedia, moderateMedia } from "../../services/api/mediaApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
@@ -45,11 +46,7 @@ export default function MediaTab() {
   };
 
   if (isLoading) {
-    return (
-      <div className="py-12 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-gold-400" />
-      </div>
-    );
+    return <SkeletonMediaGrid count={6} />;
   }
 
   if (error) {

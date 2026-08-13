@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiUser, FiLoader, FiAlertCircle } from "react-icons/fi";
+import { FiUser, FiAlertCircle } from "react-icons/fi";
 import { getMemberById } from "../features/members/services/memberApi";
 import { ApiError } from "../services/api/client";
 import Avatar from "../components/ui/Avatar";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import { playerName } from "../utils/playerName";
+import { SkeletonProfile } from "../components/ui/Skeleton";
 
 export default function MemberDetailsPage() {
   const { id } = useParams();
@@ -27,8 +28,8 @@ export default function MemberDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-gold-400" />
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <SkeletonProfile />
       </div>
     );
   }

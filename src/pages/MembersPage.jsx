@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { FiSearch, FiUsers, FiLoader, FiAlertCircle, FiClock } from "react-icons/fi";
+import { FiSearch, FiUsers, FiAlertCircle, FiClock } from "react-icons/fi";
 import { getGuildLeaderboard } from "../services/api/leaderboardApi";
 import { useAuth } from "../features/auth/context/AuthContext";
+import { SkeletonList } from "../components/ui/Skeleton";
 
 export default function MembersPage() {
   const navigate = useNavigate();
@@ -70,9 +71,7 @@ export default function MembersPage() {
       </div>
 
       {isLoading ? (
-        <div className="py-16 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-gold-400" />
-        </div>
+        <SkeletonList count={6} />
       ) : error ? (
         <div className="py-16 text-center">
           <FiAlertCircle className="mx-auto text-3xl text-gold-400" />

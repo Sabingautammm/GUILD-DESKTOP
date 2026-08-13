@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FiBell, FiCheckCircle } from "react-icons/fi";
 import { getNotifications, markAllRead } from "../services/api/notificationApi";
 import { ApiError } from "../services/api/client";
+import { SkeletonList } from "../components/ui/Skeleton";
 import { useToast } from "../components/toast/ToastProvider";
 
 export default function NotificationsPage() {
@@ -54,7 +55,7 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-guild-500 py-12 text-center">Loading…</p>
+        <SkeletonList count={5} />
       ) : error ? (
         <p className="text-sm text-red-400 py-12 text-center">{error}</p>
       ) : items.length === 0 ? (

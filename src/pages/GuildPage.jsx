@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FiShield, FiUsers, FiLoader, FiAlertCircle, FiArrowRight, FiEdit3, FiCheck, FiX } from "react-icons/fi";
+import { FiShield, FiUsers, FiAlertCircle, FiArrowRight, FiEdit3, FiCheck, FiX } from "react-icons/fi";
 import { getGuildProfile, getPrivateGuildView, updateGuild, applyToGuild, leaveGuild, disbandGuild } from "../services/api/guildApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { playerName } from "../utils/playerName";
+import { SkeletonProfile, SkeletonGuild } from "../components/ui/Skeleton";
 
 export default function GuildPage() {
   const { guildUid } = useParams();
@@ -123,8 +124,9 @@ export default function GuildPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-gold-400" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+        <SkeletonGuild />
+        <SkeletonProfile />
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiLoader, FiAlertCircle, FiCheck, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiCheck, FiX } from "react-icons/fi";
+import { SkeletonList } from "../../components/ui/Skeleton";
 import { getPendingActions, votePendingAction } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
@@ -61,9 +62,7 @@ export default function PendingTab() {
       )}
 
       {isLoading ? (
-        <div className="py-12 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-gold-400" />
-        </div>
+        <SkeletonList count={4} />
       ) : (
         <>
           <div>

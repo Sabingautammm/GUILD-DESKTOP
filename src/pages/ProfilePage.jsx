@@ -13,6 +13,7 @@ import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
 import { updateMyProfile } from "../features/dashboard/services/playerApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
+import { SkeletonProfile } from "../components/ui/Skeleton";
 
 const ACCEPT_AVATAR = "image/jpeg,image/png,image/webp";
 const AVATAR_MIMES = ["image/jpeg", "image/png", "image/webp"];
@@ -315,7 +316,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const navigate = useNavigate();
   const { user, membership, role, isAdmin, logout, refresh } = useAuth();
-  const { player, refetch } = usePlayerProfile({ enabled: true });
+  const { player, isLoading, refetch } = usePlayerProfile({ enabled: true });
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -538,6 +539,14 @@ export default function ProfilePage() {
   }, [avatarPreview]);
 
   const avatarSrc = avatarPreview || (user?.avatar ? resolveMediaUrl(user.avatar) : "");
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <SkeletonProfile />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">

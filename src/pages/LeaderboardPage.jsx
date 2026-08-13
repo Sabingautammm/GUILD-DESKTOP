@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FiLoader, FiAlertCircle, FiChevronDown, FiUsers } from "react-icons/fi";
+import { FiAlertCircle, FiChevronDown, FiUsers } from "react-icons/fi";
 import { PiTrophyFill, PiUsersFill, PiMedalFill } from "react-icons/pi";
 import { getGuildLeaderboard, getPlayerLeaderboard } from "../services/api/leaderboardApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import Avatar from "../components/ui/Avatar";
+import { SkeletonLeaderboard } from "../components/ui/Skeleton";
 
 function AvatarWithFallback({ user, inGameName }) {
   const name = inGameName || user?.name || "Player";
@@ -104,8 +105,8 @@ export default function LeaderboardPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-16 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-gold-400" />
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <SkeletonLeaderboard count={10} />
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiLoader, FiAlertCircle } from "react-icons/fi";
+import { FiAlertCircle } from "react-icons/fi";
+import { SkeletonList } from "../../components/ui/Skeleton";
 import { getRoster, getExMembers, promoteMember, processMemberAction, deleteExMember } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
@@ -78,9 +79,7 @@ export default function MembersTab() {
       )}
 
       {isLoading ? (
-        <div className="py-12 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-gold-400" />
-        </div>
+        <SkeletonList count={6} />
       ) : (
         <>
           <div>

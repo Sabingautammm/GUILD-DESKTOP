@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiLoader, FiAlertCircle } from "react-icons/fi";
+import { FiAlertCircle } from "react-icons/fi";
+import { SkeletonList } from "../../components/ui/Skeleton";
 import { getActivityLogs } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { playerName } from "../../utils/playerName";
@@ -21,11 +22,7 @@ export default function ActivityTab() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="py-12 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-gold-400" />
-      </div>
-    );
+    return <SkeletonList count={6} />;
   }
 
   if (error) {

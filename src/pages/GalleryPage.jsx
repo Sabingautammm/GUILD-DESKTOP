@@ -5,6 +5,7 @@ import MediaCard from "../components/ui/MediaCard";
 import { getGallery, uploadMediaFile, getMyMedia, resubmitMedia } from "../services/api/mediaApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import { ApiError } from "../services/api/client";
+import { SkeletonMediaGrid } from "../components/ui/Skeleton";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 
@@ -236,9 +237,7 @@ export default function GalleryPage({ reelOnly = false }) {
       </div>
 
       {isLoading ? (
-        <div className="py-16 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-gold-400" />
-        </div>
+        <SkeletonMediaGrid count={9} />
       ) : error ? (
         <div className="py-16 text-center">
           <FiAlertCircle className="mx-auto text-3xl text-gold-400" />

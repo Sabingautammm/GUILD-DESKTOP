@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiLoader, FiAlertCircle, FiShield } from "react-icons/fi";
+import { FiAlertCircle, FiShield } from "react-icons/fi";
+import { SkeletonList } from "../../components/ui/Skeleton";
 import { getRoster, initiateTransfer, completeTransfer, claimLeadership } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
@@ -102,11 +103,7 @@ export default function TransferTab() {
   };
 
   if (isLoading && isLeader) {
-    return (
-      <div className="py-12 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-gold-400" />
-      </div>
-    );
+    return <SkeletonList count={4} />;
   }
 
   if (error) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiLoader, FiAlertCircle, FiUserPlus, FiSearch, FiHash } from "react-icons/fi";
+import { FiAlertCircle, FiUserPlus, FiSearch, FiHash } from "react-icons/fi";
+import { SkeletonList } from "../../components/ui/Skeleton";
 import { getGuildPlayers, searchGuildPlayer, addPlayerByGameUid } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
@@ -316,9 +317,7 @@ export default function GuildPlayersTab() {
       </div>
 
       {isLoading ? (
-        <div className="py-12 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-gold-400" />
-        </div>
+        <SkeletonList count={6} />
       ) : filtered.length === 0 ? (
         <p className="text-xs text-guild-500">No players match your filters yet.</p>
       ) : (
