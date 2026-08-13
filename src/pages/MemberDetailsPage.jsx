@@ -5,6 +5,7 @@ import { getMemberById } from "../features/members/services/memberApi";
 import { ApiError } from "../services/api/client";
 import Avatar from "../components/ui/Avatar";
 import { resolveMediaUrl } from "../utils/mediaUrl";
+import { playerName } from "../utils/playerName";
 
 export default function MemberDetailsPage() {
   const { id } = useParams();
@@ -52,17 +53,17 @@ export default function MemberDetailsPage() {
           {member.avatar ? (
             <Avatar
               src={resolveMediaUrl(member.avatar)}
-              name={member.name}
+              name={playerName(member)}
               className="h-20 w-20 rounded-2xl ring-2 ring-gold-500/40"
               fallbackClassName="gold-gradient-bg text-4xl text-guild-950 gold-glow"
             />
           ) : (
             <span className="flex h-20 w-20 items-center justify-center rounded-2xl gold-gradient-bg text-4xl font-bold text-guild-950 gold-glow">
-              {member.name?.charAt(0).toUpperCase() || <FiUser />}
+              {playerName(member, "?").charAt(0).toUpperCase() || <FiUser />}
             </span>
           )}
           <div>
-            <p className="text-2xl font-display">{member.name}</p>
+            <p className="text-2xl font-display">{playerName(member)}</p>
             <p className="text-sm text-gold-300">{member.role}</p>
             <p className="text-xs font-mono text-guild-500 mt-1">UID {member.uid}</p>
           </div>

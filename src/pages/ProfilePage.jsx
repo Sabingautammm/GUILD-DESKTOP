@@ -560,7 +560,7 @@ export default function ProfilePage() {
           />
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-display text-cream truncate">{user?.name ?? "Player"}</h1>
+            <h1 className="text-2xl sm:text-3xl font-display text-cream truncate">{user?.inGameName || user?.name || "Player"}</h1>
             <p className="mt-1 text-sm text-guild-400 flex items-center justify-center sm:justify-start gap-1.5">
               <FiMail className="text-xs shrink-0" /> {user?.email}
             </p>

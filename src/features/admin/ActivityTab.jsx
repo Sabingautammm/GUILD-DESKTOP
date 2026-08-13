@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FiLoader, FiAlertCircle } from "react-icons/fi";
 import { getActivityLogs } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
+import { playerName } from "../../utils/playerName";
 
 export default function ActivityTab() {
   const [logs, setLogs] = useState([]);
@@ -53,7 +54,7 @@ export default function ActivityTab() {
             <span className="text-[11px] text-guild-500 shrink-0">{new Date(log.createdAt).toLocaleString()}</span>
           </div>
           <p className="text-[11px] text-guild-500 mt-1">
-            {log.entityType} · by {log.changedByUserId?.name ?? "Unknown"}
+            {log.entityType} · by {playerName(log.changedByUserId, "Unknown")}
           </p>
         </li>
       ))}

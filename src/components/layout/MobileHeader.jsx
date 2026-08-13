@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
+import { playerName } from "../../utils/playerName";
 import Avatar from "../ui/Avatar";
 
 const logo = "/Logo-removebg-preview.png";
@@ -57,13 +58,13 @@ export default function MobileHeader() {
             {user?.avatar ? (
               <Avatar
                 src={resolveMediaUrl(user.avatar)}
-                name={user?.name}
+                name={playerName(user)}
                 className="h-10 w-10 rounded-full ring-1 ring-gold-300/40"
                 fallbackClassName="bg-guild-700 text-sm text-gold-300"
               />
             ) : (
               <span className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950">
-                {user?.name?.charAt(0).toUpperCase() || "?"}
+                {playerName(user, "?").charAt(0).toUpperCase()}
               </span>
             )}
           </NavLink>

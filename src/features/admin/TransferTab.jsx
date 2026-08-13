@@ -5,6 +5,7 @@ import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../../features/dashboard/data/playerTypes";
+import { playerName } from "../../utils/playerName";
 
 export default function TransferTab() {
   const toast = useToast();
@@ -57,7 +58,7 @@ export default function TransferTab() {
   const handleInitiateClick = () => {
     const target = roster.find((m) => m.userId?._id === targetId);
     setConfirmingTransfer({
-      name: target?.userId?.name ?? "this player",
+      name: playerName(target?.userId, "this player"),
       onConfirm: handleInitiate,
     });
   };
@@ -144,7 +145,7 @@ export default function TransferTab() {
                 <option value="">Choose a target…</option>
                 {eligible.map((m) => (
                   <option key={m._id} value={m.userId._id}>
-                    {m.userId.name} — {ROLE_LABEL[m.role]}
+                    {playerName(m.userId)} — {ROLE_LABEL[m.role]}
                   </option>
                 ))}
               </select>

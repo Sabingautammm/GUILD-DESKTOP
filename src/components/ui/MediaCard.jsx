@@ -5,6 +5,7 @@ import { useAuth } from "../../features/auth/context/AuthContext";
 import { toggleReaction, addComment } from "../../services/api/mediaApi";
 import { ApiError } from "../../services/api/client";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
+import { playerName } from "../../utils/playerName";
 
 export default function MediaCard({ media, onChanged }) {
   const toast = useToast();
@@ -55,10 +56,10 @@ export default function MediaCard({ media, onChanged }) {
     <article className="rounded-xl border border-guild-700 bg-guild-900 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
-          {uploader?.name?.charAt(0).toUpperCase() || "?"}
+          {playerName(uploader, "?").charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-cream truncate">{uploader?.name ?? "Player"}</p>
+          <p className="text-sm font-semibold text-cream truncate">{playerName(uploader)}</p>
           {media.guildUid && <p className="text-[11px] text-guild-500 font-mono">Guild {media.guildUid}</p>}
         </div>
         {media.visibility === "private" && (
@@ -96,7 +97,7 @@ export default function MediaCard({ media, onChanged }) {
           <ul className="mt-3 space-y-1.5">
             {media.comments.map((c) => (
               <li key={c._id ?? c.userId?.toString?.() ?? c.createdAt} className="text-xs text-guild-300">
-                <span className="font-semibold text-cream">{c.userId?.name ?? "Player"}</span>{" "}
+                <span className="font-semibold text-cream">{playerName(c.userId)}</span>{" "}
                 {c.text}
               </li>
             ))}

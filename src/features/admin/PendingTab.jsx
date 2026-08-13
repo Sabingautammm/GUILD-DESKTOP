@@ -3,6 +3,7 @@ import { FiLoader, FiAlertCircle, FiCheck, FiX } from "react-icons/fi";
 import { getPendingActions, votePendingAction } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
+import { playerName } from "../../utils/playerName";
 
 const TYPE_LABEL = {
   kick: "Kick player",
@@ -79,10 +80,10 @@ export default function PendingTab() {
                         <div>
                           <p className="text-sm font-bold text-cream">
                             {TYPE_LABEL[a.type] ?? a.type}{" "}
-                            <span className="text-guild-500">for {a.targetUserId?.name ?? "Player"}</span>
+                            <span className="text-guild-500">for {playerName(a.targetUserId)}</span>
                           </p>
                           <p className="text-[11px] text-guild-500">
-                            Initiated by {a.initiatorUserId?.name ?? "Officer"}{" "}
+                            Initiated by {playerName(a.initiatorUserId, "Officer")}{" "}
                             {a.status === "escalated" && (
                               <span className="ml-1 rounded bg-gold-500/15 px-1.5 py-0.5 font-bold text-gold-300">
                                 Tied — Acting Leader ruling required

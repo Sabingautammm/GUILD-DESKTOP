@@ -4,6 +4,7 @@ import { getPendingMedia, moderateMedia } from "../../services/api/mediaApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
+import { playerName } from "../../utils/playerName";
 
 export default function MediaTab() {
   const toast = useToast();
@@ -83,7 +84,7 @@ export default function MediaTab() {
             <img src={resolveMediaUrl(m.url)} alt="" className="h-16 w-24 rounded-lg bg-guild-950 object-contain" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-cream truncate">{m.uploaderId?.name ?? "Unknown player"}</p>
+            <p className="text-sm font-bold text-cream truncate">{playerName(m.uploaderId, "Unknown player")}</p>
             <p className="text-[11px] text-guild-500 truncate">{m.url}</p>
             <p className="text-[11px] text-guild-500 capitalize">
               {m.type} · {m.category} · {m.visibility}

@@ -8,6 +8,7 @@ import { FiLogIn, FiBell } from "react-icons/fi";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
+import { playerName } from "../../utils/playerName";
 import Avatar from "../ui/Avatar";
 import { useEffect, useRef } from "react";
 
@@ -158,13 +159,13 @@ export default function DesktopNavbar() {
                 {user?.avatar ? (
                   <Avatar
                     src={resolveMediaUrl(user.avatar)}
-                    name={user?.name}
+                    name={playerName(user)}
                     className="h-8 w-8 rounded-full ring-2 ring-gold-500/40"
                     fallbackClassName="bg-guild-700 text-sm text-gold-300"
                   />
                 ) : (
                   <span className="flex h-8 w-8 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950">
-                    {user?.name?.charAt(0).toUpperCase() || "?"}
+                    {playerName(user, "?").charAt(0).toUpperCase()}
                   </span>
                 )}
               </button>

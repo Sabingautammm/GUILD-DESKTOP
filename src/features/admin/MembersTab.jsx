@@ -5,6 +5,7 @@ import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../../features/dashboard/data/playerTypes";
+import { playerName } from "../../utils/playerName";
 
 export default function MembersTab() {
   const toast = useToast();
@@ -94,10 +95,10 @@ export default function MembersTab() {
                   <li key={m._id} className="flex items-center justify-between gap-3 rounded-xl card-surface p-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
-                        {m.userId?.name?.charAt(0).toUpperCase() || "?"}
+                        {playerName(m.userId, "?").charAt(0).toUpperCase()}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-cream truncate">{m.userId?.name ?? "Player"}</p>
+                        <p className="text-sm font-bold text-cream truncate">{playerName(m.userId)}</p>
                         <p className="text-[11px] text-guild-500">Applied {new Date(m.createdAt ?? m.joinedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
@@ -145,10 +146,10 @@ export default function MembersTab() {
                   <li key={m._id} className="flex items-center justify-between gap-3 px-4 py-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
-                        {m.userId?.name?.charAt(0).toUpperCase() || "?"}
+                        {playerName(m.userId, "?").charAt(0).toUpperCase()}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-cream truncate">{m.userId?.name ?? "Player"}</p>
+                        <p className="text-sm font-bold text-cream truncate">{playerName(m.userId)}</p>
                         <p className="text-[11px] text-guild-500">{ROLE_LABEL[m.role] ?? m.role}</p>
                       </div>
                     </div>
@@ -160,7 +161,7 @@ export default function MembersTab() {
                           onClick={() =>
                             askConfirm({
                               title: "Promote to Officer?",
-                              message: `${m.userId?.name ?? "This player"} will become an Officer and get moderation powers.`,
+                              message: `${playerName(m.userId, "This player")} will become an Officer and get moderation powers.`,
                               actionLabel: "Promote",
                               fn: promoteMember(m.userId._id, "officer"),
                               opts: { loading: "Promoting…", success: "Promoted to Officer" },
@@ -177,7 +178,7 @@ export default function MembersTab() {
                           onClick={() =>
                             askConfirm({
                               title: "Demote to Member?",
-                              message: `${m.userId?.name ?? "This player"} will lose Officer moderation powers and become a regular Member.`,
+                              message: `${playerName(m.userId, "This player")} will lose Officer moderation powers and become a regular Member.`,
                               actionLabel: "Demote",
                               fn: promoteMember(m.userId._id, "member"),
                               opts: { loading: "Demoting…", success: "Demoted to Member" },
@@ -194,7 +195,7 @@ export default function MembersTab() {
                           onClick={() =>
                             askConfirm({
                               title: "Demote Acting Leader?",
-                              message: `${m.userId?.name ?? "This player"} will be demoted to Member and lose leadership powers.`,
+                              message: `${playerName(m.userId, "This player")} will be demoted to Member and lose leadership powers.`,
                               actionLabel: "Demote",
                               danger: true,
                               fn: promoteMember(m.userId._id, "member"),
@@ -212,7 +213,7 @@ export default function MembersTab() {
                           onClick={() =>
                             askConfirm({
                               title: "Make Acting Leader?",
-                              message: `${m.userId?.name ?? "This player"} will become Acting Leader with leadership powers (a previous Acting Leader, if any, will be demoted to Member).`,
+                              message: `${playerName(m.userId, "This player")} will become Acting Leader with leadership powers (a previous Acting Leader, if any, will be demoted to Member).`,
                               actionLabel: "Make Acting Leader",
                               fn: promoteMember(m.userId._id, "acting_leader"),
                               opts: { loading: "Assigning…", success: "Acting Leader assigned" },
@@ -229,7 +230,7 @@ export default function MembersTab() {
                           onClick={() =>
                             askConfirm({
                               title: "Kick player?",
-                              message: `${m.userId?.name ?? "This player"} will be removed from the guild. They can re-apply later.`,
+                              message: `${playerName(m.userId, "This player")} will be removed from the guild. They can re-apply later.`,
                               actionLabel: "Kick",
                               danger: true,
                               fn: processMemberAction("kick", m.userId._id),
@@ -258,7 +259,7 @@ export default function MembersTab() {
                 {exMembers.map((m) => (
                   <li key={m._id} className="flex items-center justify-between gap-3 px-4 py-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-cream truncate">{m.userId?.name ?? "Player"}</p>
+                      <p className="text-sm font-bold text-cream truncate">{playerName(m.userId)}</p>
                       <p className="text-[11px] text-guild-500">
                         Removed {m.removedAt ? new Date(m.removedAt).toLocaleDateString() : ""} — data retained
                       </p>

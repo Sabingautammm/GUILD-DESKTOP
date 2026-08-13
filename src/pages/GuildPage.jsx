@@ -6,6 +6,7 @@ import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
+import { playerName } from "../utils/playerName";
 
 export default function GuildPage() {
   const { guildUid } = useParams();
@@ -251,10 +252,10 @@ export default function GuildPage() {
                       className="flex items-center gap-3 min-w-0 text-left flex-1"
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
-                        {m.userId?.name?.charAt(0).toUpperCase() || "?"}
+                        {playerName(m.userId, "?").charAt(0).toUpperCase()}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-cream truncate">{m.userId?.name ?? "Player"}</p>
+                        <p className="text-sm font-bold text-cream truncate">{playerName(m.userId)}</p>
                         <p className="text-[11px] text-guild-500">{ROLE_LABEL[m.role] ?? m.role}</p>
                       </div>
                       <FiArrowRight className="ml-auto text-xs text-guild-600" />
@@ -404,7 +405,7 @@ function RoleChip({ member, label }) {
   return (
     <div className="flex items-center gap-2 rounded-full border border-guild-600 bg-guild-900 px-3 py-1.5">
       <FiShield className="text-xs text-gold-400" />
-      <span className="text-xs font-bold text-cream">{member.userId?.name ?? "Player"}</span>
+      <span className="text-xs font-bold text-cream">{playerName(member.userId)}</span>
       <span className="text-[10px] uppercase tracking-wide text-guild-400">{label}</span>
     </div>
   );
