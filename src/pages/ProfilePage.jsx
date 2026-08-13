@@ -92,6 +92,7 @@ export default function ProfilePage() {
 
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
   const avatarInputRef = useRef(null);
+  const avatarSavingRef = useRef(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
   const [avatarError, setAvatarError] = useState("");
@@ -244,6 +245,8 @@ export default function ProfilePage() {
       setAvatarError("Please choose an image from your device.");
       return;
     }
+    if (avatarSavingRef.current) return;
+    avatarSavingRef.current = true;
     setIsSavingAvatar(true);
     try {
       await toast.promise(uploadAvatarFile(avatarFile), {
@@ -257,6 +260,7 @@ export default function ProfilePage() {
     } catch {
       // toast handled it
     } finally {
+      avatarSavingRef.current = false;
       setIsSavingAvatar(false);
     }
   };
@@ -270,6 +274,8 @@ export default function ProfilePage() {
   };
 
   const removeAvatar = async () => {
+    if (avatarSavingRef.current) return;
+    avatarSavingRef.current = true;
     setIsSavingAvatar(true);
     try {
       await toast.promise(removeAvatarApi(), {
@@ -282,6 +288,7 @@ export default function ProfilePage() {
     } catch {
       // toast handled it
     } finally {
+      avatarSavingRef.current = false;
       setIsSavingAvatar(false);
     }
   };
