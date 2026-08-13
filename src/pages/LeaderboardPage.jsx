@@ -4,26 +4,18 @@ import { FiLoader, FiAlertCircle, FiChevronDown, FiUsers } from "react-icons/fi"
 import { PiTrophyFill, PiUsersFill, PiMedalFill } from "react-icons/pi";
 import { getGuildLeaderboard, getPlayerLeaderboard } from "../services/api/leaderboardApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
+import Avatar from "../components/ui/Avatar";
 
-function Avatar({ user, inGameName }) {
+function AvatarWithFallback({ user, inGameName }) {
   const name = inGameName || user?.name || "Player";
   const src = user?.avatar ? resolveMediaUrl(user.avatar) : null;
-  const initial = name.charAt(0).toUpperCase();
-  const size = "h-9 w-9";
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={name}
-        className={`${size} shrink-0 rounded-full object-cover ring-2 ring-gold-500/30`}
-        onError={(e) => { e.currentTarget.style.display = "none"; }}
-      />
-    );
-  }
   return (
-    <span className={`${size} flex shrink-0 items-center justify-center rounded-full bg-gold-500/10 font-bold text-gold-400 ring-1 ring-gold-500/30`}>
-      {initial}
-    </span>
+    <Avatar
+      src={src}
+      name={name}
+      className="h-9 w-9 shrink-0 rounded-full ring-2 ring-gold-500/30"
+      fallbackClassName="bg-gold-500/10 text-gold-400"
+    />
   );
 }
 
@@ -222,7 +214,7 @@ export default function LeaderboardPage() {
                     <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${style.badge}`}>
                       {p.rank}
                     </span>
-                    <Avatar user={p.user} inGameName={p.inGameName} />
+                    <AvatarWithFallback user={p.user} inGameName={p.inGameName} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold text-cream truncate">{p.inGameName || p.user?.name || "Player"}</p>
                       <p className="text-[11px] text-guild-500 flex items-center gap-1 truncate">

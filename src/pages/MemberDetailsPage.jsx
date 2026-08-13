@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FiUser, FiLoader, FiAlertCircle } from "react-icons/fi";
 import { getMemberById } from "../features/members/services/memberApi";
 import { ApiError } from "../services/api/client";
+import Avatar from "../components/ui/Avatar";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 
 export default function MemberDetailsPage() {
   const { id } = useParams();
@@ -47,9 +49,18 @@ export default function MemberDetailsPage() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-guild-800 via-guild-850 to-guild-900 p-8 text-cream ring-1 ring-gold-500/30">
         <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold-500/10 blur-2xl" />
         <div className="relative flex items-center gap-5">
-          <span className="flex h-20 w-20 items-center justify-center rounded-2xl gold-gradient-bg text-4xl font-bold text-guild-950 gold-glow">
-            {member.name?.charAt(0).toUpperCase() || <FiUser />}
-          </span>
+          {member.avatar ? (
+            <Avatar
+              src={resolveMediaUrl(member.avatar)}
+              name={member.name}
+              className="h-20 w-20 rounded-2xl ring-2 ring-gold-500/40"
+              fallbackClassName="gold-gradient-bg text-4xl text-guild-950 gold-glow"
+            />
+          ) : (
+            <span className="flex h-20 w-20 items-center justify-center rounded-2xl gold-gradient-bg text-4xl font-bold text-guild-950 gold-glow">
+              {member.name?.charAt(0).toUpperCase() || <FiUser />}
+            </span>
+          )}
           <div>
             <p className="text-2xl font-display">{member.name}</p>
             <p className="text-sm text-gold-300">{member.role}</p>

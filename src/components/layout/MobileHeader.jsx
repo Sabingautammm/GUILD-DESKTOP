@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
+import Avatar from "../ui/Avatar";
 
 const logo = "/Logo-removebg-preview.png";
 
@@ -54,11 +55,11 @@ export default function MobileHeader() {
             className="flex h-10 w-10 items-center justify-center rounded-full ring-1 ring-gold-300/40"
           >
             {user?.avatar ? (
-              <img
+              <Avatar
                 src={resolveMediaUrl(user.avatar)}
-                alt={user?.name || "avatar"}
-                className="h-10 w-10 rounded-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                name={user?.name}
+                className="h-10 w-10 rounded-full ring-1 ring-gold-300/40"
+                fallbackClassName="bg-guild-700 text-sm text-gold-300"
               />
             ) : (
               <span className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950">

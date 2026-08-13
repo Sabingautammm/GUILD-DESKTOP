@@ -1,6 +1,7 @@
 import { FiHash, FiShield, FiUsers } from "react-icons/fi";
 import { ROLE_LABEL } from "../data/playerTypes";
 import { resolveMediaUrl } from "../../../utils/mediaUrl";
+import Avatar from "../../../components/ui/Avatar";
 
 export default function PlayerIdCard({ player }) {
   const { personalUid, inGameName, role, guildUid, guildName, avatar } = player;
@@ -24,11 +25,11 @@ export default function PlayerIdCard({ player }) {
 
         <div className="flex items-center gap-4 mb-6">
           {avatar ? (
-            <img
+            <Avatar
               src={resolveMediaUrl(avatar)}
-              alt={inGameName || "avatar"}
-              className="h-14 w-14 shrink-0 rounded-xl object-cover ring-2 ring-gold-500/40"
-              onError={(e) => { e.currentTarget.style.display = "none"; }}
+              name={inGameName}
+              className="h-14 w-14 shrink-0 rounded-xl ring-2 ring-gold-500/40"
+              fallbackClassName="gold-gradient-bg text-2xl text-guild-950 gold-glow"
             />
           ) : (
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl gold-gradient-bg text-2xl font-bold text-guild-950 gold-glow">

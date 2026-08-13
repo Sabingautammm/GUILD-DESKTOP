@@ -8,6 +8,7 @@ import { FiLogIn, FiBell } from "react-icons/fi";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
 import { resolveMediaUrl } from "../../utils/mediaUrl";
+import Avatar from "../ui/Avatar";
 import { useEffect, useRef } from "react";
 
 const logo = "/Logo-removebg-preview.png";
@@ -155,11 +156,11 @@ export default function DesktopNavbar() {
                 className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-guild-800"
               >
                 {user?.avatar ? (
-                  <img
+                  <Avatar
                     src={resolveMediaUrl(user.avatar)}
-                    alt={user?.name || "avatar"}
-                    className="h-8 w-8 rounded-full object-cover ring-2 ring-gold-500/40"
-                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    name={user?.name}
+                    className="h-8 w-8 rounded-full ring-2 ring-gold-500/40"
+                    fallbackClassName="bg-guild-700 text-sm text-gold-300"
                   />
                 ) : (
                   <span className="flex h-8 w-8 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950">
