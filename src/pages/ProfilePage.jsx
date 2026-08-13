@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2,
-  FiUsers, FiArrowRight, FiCamera, FiFile, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle,
+  FiUsers, FiArrowRight, FiCamera, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle, FiAlertCircle,
 } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
@@ -174,7 +174,7 @@ function AvatarUploadZone({
               {isSavingAvatar ? (
                 <>
                   <FiLoader className="animate-spin" />
-                  Uploading…
+                  Uploading&hellip;
                 </>
               ) : (
                 <>
@@ -214,14 +214,12 @@ function AvatarUploadZone({
       {/* Help Text */}
       {!isUploading && (
         <p className="mt-3 text-center text-[11px] text-guild-500">
-          JPG, PNG or WEBP · Max 2MB · Square aspect ratio recommended
+          JPG, PNG or WEBP &middot; Max 2MB &middot; Square aspect ratio recommended
         </p>
       )}
     </div>
   );
 }
-
-export default function ProfilePage() {
 
 const STAT_MODES = [
   { key: "brRank", title: "BR Rank Match", hasPoints: true, pointsLabel: "Points" },
@@ -367,7 +365,7 @@ export default function ProfilePage() {
     setIsSaving(true);
     try {
       await toast.promise(updateMyProfile({ inGameName: inGameName.trim() }), {
-        loading: "Saving…",
+        loading: "Saving&hellip;",
         success: "Profile updated",
         error: (err) => (err instanceof ApiError ? err.message : "Could not update profile."),
       });
@@ -404,14 +402,14 @@ export default function ProfilePage() {
 
   const saveStats = async () => {
     if (!stats || !statsValid(stats)) {
-      setStatsError("Invalid values. Use non-negative numbers; Headshot % and Win Rate % must be 0–100.");
+      setStatsError("Invalid values. Use non-negative numbers; Headshot % and Win Rate % must be 0&ndash;100.");
       return;
     }
     setStatsError("");
     setSavingStats(true);
     try {
       await toast.promise(updateMyProfile({ seasonStats: stats }), {
-        loading: "Saving statistics…",
+        loading: "Saving statistics&hellip;",
         success: "Season stats updated",
         error: (err) => (err instanceof ApiError ? err.message : "Could not save statistics."),
       });
@@ -454,9 +452,19 @@ export default function ProfilePage() {
     }
 
     setAvatarFile(file);
-    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   }, []);
+
+  const clearAvatarSelection = useCallback(() => {
+    setAvatarFile(null);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview("");
+    setAvatarError("");
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  }, [avatarPreview]);
 
   const saveAvatar = useCallback(async () => {
     if (!avatarFile) {
@@ -468,7 +476,7 @@ export default function ProfilePage() {
     setIsSavingAvatar(true);
     try {
       await toast.promise(uploadAvatarFile(avatarFile), {
-        loading: "Uploading picture…",
+        loading: "Uploading picture&hellip;",
         success: "Profile picture updated",
         error: (err) => (err instanceof ApiError ? err.message : "Could not upload profile picture."),
       });
@@ -480,15 +488,7 @@ export default function ProfilePage() {
       avatarSavingRef.current = false;
       setIsSavingAvatar(false);
     }
-  }, [avatarFile, toast, refresh]);
-
-  const clearAvatarSelection = useCallback(() => {
-    setAvatarFile(null);
-    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
-    setAvatarPreview("");
-    setAvatarError("");
-    if (avatarInputRef.current) avatarInputRef.current.value = "";
-  }, [avatarPreview]);
+  }, [avatarFile, toast, refresh, clearAvatarSelection]);
 
   const removeAvatar = useCallback(async () => {
     if (avatarSavingRef.current) return;
@@ -496,7 +496,7 @@ export default function ProfilePage() {
     setIsSavingAvatar(true);
     try {
       await toast.promise(removeAvatarApi(), {
-        loading: "Removing picture…",
+        loading: "Removing picture&hellip;",
         success: "Profile picture removed",
         error: (err) => (err instanceof ApiError ? err.message : "Could not remove profile picture."),
       });
@@ -550,7 +550,7 @@ export default function ProfilePage() {
               </span>
               {user?.game && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-guild-800 px-3 py-1 text-[11px] font-bold text-guild-200 ring-1 ring-guild-600">
-                  <FiHash className="text-xs" /> {user.game}{user?.gameUid ? ` · ${user.gameUid}` : ""}
+                  <FiHash className="text-xs" /> {user.game}{user?.gameUid ? ` &middot; ${user.gameUid}` : ""}
                 </span>
               )}
             </div>
@@ -565,48 +565,6 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
-
-        {/* Avatar upload state */}
-        {(avatarFile || isSavingAvatar) && (
-          <div className="relative mt-4 rounded-xl border border-gold-500/30 bg-guild-800/80 p-4 space-y-3">
-            {avatarFile && (
-              <div className="flex flex-wrap items-center gap-2">
-                <FiFile className="text-gold-400 shrink-0" />
-                <span className="text-xs font-semibold text-cream truncate max-w-[220px]">{avatarFile.name}</span>
-                <span className="text-[11px] text-guild-500">{(avatarFile.size / 1024).toFixed(0)} KB</span>
-                <button
-                  type="button"
-                  onClick={clearAvatarSelection}
-                  className="ml-auto rounded-full border border-guild-600 px-3 py-1 text-[11px] font-semibold text-guild-300 hover:bg-guild-700"
-                >
-                  Change
-                </button>
-              </div>
-            )}
-            {avatarError && <p className="text-xs text-red-400">{avatarError}</p>}
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={saveAvatar}
-                disabled={isSavingAvatar || !avatarFile}
-                className="flex items-center justify-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
-              >
-                {isSavingAvatar ? <FiLoader className="animate-spin" /> : <FiCamera />}
-                Save picture
-              </button>
-              {user?.avatar && !avatarFile && (
-                <button
-                  type="button"
-                  onClick={removeAvatar}
-                  disabled={isSavingAvatar}
-                  className="text-[11px] font-semibold text-guild-400 hover:text-red-300 disabled:opacity-50"
-                >
-                  Remove picture
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* GUILD */}
@@ -667,13 +625,13 @@ export default function ProfilePage() {
           <div>
             <label className="text-xs font-bold text-guild-400">Game</label>
             <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
-              {user?.game || "—"}
+              {user?.game || "&mdash;"}
             </p>
           </div>
           <div>
             <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
             <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
-              {user?.gameUid || "—"}
+              {user?.gameUid || "&mdash;"}
             </p>
           </div>
           <form onSubmit={saveName} className="flex flex-col">
@@ -690,7 +648,7 @@ export default function ProfilePage() {
               disabled={isSaving || !inGameName.trim()}
               className="mt-2 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
             >
-              {isSaving ? "Saving…" : "Save name"}
+              {isSaving ? "Saving&hellip;" : "Save name"}
             </button>
           </form>
         </div>
@@ -723,8 +681,8 @@ export default function ProfilePage() {
                     )}
                     <StatField label="Matches" value={stats[mode.key].matches} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], matches: v } }))} max={undefined} step="1" />
                     <StatField label="K/D" value={stats[mode.key].kd} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], kd: v } }))} max={undefined} />
-                    <StatField label="Headshot %" value={stats[mode.key].headshotRate} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], headshotRate: v } }))} max={100} />
-                    <StatField label="Win Rate %" value={stats[mode.key].winRate} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], winRate: v } }))} max={100} />
+                    <StatField label="Headshot %" value={stats[mode.key].headshotRate} onChange={(v) => setStats((s) => ({ ...s[mode.key], headshotRate: v }))} max={100} />
+                    <StatField label="Win Rate %" value={stats[mode.key].winRate} onChange={(v) => setStats((s) => ({ ...s[mode.key], winRate: v }))} max={100} />
                   </div>
                 </div>
               ))}
@@ -775,7 +733,7 @@ export default function ProfilePage() {
           onClick={() => navigate("/onboarding")}
           className="flex items-center justify-center gap-2 w-full rounded-2xl border-2 border-dashed border-gold-500/40 bg-gold-500/5 p-5 text-sm font-bold text-gold-300 hover:bg-gold-500/10 transition-colors animate-fade-up"
         >
-          <FiPlusCircle className="text-lg" /> You're a free player — Create Guild or Apply to join one
+          <FiPlusCircle className="text-lg" /> You're a free player &mdash; Create Guild or Apply to join one
         </button>
       )}
 
