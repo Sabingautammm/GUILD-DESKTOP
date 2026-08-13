@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { FiLoader, FiAlertCircle, FiUserPlus, FiSearch, FiTrash2, FiHash } from "react-icons/fi";
-import { getGuildPlayers, searchGuildPlayer, addPlayerByGameUid, removeGuildPlayer } from "../../services/api/adminApi";
+import { FiLoader, FiAlertCircle, FiUserPlus, FiSearch, FiHash } from "react-icons/fi";
+import { getGuildPlayers, searchGuildPlayer, addPlayerByGameUid } from "../../services/api/adminApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
 import { useAuth } from "../../features/auth/context/AuthContext";
@@ -110,22 +110,6 @@ export default function GuildPlayersTab() {
       setForm({ game: GAMES[0], gameUid: "", inGameName: "" });
       setSearchResult(null);
       setShowAddForm(false);
-      reload();
-    } catch {
-      // toast handled it
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const runRemove = async (playerId) => {
-    setBusyId(playerId);
-    try {
-      await toast.promise(removeGuildPlayer(playerId), {
-        loading: "Removing…",
-        success: "Player removed from roster",
-        error: (err) => (err instanceof ApiError ? err.message : "Could not remove player."),
-      });
       reload();
     } catch {
       // toast handled it
@@ -356,16 +340,6 @@ export default function GuildPlayersTab() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <StatusBadge status={p.status} />
-                  {role !== "member" && (
-                    <button
-                      disabled={busyId === p._id}
-                      onClick={() => runRemove(p._id)}
-                      className="rounded-lg border border-guild-600 p-1.5 text-guild-500 hover:bg-red-950/60 hover:text-red-300 disabled:opacity-50"
-                      aria-label="Remove player from guild"
-                    >
-                      <FiTrash2 className="text-sm" />
-                    </button>
-                  )}
                 </div>
               </li>
             );
