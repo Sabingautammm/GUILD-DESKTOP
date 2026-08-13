@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, Component } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
@@ -28,6 +28,47 @@ function RouteFallback() {
   );
 }
 
+// Last line of defense: a crash in any page shows a recoverable screen
+// instead of a blank white page. Reload restores the app.
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("[App] Route crashed:", error, info?.componentStack);
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false });
+    window.location.hash = "";
+    window.location.reload();
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-center px-4">
+          <p className="text-3xl font-bold text-[#17120D]">Something went wrong</p>
+          <p className="text-sm text-[#6B5B45]">An unexpected error occurred on this page.</p>
+          <button
+            onClick={this.handleReset}
+            className="mt-2 rounded-full bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873] hover:opacity-90"
+          >
+            Reload app
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function AppRoutes() {
   const { isAuthenticated, isAdmin, isLoading, user } = useAuth();
   const needsOnboarding = isAuthenticated && !user?.onboardingCompleted;
@@ -42,7 +83,8 @@ function AppRoutes() {
 
   return (
     <Suspense fallback={<RouteFallback />}>
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route path="/" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <HomePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
@@ -75,7 +117,8 @@ function AppRoutes() {
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+        </Routes>
+      </ErrorBoundary>
     </Suspense>
   );
 }
