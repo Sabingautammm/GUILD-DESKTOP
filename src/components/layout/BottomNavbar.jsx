@@ -36,14 +36,14 @@ export default function BottomNavbar() {
   }, [isAuthenticated]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around bg-[#17120D] px-2 lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around bg-guild-950/95 backdrop-blur-xl border-t border-guild-700 px-2 lg:hidden">
       {navItems.map((item) => (
         <NavLink
           key={item.path}
           to={item.path}
           className={({ isActive }) =>
-            `flex flex-col items-center gap-1 text-[11px] ${
-              isActive ? "font-semibold text-[#FFD873]" : "text-[#B3A488]"
+            `flex flex-col items-center gap-1 text-[11px] transition-colors ${
+              isActive ? "font-bold text-gold-400" : "text-guild-400 hover:text-guild-200"
             }`
           }
         >
@@ -63,7 +63,7 @@ export default function BottomNavbar() {
         <NavLink
           to="/notifications"
           className={({ isActive }) =>
-            `relative flex flex-col items-center gap-1 text-[11px] ${isActive ? "font-semibold text-[#FFD873]" : "text-[#B3A488]"}`
+            `relative flex flex-col items-center gap-1 text-[11px] transition-colors ${isActive ? "font-bold text-gold-400" : "text-guild-400 hover:text-guild-200"}`
           }
         >
           <span className="relative">
@@ -81,7 +81,7 @@ export default function BottomNavbar() {
       <NavLink
         to={isAuthenticated ? "/profile" : "/login"}
         className={({ isActive }) =>
-          `flex flex-col items-center gap-1 text-[11px] ${isActive ? "font-semibold text-[#FFD873]" : "text-[#B3A488]"}`
+          `flex flex-col items-center gap-1 text-[11px] transition-colors ${isActive ? "font-bold text-gold-400" : "text-guild-400 hover:text-guild-200"}`
         }
       >
         {({ isActive }) => {

@@ -24,23 +24,23 @@ export default function AdminPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E3A012]/10 text-[#B9660B]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-500/10 text-gold-400 ring-1 ring-gold-500/30">
           <FiShield className="text-lg" />
         </span>
         <div>
-          <h1 className="text-xl font-bold text-[#17120D]">Admin Dashboard</h1>
-          <p className="text-xs text-slate-500">Your role: {role?.replace("_", " ")}</p>
+          <h1 className="text-xl font-display text-cream">Admin Dashboard</h1>
+          <p className="text-xs text-guild-500">Your role: {role?.replace("_", " ")}</p>
         </div>
       </div>
 
-      <nav className="flex gap-1 overflow-x-auto rounded-full bg-[#17120D] p-1.5 mb-6">
+      <nav className="flex gap-1 overflow-x-auto rounded-full bg-guild-900 p-1.5 mb-6 ring-1 ring-guild-700">
         {tabs.map((t) => (
           <NavLink
             key={t.key}
             to={t.path}
             className={({ isActive }) =>
-              `flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
-                isActive ? "bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] text-[#17120D]" : "text-[#B3A488] hover:text-[#FBF3E2]"
+              `flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition-colors ${
+                isActive ? "gold-gradient-bg text-guild-950" : "text-guild-400 hover:text-cream"
               }`
             }
           >
@@ -51,7 +51,7 @@ export default function AdminPage() {
       </nav>
 
       {!canLead && (
-        <p className="mb-4 rounded-lg bg-[#FFFBEF] border border-[#E3A012]/30 px-4 py-3 text-xs text-[#8a5200]">
+        <p className="mb-4 rounded-lg bg-guild-800/80 border border-gold-500/30 px-4 py-3 text-xs text-gold-300">
           As an Officer you can act on kick/join/re-apply via the consensus queue and moderate media directly.
         </p>
       )}

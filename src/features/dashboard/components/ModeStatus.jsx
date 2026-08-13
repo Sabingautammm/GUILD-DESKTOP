@@ -2,17 +2,17 @@ import { FiActivity, FiTarget, FiAward, FiCalendar } from "react-icons/fi";
 
 export default function ModeStatsCard({ icon: Icon, title, stats, rankPointsIcon: RankIcon, rankPointsLabel = "Points" }) {
   return (
-    <div className="rounded-xl border border-[#EDE1CB] bg-[#FAF6EE] p-4 sm:p-5">
+    <div className="card-surface p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E3A012]/10 text-[#B9660B]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-500/10 text-gold-400 ring-1 ring-gold-500/20">
             <Icon className="text-sm" />
           </span>
-          <span className="text-sm font-semibold text-[#17120D]">{title}</span>
+          <span className="text-sm font-bold text-cream">{title}</span>
         </div>
 
         {stats.rankPoints !== undefined && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#17120D] px-2.5 py-1 text-[11px] font-semibold text-[#FFD873]">
+          <span className="inline-flex items-center gap-1 rounded-full gold-gradient-bg px-2.5 py-1 text-[11px] font-bold text-guild-950">
             {RankIcon && <RankIcon className="text-xs" />}
             {stats.rankPoints.toLocaleString()} {rankPointsLabel}
           </span>
@@ -32,11 +32,11 @@ export default function ModeStatsCard({ icon: Icon, title, stats, rankPointsIcon
 function Metric({ icon: Icon, label, value }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-[#6B5B45] mb-1">
+      <div className="flex items-center gap-1.5 text-guild-400 mb-1">
         <Icon className="text-xs shrink-0" />
         <span className="text-[10px] font-medium uppercase tracking-wide">{label}</span>
       </div>
-      <p className="text-base font-bold text-[#17120D]">{value}</p>
+      <p className="text-base font-bold text-cream">{value}</p>
     </div>
   );
 }

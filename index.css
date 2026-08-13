@@ -1,1 +1,144 @@
+@import url("https://fonts.googleapis.com/css2?family=Russo+One&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap");
 @import "tailwindcss";
+
+@theme {
+  /* ── GUILD Dark Gold palette ─────────────────────────── */
+  --color-guild-50: #fbf6ee;
+  --color-guild-100: #f3eada;
+  --color-guild-200: #e9dcc0;
+  --color-guild-300: #c9bfa9;
+  --color-guild-400: #a3967c;
+  --color-guild-500: #6b5b45;
+  --color-guild-600: #4a3c28;
+  --color-guild-700: #3a2f21;
+  --color-guild-800: #201a12;
+  --color-guild-850: #1a1510;
+  --color-guild-900: #17120d;
+  --color-guild-950: #0c0a07;
+
+  --color-gold-100: #fff3d6;
+  --color-gold-200: #ffe8ac;
+  --color-gold-300: #ffd873;
+  --color-gold-400: #f2c14e;
+  --color-gold-500: #e3a012;
+  --color-gold-600: #b9660b;
+  --color-gold-700: #8a5200;
+
+  --color-cream: #fbf3e2;
+  --color-cream-dim: #d8cfbd;
+
+  /* ── Typography ─────────────────────────────────────── */
+  --font-display: "Russo One", "Chakra Petch", system-ui, sans-serif;
+  --font-sans: "Chakra Petch", system-ui, -apple-system, sans-serif;
+
+  /* ── Motion ─────────────────────────────────────────── */
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-glow-pulse: glow-pulse 2.6s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(227, 160, 18, 0.35);
+    }
+    50% {
+      box-shadow: 0 0 22px 4px rgba(227, 160, 18, 0.28);
+    }
+  }
+}
+
+/* ── Base ─────────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-guild-950 text-cream font-sans antialiased;
+  background-image:
+    radial-gradient(1100px 500px at 85% -10%, rgba(227, 160, 18, 0.07), transparent 60%),
+    radial-gradient(900px 420px at -10% 20%, rgba(185, 102, 11, 0.06), transparent 55%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(227, 160, 18, 0.35);
+  color: #fff6dc;
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a2f21 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #3a2f21;
+  border-radius: 8px;
+  border: 2px solid #17120d;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #4a3c28;
+}
+
+/* ── Focus / a11y ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #e3a012;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Reusable surface helpers ─────────────────────────── */
+@utility card-surface {
+  background: #201a12;
+  border: 1px solid #3a2f21;
+  border-radius: 0.9rem;
+}
+
+@utility gold-gradient-text {
+  background: linear-gradient(92deg, #ffd873 0%, #e3a012 55%, #b9660b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility gold-gradient-bg {
+  background: linear-gradient(92deg, #ffd873 0%, #e3a012 55%, #b9660b 100%);
+}
+
+@utility gold-glow {
+  box-shadow: 0 10px 30px -8px rgba(227, 160, 18, 0.5);
+}
+
+@utility input-dark {
+  background: #17120d;
+  border: 1px solid #4a3c28;
+  border-radius: 0.6rem;
+  color: #fbf3e2;
+  &::placeholder {
+    color: #6b5b45;
+  }
+}

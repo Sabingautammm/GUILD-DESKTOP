@@ -46,14 +46,14 @@ export default function MediaTab() {
   if (isLoading) {
     return (
       <div className="py-12 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+        <FiLoader className="animate-spin text-2xl text-gold-400" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-xs text-red-600">
+      <div className="flex items-center gap-2 rounded-lg bg-red-950/40 border border-red-500/30 px-4 py-3 text-xs text-red-300">
         <FiAlertCircle /> {error}
       </div>
     );
@@ -61,9 +61,9 @@ export default function MediaTab() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-[#EDE1CB] bg-white p-8 text-center">
-        <p className="text-sm font-semibold text-[#17120D]">Nothing awaiting approval</p>
-        <p className="mt-1 text-xs text-slate-400">
+      <div className="card-surface p-8 text-center">
+        <p className="text-sm font-bold text-cream">Nothing awaiting approval</p>
+        <p className="mt-1 text-xs text-guild-500">
           New member uploads land here for guild admins to review before they go public.
         </p>
       </div>
@@ -72,20 +72,20 @@ export default function MediaTab() {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
+      <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">
         Pending media ({items.length})
       </h2>
       {items.map((m) => (
-        <div key={m._id} className="flex items-center gap-4 rounded-xl border border-[#EDE1CB] bg-white p-4">
+        <div key={m._id} className="flex items-center gap-4 rounded-xl card-surface p-4">
           {m.type === "video" ? (
-            <video src={resolveMediaUrl(m.url)} className="h-16 w-24 rounded-lg bg-black object-contain" muted />
+            <video src={resolveMediaUrl(m.url)} className="h-16 w-24 rounded-lg bg-guild-950 object-contain" muted />
           ) : (
-            <img src={resolveMediaUrl(m.url)} alt="" className="h-16 w-24 rounded-lg bg-black object-contain" />
+            <img src={resolveMediaUrl(m.url)} alt="" className="h-16 w-24 rounded-lg bg-guild-950 object-contain" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#17120D] truncate">{m.uploaderId?.name ?? "Unknown player"}</p>
-            <p className="text-[11px] text-slate-400 truncate">{m.url}</p>
-            <p className="text-[11px] text-slate-400 capitalize">
+            <p className="text-sm font-bold text-cream truncate">{m.uploaderId?.name ?? "Unknown player"}</p>
+            <p className="text-[11px] text-guild-500 truncate">{m.url}</p>
+            <p className="text-[11px] text-guild-500 capitalize">
               {m.type} · {m.category} · {m.visibility}
             </p>
           </div>
@@ -93,14 +93,14 @@ export default function MediaTab() {
             <button
               onClick={() => decide(m, "approved")}
               disabled={busyId === m._id}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
             >
               {busyId === m._id ? <FiLoader className="animate-spin" /> : <FiCheck />} Approve
             </button>
             <button
               onClick={() => decide(m, "rejected")}
               disabled={busyId === m._id}
-              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50"
             >
               <FiX /> Reject
             </button>

@@ -22,37 +22,37 @@ export default function ActivityTab() {
   if (isLoading) {
     return (
       <div className="py-12 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+        <FiLoader className="animate-spin text-2xl text-gold-400" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-xs text-red-600">
+      <div className="flex items-center gap-2 rounded-lg bg-red-950/40 border border-red-500/30 px-4 py-3 text-xs text-red-300">
         <FiAlertCircle /> {error}
       </div>
     );
   }
 
   if (logs.length === 0) {
-    return <p className="text-xs text-slate-400">No recorded changes yet. Role changes, kicks, transfers and approvals appear here.</p>;
+    return <p className="text-xs text-guild-500">No recorded changes yet. Role changes, kicks, transfers and approvals appear here.</p>;
   }
 
   return (
-    <ul className="divide-y divide-[#F3EADA] rounded-xl border border-[#EDE1CB] bg-white">
+    <ul className="divide-y divide-guild-800 rounded-xl card-surface">
       {logs.map((log) => (
         <li key={log._id} className="px-4 py-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm font-medium text-[#17120D]">
-              <span className="font-bold">{log.field}</span>
-              {log.oldValue && <span className="text-slate-400">: {truncate(log.oldValue)}</span>}
-              {log.oldValue && log.newValue && <span className="text-slate-400"> → </span>}
-              {log.newValue && <span className="font-semibold text-[#B9660B]">{truncate(log.newValue)}</span>}
+            <p className="text-sm text-guild-300">
+              <span className="font-bold text-cream">{log.field}</span>
+              {log.oldValue && <span className="text-guild-500">: {truncate(log.oldValue)}</span>}
+              {log.oldValue && log.newValue && <span className="text-guild-500"> → </span>}
+              {log.newValue && <span className="font-bold text-gold-400">{truncate(log.newValue)}</span>}
             </p>
-            <span className="text-[11px] text-slate-400 shrink-0">{new Date(log.createdAt).toLocaleString()}</span>
+            <span className="text-[11px] text-guild-500 shrink-0">{new Date(log.createdAt).toLocaleString()}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-[11px] text-guild-500 mt-1">
             {log.entityType} · by {log.changedByUserId?.name ?? "Unknown"}
           </p>
         </li>

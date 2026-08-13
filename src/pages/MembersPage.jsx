@@ -34,13 +34,13 @@ export default function MembersPage() {
 
   if (membership && membership.status === "pending_approval") {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E3A012]/15 text-[#B9660B]">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center animate-fade-up">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold-500/15 text-gold-400 ring-1 ring-gold-500/30">
           <FiClock className="text-2xl" />
         </span>
-        <h1 className="mt-4 text-xl font-bold text-[#17120D]">Application pending</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Your request to join guild <span className="font-mono font-semibold">{membership.guildUid}</span> is awaiting
+        <h1 className="mt-4 text-xl font-display text-cream">Application pending</h1>
+        <p className="mt-2 text-sm text-guild-400">
+          Your request to join guild <span className="font-mono font-semibold text-gold-300">{membership.guildUid}</span> is awaiting
           approval by the guild's admins.
         </p>
       </div>
@@ -49,34 +49,35 @@ export default function MembersPage() {
 
   if (membership && membership.status === "active") {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16">
-        <div className="rounded-2xl bg-gradient-to-br from-[#17120D] via-[#3A2712] to-[#B9660B] p-8 text-white">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#FFD873]">Your Guild</p>
-          <h1 className="mt-2 text-2xl font-bold">{guild?.name ?? `Guild ${membership.guildUid}`}</h1>
-          <p className="mt-1 text-xs font-mono text-white/50">Guild UID {membership.guildUid}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-[#FFD873] ring-1 ring-white/10">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 animate-fade-up">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-guild-900 via-guild-850 to-guild-900 ring-1 ring-gold-500/30 p-8 text-cream">
+          <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gold-500/10 blur-3xl" />
+          <p className="relative text-[11px] font-bold uppercase tracking-[0.25em] text-gold-400">Your Guild</p>
+          <h1 className="relative mt-2 text-2xl font-display">{guild?.name ?? `Guild ${membership.guildUid}`}</h1>
+          <p className="relative mt-1 text-xs font-mono text-guild-500">Guild UID {membership.guildUid}</p>
+          <div className="relative mt-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full gold-gradient-bg px-3 py-1 text-[11px] font-bold text-guild-950">
               {ROLE_LABEL[membership.role] ?? membership.role}
             </span>
           </div>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="relative mt-6 flex flex-wrap gap-3">
             <button
               onClick={() => navigate(`/guild/${membership.guildUid}`)}
-              className="rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-5 py-2 text-sm font-bold text-[#17120D] hover:brightness-105"
+              className="rounded-full gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 gold-glow hover:brightness-110"
             >
               View your guild
             </button>
             {isAdmin && (
               <button
                 onClick={() => navigate("/admin/members")}
-                className="flex items-center gap-2 rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white hover:bg-white/10"
+                className="flex items-center gap-2 rounded-full border border-guild-600 px-5 py-2 text-sm font-semibold text-guild-200 hover:bg-guild-800"
               >
                 <FiShield className="text-xs" /> Admin dashboard
               </button>
             )}
           </div>
         </div>
-        <p className="mt-4 text-center text-xs text-slate-400">
+        <p className="mt-4 text-center text-xs text-guild-500">
           You're already a member of a guild — members belong to one guild at a time.
         </p>
       </div>
@@ -85,34 +86,34 @@ export default function MembersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 animate-fade-up">
         <div>
-          <h1 className="text-2xl font-bold text-[#17120D]">Find a guild</h1>
-          <p className="text-sm text-slate-500 mt-1">Search by Guild UID or name, then apply to join.</p>
+          <h1 className="text-2xl font-display text-cream">Find a guild</h1>
+          <p className="text-sm text-guild-400 mt-1">Search by Guild UID or name, then apply to join.</p>
         </div>
       </div>
 
       <div className="relative max-w-md mb-6">
-        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search Guild UID or name…"
-          className="w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+          className="w-full rounded-full input-dark pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
         />
       </div>
 
       {isLoading ? (
         <div className="py-16 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+          <FiLoader className="animate-spin text-2xl text-gold-400" />
         </div>
       ) : error ? (
         <div className="py-16 text-center">
-          <FiAlertCircle className="mx-auto text-3xl text-[#B9660B]" />
-          <p className="mt-3 text-sm font-semibold text-[#17120D]">{error}</p>
+          <FiAlertCircle className="mx-auto text-3xl text-gold-400" />
+          <p className="mt-3 text-sm font-semibold text-cream">{error}</p>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="py-16 text-center text-sm text-slate-400">
+        <p className="py-16 text-center text-sm text-guild-500">
           No guilds found. {isAuthenticated && "Whoever creates a UID first becomes its Leader."}
         </p>
       ) : (
@@ -121,24 +122,24 @@ export default function MembersPage() {
             <button
               key={g._id}
               onClick={() => navigate(`/guild/${g.guildUid}`)}
-              className="text-left rounded-xl border border-[#EDE1CB] bg-white p-5 hover:shadow-md transition-shadow"
+              className="text-left card-surface p-5 hover:border-gold-500/40 hover:-translate-y-0.5 transition-all"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E3A012]/10 text-lg font-bold text-[#B9660B]">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-500/10 text-lg font-bold text-gold-400 ring-1 ring-gold-500/30">
                   {g.name.charAt(0).toUpperCase()}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-[#17120D] truncate">{g.name}</p>
-                  <p className="text-[11px] font-mono text-slate-400">UID {g.guildUid}</p>
+                  <p className="text-sm font-bold text-cream truncate">{g.name}</p>
+                  <p className="text-[11px] font-mono text-guild-500">UID {g.guildUid}</p>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-slate-500 line-clamp-2">{g.slogan}</p>
-<div className="mt-3 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+              <p className="mt-3 text-xs text-guild-400 line-clamp-2">{g.slogan}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-[11px] text-guild-500 flex items-center gap-1">
                   <FiUsers /> {g.memberCount ?? "…"} active
                 </span>
                 {isFree && (
-                  <span className="rounded-full bg-[#E3A012]/15 px-2.5 py-1 text-[11px] font-bold text-[#8a5200]">
+                  <span className="rounded-full gold-gradient-bg px-2.5 py-1 text-[11px] font-bold text-guild-950">
                     Apply
                   </span>
                 )}

@@ -22,11 +22,11 @@ function StatusBadge({ status }) {
   const registered = status === "registered";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-        registered ? "bg-green-600/10 text-green-700" : "bg-slate-200 text-slate-600"
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+        registered ? "bg-green-500/10 text-green-300" : "bg-guild-800 text-guild-400"
       }`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${registered ? "bg-green-600" : "bg-slate-400"}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${registered ? "bg-green-400" : "bg-guild-600"}`} />
       {registered ? "GUILD App User" : "Not Registered"}
     </span>
   );
@@ -150,23 +150,23 @@ export default function GuildPlayersTab() {
   return (
     <section className="space-y-6">
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-xs text-red-600">
+        <div className="flex items-center gap-2 rounded-lg bg-red-950/40 border border-red-500/30 px-4 py-3 text-xs text-red-300">
           <FiAlertCircle /> {error}
         </div>
       )}
 
-      <div className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
+      <div className="card-surface p-6 space-y-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Guild Players</h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Guild Players</h2>
+            <p className="text-xs text-guild-500 mt-1">
               {memberCount} total — {registeredCount} GUILD App Users · {notRegisteredCount} Not Registered
             </p>
           </div>
           {role !== "member" && (
             <button
               onClick={() => setShowAddForm((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110"
             >
               <FiUserPlus className="text-sm" /> Add Guild Player
             </button>
@@ -174,8 +174,8 @@ export default function GuildPlayersTab() {
         </div>
 
         {showAddForm && (
-          <div className="rounded-lg bg-[#FAF6EE] border border-[#EDE1CB] p-4 space-y-3">
-            <label className="text-xs font-semibold text-slate-800">Find a player by their in-game UID</label>
+          <div className="rounded-lg bg-guild-900 border border-guild-700 p-4 space-y-3">
+            <label className="text-xs font-bold text-guild-300">Find a player by their in-game UID</label>
             <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-3">
               <select
                 value={form.game}
@@ -183,7 +183,7 @@ export default function GuildPlayersTab() {
                   setForm((f) => ({ ...f, game: e.target.value }));
                   setSearchResult(null);
                 }}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="rounded-lg input-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               >
                 {GAMES.map((g) => (
                   <option key={g} value={g}>
@@ -192,7 +192,7 @@ export default function GuildPlayersTab() {
                 ))}
               </select>
               <div className="relative">
-                <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
                 <input
                   inputMode="numeric"
                   value={form.gameUid}
@@ -201,65 +201,65 @@ export default function GuildPlayersTab() {
                     setSearchResult(null);
                   }}
                   placeholder="Game UID (required)"
-                  className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
                 />
               </div>
               <button
                 onClick={runSearch}
                 disabled={searching || !form.gameUid.trim()}
-                className="rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+                className="rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
               >
                 {searching ? "Searching…" : "Search Player"}
               </button>
             </div>
 
-            {formError && <p className="text-xs text-red-500">{formError}</p>}
+            {formError && <p className="text-xs text-red-400">{formError}</p>}
 
             {searchResult && (
-              <div className="rounded-lg border border-[#E3A012]/30 bg-white p-4 space-y-3">
+              <div className="rounded-lg border border-gold-500/30 bg-guild-900 p-4 space-y-3">
                 {searchResult.found ? (
                   <>
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#17120D]">{searchResult.user.inGameName || searchResult.user.name}</p>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-sm font-bold text-cream">{searchResult.user.inGameName || searchResult.user.name}</p>
+                        <p className="text-[11px] text-guild-500">
                           {searchResult.user.game} · UID {searchResult.user.gameUid}
                         </p>
                       </div>
                       {searchResult.inRoster && (
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+                        <span className="rounded-full bg-guild-800 px-2.5 py-1 text-[10px] font-bold text-guild-400">
                           Already in this guild's roster
                         </span>
                       )}
                       {!searchResult.inRoster && searchResult.addable && (
-                        <span className="rounded-full bg-green-600/10 px-2.5 py-1 text-[10px] font-semibold text-green-700">
+                        <span className="rounded-full bg-green-500/10 px-2.5 py-1 text-[10px] font-bold text-green-300">
                           Free Player
                         </span>
                       )}
                       {!searchResult.inRoster && !searchResult.addable && (
-                        <span className="rounded-full bg-red-600/10 px-2.5 py-1 text-[10px] font-semibold text-red-700">
+                        <span className="rounded-full bg-red-500/10 px-2.5 py-1 text-[10px] font-bold text-red-300">
                           Already in a guild
                         </span>
                       )}
                     </div>
 
                     {!searchResult.inRoster && !searchResult.addable && searchResult.currentGuild && (
-                      <p className="text-xs text-slate-500">
-                        Currently <span className="font-semibold text-[#17120D]">{searchResult.currentGuild.name}</span> as{" "}
-                        <span className="font-semibold text-[#17120D]">{ROLE_LABEL[searchResult.currentGuild.role] ?? searchResult.currentGuild.role}</span>.
+                      <p className="text-xs text-guild-500">
+                        Currently <span className="font-semibold text-cream">{searchResult.currentGuild.name}</span> as{" "}
+                        <span className="font-semibold text-cream">{ROLE_LABEL[searchResult.currentGuild.role] ?? searchResult.currentGuild.role}</span>.
                         This player must leave that guild before being added here.
                       </p>
                     )}
 
                     {searchResult.inRoster && (
-                      <p className="text-xs text-slate-500">This Game UID is already on this guild's roster.</p>
+                      <p className="text-xs text-guild-500">This Game UID is already on this guild's roster.</p>
                     )}
 
                     {!searchResult.inRoster && searchResult.addable && (
                       <button
                         onClick={() => runAdd(searchResult.user.inGameName)}
                         disabled={busyId === "__add__"}
-                        className="rounded-lg bg-[#B9660B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                        className="rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
                       >
                         {busyId === "__add__" ? "Adding…" : "Add to Guild"}
                       </button>
@@ -269,14 +269,14 @@ export default function GuildPlayersTab() {
                   <>
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div>
-                        <p className="text-sm font-bold text-[#17120D]">No App User Found</p>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-sm font-bold text-cream">No App User Found</p>
+                        <p className="text-[11px] text-guild-500">
                           This player has not created an account in the application. You can still add them to the guild
                           roster as a game-only player — they can link their account later.
                         </p>
                       </div>
                       {searchResult.inRoster && (
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-semibold text-slate-500">
+                        <span className="rounded-full bg-guild-800 px-2.5 py-1 text-[10px] font-bold text-guild-400">
                           Already in roster
                         </span>
                       )}
@@ -287,12 +287,12 @@ export default function GuildPlayersTab() {
                           value={form.inGameName}
                           onChange={(e) => setForm((f) => ({ ...f, inGameName: e.target.value }))}
                           placeholder="In-Game Name (optional)"
-                          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          className="min-w-0 flex-1 input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
                         />
                         <button
                           onClick={() => runAdd(form.inGameName.trim())}
                           disabled={busyId === "__add__"}
-                          className="rounded-lg bg-[#B9660B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                          className="rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
                         >
                           {busyId === "__add__" ? "Adding…" : "Add as game-only player"}
                         </button>
@@ -307,12 +307,12 @@ export default function GuildPlayersTab() {
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by in-game name or UID…"
-              className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
             />
           </div>
           <div className="flex gap-1 overflow-x-auto">
@@ -320,8 +320,8 @@ export default function GuildPlayersTab() {
               <button
                 key={f.key}
                 onClick={() => setStatusFilter(f.key)}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                  statusFilter === f.key ? "bg-[#17120D] text-[#FFD873]" : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors ${
+                  statusFilter === f.key ? "gold-gradient-bg text-guild-950" : "bg-guild-800 text-guild-400 hover:bg-guild-700"
                 }`}
               >
                 {f.label}
@@ -333,23 +333,23 @@ export default function GuildPlayersTab() {
 
       {isLoading ? (
         <div className="py-12 flex justify-center">
-          <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+          <FiLoader className="animate-spin text-2xl text-gold-400" />
         </div>
       ) : filtered.length === 0 ? (
-        <p className="text-xs text-slate-400">No players match your filters yet.</p>
+        <p className="text-xs text-guild-500">No players match your filters yet.</p>
       ) : (
-        <ul className="divide-y divide-[#F3EADA] rounded-xl border border-[#EDE1CB] bg-white">
+        <ul className="divide-y divide-guild-800 rounded-xl card-surface">
           {filtered.map((p) => {
             const displayName = p.inGameName || p.userId?.name || "Player";
             return (
               <li key={p._id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
                     {displayName.charAt(0).toUpperCase()}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#17120D] truncate">{displayName}</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-sm font-bold text-cream truncate">{displayName}</p>
+                    <p className="text-[11px] text-guild-500">
                       {p.game} · UID {p.gameUid} · {ROLE_LABEL[p.role] ?? p.role}
                     </p>
                   </div>
@@ -360,7 +360,7 @@ export default function GuildPlayersTab() {
                     <button
                       disabled={busyId === p._id}
                       onClick={() => runRemove(p._id)}
-                      className="rounded-lg border border-slate-300 p-1.5 text-slate-400 hover:bg-red-100 hover:text-red-600 disabled:opacity-50"
+                      className="rounded-lg border border-guild-600 p-1.5 text-guild-500 hover:bg-red-950/60 hover:text-red-300 disabled:opacity-50"
                       aria-label="Remove player from guild"
                     >
                       <FiTrash2 className="text-sm" />

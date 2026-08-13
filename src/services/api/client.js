@@ -21,6 +21,58 @@ export class ApiError extends Error {
   }
 }
 
+// Honeypot: timestamp when page loaded (bots often submit immediately)
+const PAGE_LOAD_TIME = Date.now();
+
+// Generate a simple client fingerprint for bot detection
+function generateClientFingerprint() {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.textBaseline = 'top';
+  ctx.font = '14px Arial';
+  ctx.fillText('fingerprint', 2, 2);
+  const canvasFingerprint = canvas.toDataURL();
+
+  const components = [
+    navigator.userAgent,
+    navigator.language,
+    screen.width + 'x' + screen.height,
+    screen.colorDepth,
+    new Date().getTimezoneOffset(),
+    canvasFingerprint.substring(0, 50),
+  ].join('|');
+
+  // Simple hash
+  let hash = 0;
+  for (let i = 0; i < components.length; i++) {
+    hash = ((hash << 5) - hash) + components.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+const CLIENT_FINGERPRINT = generateClientFingerprint();
+
+function addBotProtectionFields(body) {
+  if (!body || typeof body !== 'object') return body;
+
+  const protectedBody = { ...body };
+
+  // Add request timestamp (honeypot - bots often submit too fast)
+  protectedBody._request_ts = Date.now();
+  protectedBody._page_load_ts = PAGE_LOAD_TIME;
+
+  // Add client fingerprint
+  protectedBody._client_fp = CLIENT_FINGERPRINT;
+
+  // Add hCaptcha token if available (from global window.hcaptchaToken)
+  if (typeof window !== 'undefined' && window.hcaptchaToken) {
+    protectedBody.hcaptcha_token = window.hcaptchaToken;
+  }
+
+  return protectedBody;
+}
+
 export async function apiFetch(path, options = {}) {
   const { timeoutMs = 10000, headers, body, ...rest } = options;
   const controller = new AbortController();
@@ -34,7 +86,11 @@ export async function apiFetch(path, options = {}) {
     ...(!isFormData && { "Content-Type": "application/json" }),
     ...headers,
   };
-  const requestBody = isFormData ? body : body !== undefined ? JSON.stringify(body) : undefined;
+  const requestBody = isFormData
+    ? body
+    : body !== undefined
+      ? JSON.stringify(addBotProtectionFields(body))
+      : undefined;
 
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {

@@ -23,7 +23,7 @@ const ToastDemoPage = lazy(() => import("./pages/ToastDemo"));
 function RouteFallback() {
   return (
     <div className="min-h-[40vh] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-amber-500" />
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-guild-700 border-t-gold-500" />
     </div>
   );
 }
@@ -54,11 +54,11 @@ class ErrorBoundary extends Component {
     if (this.state.hasError) {
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-center px-4">
-          <p className="text-3xl font-bold text-[#17120D]">Something went wrong</p>
-          <p className="text-sm text-[#6B5B45]">An unexpected error occurred on this page.</p>
+          <p className="text-3xl font-bold text-cream font-display">Something went wrong</p>
+          <p className="text-sm text-guild-300">An unexpected error occurred on this page.</p>
           <button
             onClick={this.handleReset}
-            className="mt-2 rounded-full bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873] hover:opacity-90"
+            className="mt-2 rounded-full gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 hover:brightness-110"
           >
             Reload app
           </button>
@@ -76,8 +76,8 @@ function AppRoutes() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-300 border-t-amber-500" />
+      <div className="min-h-screen bg-guild-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-guild-700 border-t-gold-500" />
       </div>
     );
   }
@@ -127,8 +127,8 @@ function AppRoutes() {
 function NotFoundPage() {
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center gap-2 text-center">
-      <p className="text-3xl font-bold text-[#17120D]">404</p>
-      <p className="text-sm text-[#6B5B45]">Page not found. Check the URL or head back home.</p>
+      <p className="text-3xl font-bold font-display gold-gradient-text">404</p>
+      <p className="text-sm text-guild-300">Page not found. Check the URL or head back home.</p>
     </div>
   );
 }
@@ -138,7 +138,7 @@ export default function App() {
     <ToastProvider>
       <AuthProvider>
         <BrowserRouter>
-          <div className="min-h-screen flex flex-col bg-slate-100">
+          <div className="min-h-screen flex flex-col bg-guild-950">
             <Navbar />
             <main className="flex-1 pt-16 pb-20 lg:pt-16 lg:pb-0">
               <AppRoutes />

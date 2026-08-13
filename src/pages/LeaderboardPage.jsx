@@ -1,41 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { PiTrophyFill, PiUsersFill } from "react-icons/pi";
 import { FiLoader, FiAlertCircle, FiChevronDown, FiUsers } from "react-icons/fi";
+import { PiTrophyFill, PiUsersFill, PiMedalFill } from "react-icons/pi";
 import { getGuildLeaderboard, getPlayerLeaderboard } from "../services/api/leaderboardApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 
-const RANK_STYLES = {
-  gold: { ring: "ring-2 ring-[#E3A012]/40", badge: "bg-gradient-to-br from-[#FFD873] via-[#E3A012] to-[#B9660B] text-[#17120D]", label: "bg-[#E3A012]/15 text-[#8a5200]" },
-  silver: { ring: "ring-2 ring-slate-300/60", badge: "bg-gradient-to-br from-slate-200 to-slate-400 text-slate-800", label: "bg-slate-100 text-slate-600" },
-  bronze: { ring: "ring-2 ring-[#B9660B]/40", badge: "bg-gradient-to-br from-[#D98745] to-[#8a3d00] text-white", label: "bg-[#B9660B]/15 text-[#8a3d00]" },
-  plain: { ring: "", badge: "bg-[#F3EADA] text-[#6B5B45]", label: "bg-slate-100 text-slate-500" },
-};
-
-const rankStyleFor = (i) =>
-  i === 0 ? RANK_STYLES.gold : i === 1 ? RANK_STYLES.silver : i === 2 ? RANK_STYLES.bronze : RANK_STYLES.plain;
-
-function ScoreStat({ label, value, sub }) {
+function Avatar({ user, inGameName }) {
+  const name = inGameName || user?.name || "Player";
+  const src = user?.avatar ? resolveMediaUrl(user.avatar) : null;
+  const initial = name.charAt(0).toUpperCase();
+  const size = "h-9 w-9";
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        className={`${size} shrink-0 rounded-full object-cover ring-2 ring-gold-500/30`}
+        onError={(e) => { e.currentTarget.style.display = "none"; }}
+      />
+    );
+  }
   return (
-    <div className="rounded-lg bg-[#FAF6EE] border border-[#EDE1CB] px-3 py-2 text-center">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45]">{label}</p>
-      <p className="text-sm sm:text-base font-bold text-[#17120D]">{value}</p>
-      {sub && <p className="text-[10px] text-slate-400 font-mono">{sub}</p>}
-    </div>
-  );
-}
-
-function Avatar({ user, inGameName, size = "h-10 w-10 text-sm" }) {
-  const initial = (user?.name || inGameName || "?").charAt(0).toUpperCase();
-  return user?.avatar ? (
-    <img
-      src={resolveMediaUrl(user.avatar)}
-      alt={user?.name || "avatar"}
-      className={`${size} shrink-0 rounded-full object-cover ring-1 ring-[#E3A012]/30`}
-      onError={(e) => { e.currentTarget.style.display = "none"; }}
-    />
-  ) : (
-    <span className={`${size} flex shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 font-bold text-[#B9660B]`}>
+    <span className={`${size} flex shrink-0 items-center justify-center rounded-full bg-gold-500/10 font-bold text-gold-400 ring-1 ring-gold-500/30`}>
       {initial}
     </span>
   );
@@ -43,10 +29,10 @@ function Avatar({ user, inGameName, size = "h-10 w-10 text-sm" }) {
 
 function PlayerModeRow({ mode, stats }) {
   return (
-    <div className="rounded-lg border border-[#EDE1CB] bg-white px-3 py-2">
+    <div className="rounded-lg border border-guild-700 bg-guild-900 px-3 py-2">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[11px] font-semibold text-[#17120D]">{mode.title}</p>
-        <p className="text-[10px] text-slate-400">{stats.rankPoints !== undefined ? `${stats.rankPoints.toLocaleString()} pts` : ""}</p>
+        <p className="text-[11px] font-bold text-cream">{mode.title}</p>
+        <p className="text-[10px] text-guild-500">{stats.rankPoints !== undefined ? `${stats.rankPoints.toLocaleString()} pts` : ""}</p>
       </div>
       <div className="grid grid-cols-4 gap-1 text-center">
         <ModeStat label="M" value={stats.matches} />
@@ -61,8 +47,8 @@ function PlayerModeRow({ mode, stats }) {
 function ModeStat({ label, value }) {
   return (
     <div>
-      <p className="text-[9px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="text-[11px] font-bold text-[#17120D]">{value ?? 0}</p>
+      <p className="text-[9px] font-medium uppercase tracking-wide text-guild-500">{label}</p>
+      <p className="text-[11px] font-bold text-cream">{value ?? 0}</p>
     </div>
   );
 }
@@ -74,6 +60,22 @@ const STAT_MODES = [
 ];
 
 const fmt = (v, d = 1) => (v ?? 0).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+
+function ScoreStat({ label, value }) {
+  return (
+    <div className="rounded-lg bg-guild-900 border border-guild-800 px-3 py-2">
+      <p className="text-[9px] font-medium uppercase tracking-wide text-guild-500">{label}</p>
+      <p className="text-sm font-bold text-cream">{value}</p>
+    </div>
+  );
+}
+
+function rankStyleFor(i) {
+  if (i === 0) return { badge: "gold-gradient-bg text-guild-950", ring: "ring-1 ring-gold-500/40 bg-guild-900" };
+  if (i === 1) return { badge: "bg-guild-600 text-guild-100", ring: "bg-guild-900" };
+  if (i === 2) return { badge: "bg-guild-700 text-gold-300", ring: "bg-guild-900" };
+  return { badge: "bg-guild-800 text-guild-400", ring: "bg-guild-900" };
+}
 
 export default function LeaderboardPage() {
   const [guilds, setGuilds] = useState([]);
@@ -111,7 +113,7 @@ export default function LeaderboardPage() {
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+        <FiLoader className="animate-spin text-2xl text-gold-400" />
       </div>
     );
   }
@@ -119,64 +121,97 @@ export default function LeaderboardPage() {
   if (error) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
-        <FiAlertCircle className="mx-auto text-3xl text-[#B9660B]" />
-        <p className="mt-3 text-sm font-semibold text-[#17120D]">{error}</p>
-        <p className="mt-1 text-xs text-slate-400">Please try again later.</p>
+        <FiAlertCircle className="mx-auto text-3xl text-gold-400" />
+        <p className="mt-3 text-sm font-semibold text-cream">{error}</p>
+        <p className="mt-1 text-xs text-guild-500">Please try again later.</p>
       </div>
     );
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-[#17120D]">Leaderboards</h1>
-        <p className="text-sm text-slate-500 mt-1">Ranked by season performance across BR, CS and Clash Squad.</p>
+      <div className="animate-fade-up">
+        <h1 className="text-2xl sm:text-3xl font-display text-cream">Leaderboards</h1>
+        <p className="text-sm text-guild-400 mt-1">Ranked by season performance across BR, CS and Clash Squad.</p>
       </div>
 
-      <section className="rounded-xl border border-[#EDE1CB] bg-white overflow-hidden">
-        <div className="flex items-center gap-2 border-b border-[#EDE1CB] px-5 py-4">
-          <PiTrophyFill className="text-[#E3A012]" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Top Guilds</h2>
+      {guilds.length > 0 && (
+        <section className="animate-fade-up">
+          <div className="grid grid-cols-3 gap-3 items-end">
+            {[1, 0, 2].map((pos) => {
+              const g = guilds[pos];
+              if (!g) return <div key={pos} />;
+              const isFirst = pos === 0;
+              return (
+                <Link
+                  key={g._id}
+                  to={`/guild/${g.guildUid}`}
+                  className={`flex flex-col items-center gap-2 rounded-2xl border p-4 sm:p-6 text-center transition-all hover:-translate-y-1 ${
+                    isFirst
+                      ? "border-gold-500/40 bg-gradient-to-b from-gold-500/15 to-guild-900 gold-glow"
+                      : "border-guild-700 bg-guild-900 hover:border-gold-500/30"
+                  }`}
+                >
+                  <PiMedalFill className={`text-2xl ${isFirst ? "text-gold-400" : "text-guild-600"}`} />
+                  <span className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full gold-gradient-bg text-sm sm:text-base font-bold text-guild-950">
+                    {g.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="text-xs sm:text-sm font-bold text-cream truncate w-full">{g.name}</span>
+                  <span className="text-[10px] font-mono text-guild-500">UID {g.guildUid}</span>
+                  <span className={`font-display ${isFirst ? "text-gold-300 text-xl sm:text-2xl" : "text-cream text-base sm:text-lg"}`}>
+                    {g.score.toLocaleString()}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      <section className="card-surface overflow-hidden animate-fade-up">
+        <div className="flex items-center gap-2 border-b border-guild-700 px-5 py-4">
+          <PiTrophyFill className="text-gold-400" />
+          <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Top Guilds</h2>
         </div>
         {guilds.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-slate-400 text-center">No guilds ranked yet.</p>
+          <p className="px-5 py-8 text-sm text-guild-500 text-center">No guilds ranked yet.</p>
         ) : (
-          <ul className="divide-y divide-[#F3EADA]">
+          <ul className="divide-y divide-guild-800">
             {guilds.map((g, i) => (
               <li key={g._id} className="flex items-center gap-4 px-5 py-3">
-                <span className={`w-8 text-center text-sm font-bold ${i < 3 ? "text-[#E3A012]" : "text-slate-300"}`}>
+                <span className={`w-8 text-center text-sm font-display ${i < 3 ? "text-gold-400" : "text-guild-600"}`}>
                   {i + 1}
                 </span>
                 <Link to={`/guild/${g.guildUid}`} className="flex items-center gap-3 min-w-0 flex-1 group">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
                     {g.name.charAt(0).toUpperCase()}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#17120D] group-hover:underline truncate">{g.name}</p>
-                    <p className="text-[11px] font-mono text-slate-400">UID {g.guildUid}</p>
+                    <p className="text-sm font-bold text-cream group-hover:text-gold-300 truncate">{g.name}</p>
+                    <p className="text-[11px] font-mono text-guild-500">UID {g.guildUid}</p>
                   </div>
                 </Link>
-                <span className="text-sm font-bold text-[#17120D]">{g.score.toLocaleString()}</span>
+                <span className="text-sm font-bold text-cream">{g.score.toLocaleString()}</span>
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      <section className="rounded-xl border border-[#EDE1CB] bg-white overflow-hidden">
-        <div className="flex items-center gap-2 border-b border-[#EDE1CB] px-5 py-4">
-          <PiUsersFill className="text-[#E3A012]" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Top Players</h2>
-          <span className="ml-auto text-[11px] text-slate-400">Top {Math.min(players.length, 100)} · Final Performance Score</span>
+      <section className="card-surface overflow-hidden animate-fade-up">
+        <div className="flex items-center gap-2 border-b border-guild-700 px-5 py-4">
+          <PiUsersFill className="text-gold-400" />
+          <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Top Players</h2>
+          <span className="ml-auto text-[11px] text-guild-500">Top {Math.min(players.length, 100)} · Final Performance Score</span>
         </div>
 
         {players.length === 0 ? (
           <div className="px-5 py-8 text-center">
-            <p className="text-sm text-slate-400">No players ranked yet.</p>
-            <p className="mt-1 text-xs text-slate-400">Players appear here once they log in and record season statistics.</p>
+            <p className="text-sm text-guild-500">No players ranked yet.</p>
+            <p className="mt-1 text-xs text-guild-500">Players appear here once they log in and record season statistics.</p>
           </div>
         ) : (
-          <ul className="divide-y divide-[#F3EADA]">
+          <ul className="divide-y divide-guild-800">
             {players.map((p, i) => {
               const style = rankStyleFor(i);
               const isOpen = expanded.has(p.profileId);
@@ -189,10 +224,10 @@ export default function LeaderboardPage() {
                     </span>
                     <Avatar user={p.user} inGameName={p.inGameName} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-[#17120D] truncate">{p.inGameName || p.user?.name || "Player"}</p>
-                      <p className="text-[11px] text-slate-400 flex items-center gap-1 truncate">
+                      <p className="text-sm font-bold text-cream truncate">{p.inGameName || p.user?.name || "Player"}</p>
+                      <p className="text-[11px] text-guild-500 flex items-center gap-1 truncate">
                         {p.guildName ? (
-                          <Link to={`/guild/${p.guildUid}`} className="flex items-center gap-1 hover:underline text-[#B9660B]">
+                          <Link to={`/guild/${p.guildUid}`} className="flex items-center gap-1 hover:underline text-gold-400">
                             <FiUsers className="text-[10px]" /> {p.guildName}
                           </Link>
                         ) : (
@@ -201,8 +236,8 @@ export default function LeaderboardPage() {
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-lg font-black text-[#17120D]">{fmt(p.finalScore ?? 0)}</p>
-                      <p className="text-[10px] uppercase tracking-wide text-[#6B5B45]">Score</p>
+                      <p className="text-lg font-display text-cream">{fmt(p.finalScore ?? 0)}</p>
+                      <p className="text-[10px] uppercase tracking-wide text-guild-500">Score</p>
                     </div>
                   </div>
 
@@ -214,7 +249,7 @@ export default function LeaderboardPage() {
                     <ScoreStat label="Wins" value={t.wins ?? 0} />
                     <button
                       onClick={() => toggleExpanded(p.profileId)}
-                      className="flex items-center justify-center gap-1 rounded-lg bg-[#FAF6EE] border border-[#EDE1CB] px-3 py-2 text-xs font-semibold text-[#6B5B45] hover:bg-[#FFF6DC]"
+                      className="flex items-center justify-center gap-1 rounded-lg bg-guild-800 border border-guild-700 px-3 py-2 text-xs font-bold text-guild-300 hover:bg-guild-700"
                     >
                       Modes <FiChevronDown className={`text-sm transition-transform ${isOpen ? "rotate-180" : ""}`} />
                     </button>

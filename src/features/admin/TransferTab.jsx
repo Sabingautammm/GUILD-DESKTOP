@@ -94,14 +94,14 @@ export default function TransferTab() {
   if (isLoading && isLeader) {
     return (
       <div className="py-12 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+        <FiLoader className="animate-spin text-2xl text-gold-400" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-xs text-red-600">
+      <div className="flex items-center gap-2 rounded-lg bg-red-950/40 border border-red-500/30 px-4 py-3 text-xs text-red-300">
         <FiAlertCircle /> {error}
       </div>
     );
@@ -110,19 +110,19 @@ export default function TransferTab() {
   return (
     <section className="space-y-6">
       {isLeader && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
+        <div className="card-surface p-6 space-y-4">
           <div className="flex items-center gap-2">
-            <FiShield className="text-[#B9660B]" />
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Transfer leadership</h2>
+            <FiShield className="text-gold-400" />
+            <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Transfer leadership</h2>
           </div>
-          <p className="text-xs text-slate-500">
-            Only <b>Officers</b> and the <b>Acting Leader</b> are eligible. The old Leader keeps full access until the
+          <p className="text-xs text-guild-500">
+            Only <b className="text-cream">Officers</b> and the <b className="text-cream">Acting Leader</b> are eligible. The old Leader keeps full access until the
             new Leader completes setup via the one-time token (60 min expiry) — no leaderless window. Both accounts are
             signed out afterwards.
           </p>
 
           {eligible.length === 0 ? (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-guild-500">
               No eligible targets yet. Promote a member to Officer or assign an Acting Leader first.
             </p>
           ) : (
@@ -130,7 +130,7 @@ export default function TransferTab() {
               <select
                 value={targetId}
                 onChange={(e) => setTargetId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               >
                 <option value="">Choose a target…</option>
                 {eligible.map((m) => (
@@ -142,7 +142,7 @@ export default function TransferTab() {
               <button
                 onClick={handleInitiate}
                 disabled={busy || !targetId}
-                className="w-full rounded-lg bg-[#B30000] py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                className="w-full rounded-lg bg-red-600 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {busy ? "Generating…" : "Generate transfer link"}
               </button>
@@ -151,9 +151,9 @@ export default function TransferTab() {
         </div>
       )}
 
-      <div className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">I am the new leader (setup)</h2>
-          <p className="text-xs text-slate-500">
+      <div className="card-surface p-6 space-y-4">
+        <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">I am the new leader (setup)</h2>
+          <p className="text-xs text-guild-500">
             Got a leadership transfer token? Anyone in the guild who holds it can complete the setup here — the token
             only works for the guild member it was issued to. Enter it with your new Leader password to swap roles.
           </p>
@@ -162,19 +162,19 @@ export default function TransferTab() {
               value={rawToken}
               onChange={(e) => setRawToken(e.target.value)}
               placeholder="One-time token (from your notification)"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
             />
             <input
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="New Leader password"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
             />
             <button
               type="submit"
               disabled={busy || !rawToken || !newPassword}
-              className="w-full rounded-lg bg-[#17120D] py-2 text-sm font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-lg gold-gradient-bg py-2 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
             >
               {busy ? "Working…" : "Complete transfer"}
             </button>
@@ -182,16 +182,16 @@ export default function TransferTab() {
         </div>
 
       {isActingLeader && (
-        <div className="rounded-xl border border-amber-200 bg-[#FFFBEF] p-6 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#8a5200]">Claim leadership</h2>
-          <p className="text-xs text-slate-500">
+        <div className="rounded-xl border border-gold-500/40 bg-guild-800/60 p-6 space-y-3">
+          <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-gold-300">Claim leadership</h2>
+          <p className="text-xs text-guild-500">
             If the Leader's account is deleted or hasn't logged in for 30+ days, you can claim leadership here. This
             follows the same mechanics as a transfer (audit logged).
           </p>
           <button
             onClick={handleClaim}
             disabled={busy}
-            className="rounded-lg bg-[#B30000] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-red-600 px-5 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
           >
             {busy ? "Claiming…" : "Claim Leadership"}
           </button>
@@ -199,7 +199,7 @@ export default function TransferTab() {
       )}
 
       {!isLeader && !isActingLeader && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-guild-500">
           Only the Leader can initiate a transfer. If you were issued a transfer token, use the setup panel above; claim
           requires the Acting Leader role.
         </p>

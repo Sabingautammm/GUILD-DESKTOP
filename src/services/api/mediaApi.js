@@ -38,6 +38,14 @@ export function getPendingMedia() {
   return apiFetch("/media/pending");
 }
 
+export function getMyMedia() {
+  return apiFetch("/media/mine");
+}
+
+export function resubmitMedia(mediaId) {
+  return apiFetch(`/media/${mediaId}/resubmit`, { method: "POST" });
+}
+
 export function toggleReaction(mediaId) {
   return apiFetch(`/media/${mediaId}/react`, { method: "POST" });
 }

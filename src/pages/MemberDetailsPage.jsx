@@ -25,7 +25,7 @@ export default function MemberDetailsPage() {
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+        <FiLoader className="animate-spin text-2xl text-gold-400" />
       </div>
     );
   }
@@ -33,9 +33,9 @@ export default function MemberDetailsPage() {
   if (error || !member) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <FiAlertCircle className="mx-auto text-3xl text-[#B9660B]" />
-        <p className="mt-3 text-sm font-semibold text-[#17120D]">{error ?? "Member not found."}</p>
-        <button onClick={() => navigate("/guild")} className="mt-4 rounded-full bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873]">
+        <FiAlertCircle className="mx-auto text-3xl text-gold-400" />
+        <p className="mt-3 text-sm font-semibold text-cream">{error ?? "Member not found."}</p>
+        <button onClick={() => navigate("/guild")} className="mt-4 rounded-full gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110">
           Back to guilds
         </button>
       </div>
@@ -44,29 +44,30 @@ export default function MemberDetailsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
-      <div className="rounded-2xl bg-gradient-to-br from-[#17120D] via-[#3A2712] to-[#B9660B] p-8 text-white">
-        <div className="flex items-center gap-5">
-          <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10 text-4xl font-bold text-[#FFD873] ring-1 ring-white/10">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-guild-800 via-guild-850 to-guild-900 p-8 text-cream ring-1 ring-gold-500/30">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold-500/10 blur-2xl" />
+        <div className="relative flex items-center gap-5">
+          <span className="flex h-20 w-20 items-center justify-center rounded-2xl gold-gradient-bg text-4xl font-bold text-guild-950 gold-glow">
             {member.name?.charAt(0).toUpperCase() || <FiUser />}
           </span>
           <div>
-            <p className="text-2xl font-bold">{member.name}</p>
-            <p className="text-sm text-[#FFD873]/80">{member.role}</p>
-            <p className="text-xs font-mono text-white/50 mt-1">UID {member.uid}</p>
+            <p className="text-2xl font-display">{member.name}</p>
+            <p className="text-sm text-gold-300">{member.role}</p>
+            <p className="text-xs font-mono text-guild-500 mt-1">UID {member.uid}</p>
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-lg font-bold">{member.level}</p>
-            <p className="text-[10px] uppercase tracking-wide text-white/50">Level</p>
+        <div className="relative mt-6 grid grid-cols-3 gap-3 text-center">
+          <div className="rounded-xl bg-guild-950/60 ring-1 ring-guild-700 p-3">
+            <p className="text-lg font-bold text-gold-300">{member.level}</p>
+            <p className="text-[10px] uppercase tracking-wide text-guild-500">Level</p>
           </div>
-          <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-lg font-bold">{member.status}</p>
-            <p className="text-[10px] uppercase tracking-wide text-white/50">Status</p>
+          <div className="rounded-xl bg-guild-950/60 ring-1 ring-guild-700 p-3">
+            <p className="text-lg font-bold text-gold-300">{member.status}</p>
+            <p className="text-[10px] uppercase tracking-wide text-guild-500">Status</p>
           </div>
-          <div className="rounded-xl bg-white/5 p-3">
-            <p className="text-lg font-bold">{new Date(member.joinDate ?? member.createdAt ?? Date.now()).toLocaleDateString()}</p>
-            <p className="text-[10px] uppercase tracking-wide text-white/50">Joined</p>
+          <div className="rounded-xl bg-guild-950/60 ring-1 ring-guild-700 p-3">
+            <p className="text-lg font-bold text-gold-300">{new Date(member.joinDate ?? member.createdAt ?? Date.now()).toLocaleDateString()}</p>
+            <p className="text-[10px] uppercase tracking-wide text-guild-500">Joined</p>
           </div>
         </div>
       </div>

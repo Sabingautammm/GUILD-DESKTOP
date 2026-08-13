@@ -4,32 +4,32 @@ export default function ToastDemoPage() {
   const { toast, dismissAll } = useToast();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
+    <div className="min-h-screen p-6">
       <div className="mx-auto max-w-lg space-y-6">
-        <h1 className="text-2xl font-bold text-white">Toast Demo</h1>
+        <h1 className="text-2xl font-display text-cream">Toast Demo</h1>
 
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => toast.info("New notification", "You have received a new guild invitation.")}
-            className="rounded-lg bg-[#3b82f6]/20 px-4 py-2 text-sm font-medium text-[#3b82f6] hover:bg-[#3b82f6]/30"
+            className="rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-300 hover:bg-blue-500/30"
           >
             Info Toast
           </button>
           <button
             onClick={() => toast.success("Guild created", "Your guild was successfully created.")}
-            className="rounded-lg bg-[#10b981]/20 px-4 py-2 text-sm font-medium text-[#10b981] hover:bg-[#10b981]/30"
+            className="rounded-lg bg-emerald-500/20 px-4 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-500/30"
           >
             Success Toast
           </button>
           <button
             onClick={() => toast.warning("Low activity", "Your guild has been inactive for 7 days.")}
-            className="rounded-lg bg-[#f59e0b]/20 px-4 py-2 text-sm font-medium text-[#f59e0b] hover:bg-[#f59e0b]/30"
+            className="rounded-lg bg-amber-500/20 px-4 py-2 text-sm font-medium text-amber-300 hover:bg-amber-500/30"
           >
             Warning Toast
           </button>
           <button
             onClick={() => toast.error("Something went wrong", "Unable to connect to the server.")}
-            className="rounded-lg bg-[#ef4444]/20 px-4 py-2 text-sm font-medium text-[#ef4444] hover:bg-[#ef4444]/30"
+            className="rounded-lg bg-red-500/20 px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-500/30"
           >
             Error Toast
           </button>
@@ -41,7 +41,7 @@ export default function ToastDemoPage() {
               toast.success("Saved 1", "Your profile was updated.");
               toast.info("New notification", "You have received a new guild invitation.");
             }}
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5"
+            className="rounded-lg border border-guild-600 px-4 py-2 text-sm font-medium text-guild-300 hover:bg-guild-800"
           >
             Trigger 2 Toasts
           </button>
@@ -52,7 +52,7 @@ export default function ToastDemoPage() {
               toast.warning("Warning", "Third toast");
               toast.error("Error", "Fourth toast — this replaces the oldest info");
             }}
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5"
+            className="rounded-lg border border-guild-600 px-4 py-2 text-sm font-medium text-guild-300 hover:bg-guild-800"
           >
             Trigger 4 Toasts
           </button>
@@ -63,19 +63,19 @@ export default function ToastDemoPage() {
                 "Your guild information, player roster, introduction, history, and season statistics have all been synchronized successfully."
               )
             }
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5"
+            className="rounded-lg border border-guild-600 px-4 py-2 text-sm font-medium text-guild-300 hover:bg-guild-800"
           >
             Long Message
           </button>
           <button
             onClick={dismissAll}
-            className="rounded-lg border border-white/10 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-white/5"
+            className="rounded-lg border border-guild-600 px-4 py-2 text-sm font-medium text-guild-300 hover:bg-guild-800"
           >
             Dismiss All
           </button>
         </div>
 
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-guild-500">
           Desktop: bottom-right | Mobile: top-center | Swipe to dismiss | Hover to pause | Max 2 visible
         </p>
       </div>

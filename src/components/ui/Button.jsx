@@ -1,9 +1,9 @@
 export default function Button({ children, variant = "primary", className = "", ...props }) {
   const base = "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200";
   const variants = {
-    primary: "bg-[#17120D] text-[#FFD873] hover:opacity-90",
-    secondary: "bg-slate-200 text-slate-800 hover:bg-slate-300",
-    outline: "border border-slate-300 text-slate-700 hover:bg-slate-50",
+    primary: "gold-gradient-bg text-guild-950 font-bold hover:brightness-110",
+    secondary: "bg-guild-700 text-guild-100 hover:bg-guild-600",
+    outline: "border border-guild-600 text-guild-200 hover:bg-guild-800",
   };
 
   return (

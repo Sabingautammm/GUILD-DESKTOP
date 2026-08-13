@@ -2,13 +2,13 @@ export default function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        {title && <h3 className="text-lg font-bold text-slate-900 mb-4">{title}</h3>}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="w-full max-w-md rounded-2xl border border-guild-700 bg-guild-900 p-6 shadow-2xl">
+        {title && <h3 className="text-lg font-bold text-cream mb-4 font-display">{title}</h3>}
         {children}
         <button
           onClick={onClose}
-          className="mt-6 w-full rounded-lg bg-slate-100 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          className="mt-6 w-full rounded-lg bg-guild-700 py-2 text-sm font-semibold text-guild-100 hover:bg-guild-600"
         >
           Close
         </button>

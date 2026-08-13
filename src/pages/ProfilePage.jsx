@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2, FiUsers, FiArrowRight, FiCamera, FiUpload, FiFile } from "react-icons/fi";
+import {
+  FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2,
+  FiUsers, FiArrowRight, FiCamera, FiFile, FiHash, FiAward, FiLock,
+} from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
 import { uploadAvatarFile, removeAvatar as removeAvatarApi } from "../services/api/mediaApi";
@@ -61,7 +64,7 @@ const statsValid = (stats) => {
 function StatField({ label, value, onChange, max, step = "0.01" }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45] block mb-1">{label}</span>
+      <span className="text-[10px] font-medium uppercase tracking-wide text-guild-400 block mb-1">{label}</span>
       <input
         type="number"
         inputMode="decimal"
@@ -70,9 +73,35 @@ function StatField({ label, value, onChange, max, step = "0.01" }) {
         step={step}
         value={value}
         onChange={(e) => onChange(num(e.target.value))}
-        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+        className="w-full input-dark px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
       />
     </label>
+  );
+}
+
+function SectionCard({ icon: Icon, title, action, children }) {
+  return (
+    <section className="card-surface p-6 space-y-4 animate-fade-up">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.15em] text-guild-300">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gold-500/10 text-gold-400">
+            <Icon className="text-sm" />
+          </span>
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function StatTile({ label, value, highlight = false }) {
+  return (
+    <div className="rounded-lg bg-guild-900 border border-guild-800 p-2">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-guild-500">{label}</p>
+      <p className={`text-base font-bold ${highlight ? "gold-gradient-text" : "text-cream"}`}>{value}</p>
+    </div>
   );
 }
 
@@ -256,7 +285,6 @@ export default function ProfilePage() {
       });
       await refresh();
       clearAvatarSelection();
-      toast.success("Profile picture updated");
     } catch {
       // toast handled it
     } finally {
@@ -300,59 +328,139 @@ export default function ProfilePage() {
     };
   }, [avatarPreview]);
 
+  const avatarSrc = avatarPreview || (user?.avatar ? resolveMediaUrl(user.avatar) : "");
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div className="flex items-center gap-4">
-        {user?.avatar ? (
-          <img
-            src={resolveMediaUrl(user.avatar)}
-            alt={user?.name}
-            className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-[#E3A012]/30"
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
+      {/* HERO */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-guild-900 via-guild-850 to-guild-900 ring-1 ring-gold-500/25 p-6 sm:p-8 animate-fade-up">
+        <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-gold-500/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-gold-600/10 blur-3xl" />
+        <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-5">
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            className="group relative shrink-0"
+            aria-label="Change profile picture"
+          >
+            <span className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl bg-guild-800 ring-2 ring-gold-500/40 gold-glow">
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              ) : (
+                <FiUser className="text-3xl text-gold-400" />
+              )}
+              <span className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                <FiCamera className="text-xl text-gold-300" />
+              </span>
+            </span>
+          </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept={ACCEPT_AVATAR}
+            onChange={handleAvatarSelect}
+            className="hidden"
           />
-        ) : (
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#E3A012]/10 text-2xl font-bold text-[#B9660B]">
-            {user?.name?.charAt(0).toUpperCase() || <FiUser />}
-          </span>
-        )}
-        <div>
-          <h1 className="text-2xl font-bold text-[#17120D]">{user?.name ?? "Player"}</h1>
-          <p className="text-sm text-slate-500 flex items-center gap-1.5">
-            <FiMail className="text-xs" /> {user?.email}
-          </p>
-          <span className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-            isAdmin ? "bg-[#E3A012]/15 text-[#8a5200]" : "bg-slate-100 text-slate-500"
-          }`}>
-            <FiShield className="text-xs" /> {ROLE_LABEL[role] ?? role ?? "Free Player"}
-          </span>
+
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-display text-cream truncate">{user?.name ?? "Player"}</h1>
+            <p className="mt-1 text-sm text-guild-400 flex items-center justify-center sm:justify-start gap-1.5">
+              <FiMail className="text-xs shrink-0" /> {user?.email}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-500/10 px-3 py-1 text-[11px] font-bold text-gold-300 ring-1 ring-gold-500/30">
+                <FiShield className="text-xs" /> {ROLE_LABEL[role] ?? role ?? "Free Player"}
+              </span>
+              {user?.game && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-guild-800 px-3 py-1 text-[11px] font-bold text-guild-200 ring-1 ring-guild-600">
+                  <FiHash className="text-xs" /> {user.game}{user?.gameUid ? ` · ${user.gameUid}` : ""}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex shrink-0 gap-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-semibold text-guild-300 hover:bg-guild-800 hover:text-red-300 transition-colors"
+            >
+              <FiLogOut /> Sign out
+            </button>
+          </div>
         </div>
+
+        {/* Avatar upload state */}
+        {(avatarFile || isSavingAvatar) && (
+          <div className="relative mt-4 rounded-xl border border-gold-500/30 bg-guild-800/80 p-4 space-y-3">
+            {avatarFile && (
+              <div className="flex flex-wrap items-center gap-2">
+                <FiFile className="text-gold-400 shrink-0" />
+                <span className="text-xs font-semibold text-cream truncate max-w-[220px]">{avatarFile.name}</span>
+                <span className="text-[11px] text-guild-500">{(avatarFile.size / 1024).toFixed(0)} KB</span>
+                <button
+                  type="button"
+                  onClick={clearAvatarSelection}
+                  className="ml-auto rounded-full border border-guild-600 px-3 py-1 text-[11px] font-semibold text-guild-300 hover:bg-guild-700"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+            {avatarError && <p className="text-xs text-red-400">{avatarError}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={saveAvatar}
+                disabled={isSavingAvatar || !avatarFile}
+                className="flex items-center justify-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
+              >
+                {isSavingAvatar ? <FiLoader className="animate-spin" /> : <FiCamera />}
+                Save picture
+              </button>
+              {user?.avatar && !avatarFile && (
+                <button
+                  type="button"
+                  onClick={removeAvatar}
+                  disabled={isSavingAvatar}
+                  className="text-[11px] font-semibold text-guild-400 hover:text-red-300 disabled:opacity-50"
+                >
+                  Remove picture
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* GUILD */}
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45] mb-4">Guild</h2>
+      <SectionCard icon={FiUsers} title="Guild">
         {membership ? (
-          <div className="rounded-lg border border-[#E3A012]/30 bg-[#FAF6EE] p-4">
+          <div className="rounded-xl border border-gold-500/25 bg-guild-900 p-5">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
               <div>
-                <p className="text-sm font-bold text-[#17120D]">{player?.guildName || `Guild ${membership.guildUid}`}</p>
-                <p className="text-[11px] font-mono text-slate-400">Guild UID {membership.guildUid}</p>
+                <p className="text-lg font-display text-cream">{player?.guildName || `Guild ${membership.guildUid}`}</p>
+                <p className="text-[11px] font-mono text-guild-500 mt-0.5">Guild UID {membership.guildUid}</p>
               </div>
-              <span className="rounded-full bg-[#E3A012]/15 px-2.5 py-1 text-[11px] font-bold text-[#8a5200]">
-                Role: {ROLE_LABEL[membership.role] ?? membership.role}
+              <span className="rounded-full gold-gradient-bg px-3 py-1 text-[11px] font-bold text-guild-950">
+                {ROLE_LABEL[membership.role] ?? membership.role}
               </span>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <button
                 onClick={() => navigate(`/guild/${membership.guildUid}`)}
-                className="flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90"
+                className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110"
               >
                 <FiUsers className="text-xs" /> View guild
               </button>
               {isAdmin && (
                 <button
                   onClick={() => navigate("/admin/members")}
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-200 hover:bg-guild-800"
                 >
                   <FiShield className="text-xs" /> Admin Dashboard
                 </button>
@@ -360,156 +468,83 @@ export default function ProfilePage() {
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-[#E3A012]/50 bg-[#FFFBEF] p-5 space-y-3">
-            <p className="text-sm font-semibold text-[#17120D]">Not in a Guild</p>
-            <p className="text-xs text-slate-500">Join an existing guild or create your own to become its Leader.</p>
+          <div className="rounded-xl border border-dashed border-gold-500/40 bg-guild-900 p-5 space-y-3">
+            <p className="text-sm font-bold text-cream">Not in a Guild</p>
+            <p className="text-xs text-guild-400">Join an existing guild or create your own to become its Leader.</p>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => navigate("/guild")}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#B9660B] px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
+                className="inline-flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110"
               >
                 <FiUsers className="text-xs" /> Join Guild
               </button>
               <button
                 onClick={() => navigate("/onboarding")}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-200 hover:bg-guild-800"
               >
                 <FiPlusCircle className="text-xs" /> Create Guild
               </button>
             </div>
           </div>
         )}
-      </section>
+      </SectionCard>
 
       {/* PERSONAL INFORMATION */}
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Personal Information</h2>
-
-        <div className="flex flex-wrap items-center gap-4 rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] p-4">
-          <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E3A012]/15 ring-2 ring-[#E3A012]/30">
-            {avatarPreview || user?.avatar ? (
-              <img
-                src={avatarPreview || resolveMediaUrl(user?.avatar) || ""}
-                alt="Profile preview"
-                className="h-full w-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
-              />
-            ) : (
-              <FiUser className="text-2xl text-[#B9660B]" />
-            )}
-          </span>
-          <div className="min-w-0 flex-1 space-y-2">
-            {!avatarFile ? (
-              <button
-                type="button"
-                onClick={() => avatarInputRef.current?.click()}
-                className="flex items-center gap-2 rounded-lg border border-[#E3A012]/40 bg-[#FFFBEF] px-4 py-2 text-xs font-semibold text-[#8a5200] hover:bg-[#FFF6DC]"
-              >
-                <FiUpload /> Upload Profile Picture
-              </button>
-            ) : (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <FiFile className="text-[#B9660B] shrink-0" />
-                  <span className="text-xs font-semibold text-[#17120D] truncate">{avatarFile.name}</span>
-                  <span className="text-[11px] text-slate-400">{(avatarFile.size / 1024).toFixed(0)} KB</span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={clearAvatarSelection}
-                    className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                  >
-                    Change
-                  </button>
-                </div>
-              </div>
-            )}
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept={ACCEPT_AVATAR}
-              onChange={handleAvatarSelect}
-              className="hidden"
-            />
-            {avatarError && <p className="text-xs text-red-500">{avatarError}</p>}
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={saveAvatar}
-                disabled={isSavingAvatar || !avatarFile}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
-              >
-                {isSavingAvatar ? <FiLoader className="animate-spin" /> : <FiCamera />}
-                Save picture
-              </button>
-              {user?.avatar && (
-                <button
-                  type="button"
-                  onClick={removeAvatar}
-                  disabled={isSavingAvatar}
-                  className="text-[11px] font-semibold text-slate-400 hover:text-red-600 disabled:opacity-50"
-                >
-                  Remove picture
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
+      <SectionCard icon={FiUser} title="Personal Information">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-700">Game</label>
-            <p className="mt-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+            <label className="text-xs font-bold text-guild-400">Game</label>
+            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
               {user?.game || "—"}
             </p>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-700">Game UID (locked)</label>
-            <p className="mt-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-mono text-slate-600">
+            <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
+            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
               {user?.gameUid || "—"}
             </p>
           </div>
           <form onSubmit={saveName} className="flex flex-col">
-            <label htmlFor="in-game-name" className="text-xs font-semibold text-slate-700">In-Game Name</label>
+            <label htmlFor="in-game-name" className="text-xs font-bold text-guild-400">In-Game Name</label>
             <input
               id="in-game-name"
               value={inGameName}
               onChange={(e) => setInGameName(e.target.value)}
               placeholder="Your in-game name"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="mt-1 w-full input-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
             />
             <button
               type="submit"
               disabled={isSaving || !inGameName.trim()}
-              className="mt-2 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+              className="mt-2 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
             >
               {isSaving ? "Saving…" : "Save name"}
             </button>
           </form>
         </div>
-      </section>
+      </SectionCard>
 
       {/* SEASON STATISTICS */}
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Season Statistics</h2>
-          {!editingStats && (
+      <SectionCard
+        icon={FiAward}
+        title="Season Statistics"
+        action={
+          !editingStats && (
             <button
               onClick={startEditStats}
-              className="flex items-center gap-1.5 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
             >
               <FiEdit3 /> Edit stats
             </button>
-          )}
-        </div>
-
+          )
+        }
+      >
         {editingStats && stats ? (
           <>
             <div className="space-y-5">
               {STAT_MODES.map((mode) => (
-                <div key={mode.key} className="rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] p-4">
-                  <p className="text-sm font-semibold text-[#17120D] mb-3">{mode.title}</p>
+                <div key={mode.key} className="rounded-xl border border-guild-700 bg-guild-900 p-4">
+                  <p className="text-sm font-bold text-cream mb-3">{mode.title}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                     {mode.hasPoints && (
                       <StatField label={mode.pointsLabel} value={stats[mode.key].rankPoints} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], rankPoints: v } }))} max={undefined} step="1" />
@@ -522,19 +557,19 @@ export default function ProfilePage() {
                 </div>
               ))}
             </div>
-            {statsError && <p className="text-xs text-red-500">{statsError}</p>}
+            {statsError && <p className="text-xs text-red-400">{statsError}</p>}
             <div className="flex gap-2">
               <button
                 onClick={saveStats}
                 disabled={savingStats}
-                className="flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
               >
                 {savingStats ? <FiLoader className="animate-spin" /> : <FiCheck />} Save stats
               </button>
               <button
                 onClick={() => setEditingStats(false)}
                 disabled={savingStats}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
               >
                 <FiX /> Cancel
               </button>
@@ -545,56 +580,39 @@ export default function ProfilePage() {
             {STAT_MODES.map((mode) => {
               const m = player?.stats?.[mode.key] || {};
               return (
-                <div key={mode.key} className="rounded-lg border border-[#EDE1CB] bg-[#FAF6EE] p-4">
-                  <p className="text-sm font-semibold text-[#17120D] mb-2">{mode.title}</p>
+                <div key={mode.key} className="rounded-xl border border-guild-700 bg-guild-900 p-4">
+                  <p className="text-sm font-bold text-cream mb-2">{mode.title}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
                     {mode.hasPoints && (
-                      <div className="rounded-lg bg-white border border-[#EDE1CB] p-2">
-                        <p className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45]">{mode.pointsLabel}</p>
-                        <p className="text-base font-bold text-[#17120D]">{(m.rankPoints ?? 0).toLocaleString()}</p>
-                      </div>
+                      <StatTile label={mode.pointsLabel} value={(m.rankPoints ?? 0).toLocaleString()} highlight />
                     )}
-                    <div className="rounded-lg bg-white border border-[#EDE1CB] p-2">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45]">Matches</p>
-                      <p className="text-base font-bold text-[#17120D]">{(m.matches ?? 0).toLocaleString()}</p>
-                    </div>
-                    <div className="rounded-lg bg-white border border-[#EDE1CB] p-2">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45]">K/D</p>
-                      <p className="text-base font-bold text-[#17120D]">{(m.kd ?? 0).toFixed(2)}</p>
-                    </div>
-                    <div className="rounded-lg bg-white border border-[#EDE1CB] p-2">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45]">Headshot</p>
-                      <p className="text-base font-bold text-[#17120D]">{(m.headshotRate ?? 0).toFixed(1)}%</p>
-                    </div>
-                    <div className="rounded-lg bg-white border border-[#EDE1CB] p-2">
-                      <p className="text-[10px] font-medium uppercase tracking-wide text-[#6B5B45]">Win Rate</p>
-                      <p className="text-base font-bold text-[#17120D]">{(m.winRate ?? 0).toFixed(1)}%</p>
-                    </div>
+                    <StatTile label="Matches" value={(m.matches ?? 0).toLocaleString()} />
+                    <StatTile label="K/D" value={(m.kd ?? 0).toFixed(2)} />
+                    <StatTile label="Headshot" value={`${(m.headshotRate ?? 0).toFixed(1)}%`} />
+                    <StatTile label="Win Rate" value={`${(m.winRate ?? 0).toFixed(1)}%`} />
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </section>
+      </SectionCard>
 
       {isFree && (
         <button
           onClick={() => navigate("/onboarding")}
-          className="flex items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-[#E3A012]/50 bg-[#FFFBEF] p-5 text-sm font-bold text-[#8a5200] hover:bg-[#FFF6DC]"
+          className="flex items-center justify-center gap-2 w-full rounded-2xl border-2 border-dashed border-gold-500/40 bg-gold-500/5 p-5 text-sm font-bold text-gold-300 hover:bg-gold-500/10 transition-colors animate-fade-up"
         >
           <FiPlusCircle className="text-lg" /> You're a free player — Create Guild or Apply to join one
         </button>
       )}
 
       {/* ACCOUNT */}
-      <section className="rounded-xl border border-[#EDE1CB] bg-white p-6 space-y-5">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Account</h2>
-
+      <SectionCard icon={FiLock} title="Account">
         {isAdmin && (
           <button
             onClick={() => navigate("/admin/members")}
-            className="flex items-center justify-between w-full rounded-lg border border-[#E3A012]/40 bg-[#FFFBEF] px-4 py-3 text-sm font-semibold text-[#8a5200] hover:bg-[#FFF6DC]"
+            className="flex items-center justify-between w-full rounded-xl border border-gold-500/30 bg-gold-500/5 px-4 py-3 text-sm font-bold text-gold-300 hover:bg-gold-500/10 transition-colors"
           >
             <span className="flex items-center gap-2">
               <FiShield className="text-xs" /> Admin Dashboard
@@ -604,56 +622,49 @@ export default function ProfilePage() {
         )}
 
         {isLeader && (
-          <form onSubmit={savePassword} className="rounded-lg border border-[#EDE1CB] p-5 space-y-4">
+          <form onSubmit={savePassword} className="rounded-xl border border-guild-700 p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <FiShield className="text-[#B9660B]" />
-              <h3 className="text-sm font-semibold text-[#17120D]">Leader password</h3>
+              <FiShield className="text-gold-400" />
+              <h3 className="text-sm font-bold text-cream">Leader password</h3>
             </div>
-            <p className="text-xs text-slate-400">Your Leader login uses Guild UID + this password. Changing it signs you out everywhere (session version).</p>
+            <p className="text-xs text-guild-400">Your Leader login uses Guild UID + this password. Changing it signs you out everywhere (session version).</p>
             <div className="space-y-3">
               <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password" />
               <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirm new password" />
             </div>
-            {pwError && <p className="text-xs text-red-500">{pwError}</p>}
+            {pwError && <p className="text-xs text-red-400">{pwError}</p>}
             <button
               type="submit"
               disabled={isSavingPw}
-              className="rounded-lg bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+              className="rounded-lg gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center gap-2"
             >
               {isSavingPw && <FiLoader className="animate-spin" />} Update password
             </button>
           </form>
         )}
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:underline"
-        >
-          <FiLogOut /> Sign out
-        </button>
-
-        <div className="pt-2 border-t border-[#F3EADA]">
+        <div className="pt-2 border-t border-guild-800 space-y-3">
           <button
             onClick={() => setConfirmingDelete(true)}
-            className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:underline"
+            className="flex items-center gap-2 text-sm font-semibold text-red-400 hover:text-red-300"
           >
             <FiTrash2 /> Delete account
           </button>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="text-[11px] text-guild-500">
             Permanently removes your account and data. Leaders must transfer leadership before deleting.
           </p>
         </div>
-      </section>
+      </SectionCard>
 
       {/* DELETE CONFIRMATION */}
       {confirmingDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setConfirmingDelete(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setConfirmingDelete(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4"
+            className="w-full max-w-md rounded-2xl border border-guild-700 bg-guild-900 p-6 shadow-2xl space-y-4"
           >
-            <h3 className="text-lg font-bold text-[#17120D]">Delete your account?</h3>
-            <p className="text-sm text-slate-500">
+            <h3 className="text-lg font-display text-cream">Delete your account?</h3>
+            <p className="text-sm text-guild-400">
               This will permanently delete your account, memberships, notifications and profile data. This action
               cannot be undone. If you lead a guild, transfer leadership or disband it first.
             </p>
@@ -661,7 +672,7 @@ export default function ProfilePage() {
               <button
                 onClick={() => setConfirmingDelete(false)}
                 disabled={deleting}
-                className="flex-1 rounded-lg bg-slate-100 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+                className="flex-1 rounded-lg bg-guild-700 py-2 text-sm font-semibold text-guild-100 hover:bg-guild-600 disabled:opacity-50"
               >
                 Cancel
               </button>

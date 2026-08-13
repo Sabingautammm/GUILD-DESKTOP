@@ -83,8 +83,8 @@ export default function DesktopNavbar() {
     <header
       className={`sticky top-0 left-0 right-0 z-50 border-b transition-all duration-300 backdrop-blur-xl ${
         scrolled
-          ? "h-16 bg-[#FFFDF7]/90 border-[#E9DCC0] shadow-[0_10px_30px_-14px_rgba(23,18,13,0.35)]"
-          : "h-20 bg-[#FFFDF7]/60 border-transparent shadow-none"
+          ? "h-16 bg-guild-950/90 border-guild-700 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.8)]"
+          : "h-20 bg-guild-950/50 border-transparent shadow-none"
       }`}
     >
       <div className="max-w-7xl mx-auto flex h-full items-center justify-between gap-6 px-4 xl:px-8">
@@ -94,9 +94,9 @@ export default function DesktopNavbar() {
           </div>
         </NavLink>
 
-        <nav ref={navRef} className="relative flex items-center gap-1 rounded-full bg-[#17120D] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_30px_-10px_rgba(23,18,13,0.55)] ring-1 ring-[#E3A012]/10 overflow-x-auto">
+        <nav ref={navRef} className="relative flex items-center gap-1 rounded-full bg-guild-900 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_12px_30px_-10px_rgba(0,0,0,0.8)] ring-1 ring-gold-500/15 overflow-x-auto">
           <span
-            className="absolute top-1.5 bottom-1.5 rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] shadow-[0_4px_18px_-2px_rgba(227,160,18,0.55)] transition-all duration-300 ease-out"
+            className="absolute top-1.5 bottom-1.5 rounded-full gold-gradient-bg shadow-[0_4px_18px_-2px_rgba(227,160,18,0.55)] transition-all duration-300 ease-out"
             style={{
               left: indicator.left,
               width: indicator.width,
@@ -113,7 +113,7 @@ export default function DesktopNavbar() {
               }}
               className={({ isActive }) =>
                 `relative z-10 flex items-center gap-2 whitespace-nowrap rounded-full px-3 xl:px-5 py-2.5 text-sm xl:text-[15px] font-medium tracking-tight transition-colors duration-300 ${
-                  isActive ? "text-[#17120D]" : "text-[#B3A488] hover:text-[#FBF3E2]"
+                  isActive ? "text-guild-950" : "text-guild-400 hover:text-cream"
                 }`
               }
             >
@@ -122,7 +122,7 @@ export default function DesktopNavbar() {
                 return (
                   <>
                     <span className="relative flex items-center justify-center">
-                      {isActive && <span className="absolute h-4 w-4 rounded-full bg-[#C81034] blur-[7px] opacity-50" />}
+                      {isActive && <span className="absolute h-4 w-4 rounded-full bg-gold-500 blur-[7px] opacity-50" />}
                       <Icon className={`relative text-lg shrink-0 transition-transform duration-300 ${isActive ? "scale-110" : ""}`} />
                     </span>
                     <span className="hidden xl:inline">{item.label}</span>
@@ -137,7 +137,7 @@ export default function DesktopNavbar() {
           {isAuthenticated && (
             <button
               onClick={() => navigate("/notifications")}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-[#17120D]/5"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-guild-300 hover:bg-guild-800 hover:text-gold-300"
             >
               <FiBell className="text-lg" />
               {unread > 0 && (
@@ -152,34 +152,34 @@ export default function DesktopNavbar() {
             <div className="relative">
               <button
                 onClick={() => setDropdown((d) => !d)}
-                className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-[#17120D]/5"
+                className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-guild-800"
               >
                 {user?.avatar ? (
                   <img
                     src={resolveMediaUrl(user.avatar)}
                     alt={user?.name || "avatar"}
-                    className="h-8 w-8 rounded-full object-cover ring-2 ring-[#E3A012]/40"
+                    className="h-8 w-8 rounded-full object-cover ring-2 ring-gold-500/40"
                     onError={(e) => { e.currentTarget.style.display = "none"; }}
                   />
                 ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#FFD873] to-[#B9660B] text-sm font-bold text-[#17120D]">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950">
                     {user?.name?.charAt(0).toUpperCase() || "?"}
                   </span>
                 )}
               </button>
               {dropdown && (
                 <div
-                  className="absolute right-0 top-12 w-48 rounded-xl border border-slate-200 bg-white py-2 shadow-xl"
+                  className="absolute right-0 top-12 w-48 rounded-xl border border-guild-700 bg-guild-900 py-2 shadow-2xl"
                   onMouseLeave={() => setDropdown(false)}
                 >
-                  <NavLink to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                  <NavLink to="/profile" className="block px-4 py-2 text-sm text-cream hover:bg-guild-800">
                     Profile
                   </NavLink>
-                  <NavLink to="/onboarding" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                  <NavLink to="/onboarding" className="block px-4 py-2 text-sm text-cream hover:bg-guild-800">
                     Join / Create Guild
                   </NavLink>
                   {isAdmin && (
-                    <NavLink to="/admin/members" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                    <NavLink to="/admin/members" className="block px-4 py-2 text-sm text-cream hover:bg-guild-800">
                       Admin Dashboard
                     </NavLink>
                   )}
@@ -188,7 +188,7 @@ export default function DesktopNavbar() {
                       logout();
                       navigate("/");
                     }}
-                    className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                    className="block w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-950/40"
                   >
                     Sign out
                   </button>
@@ -198,7 +198,7 @@ export default function DesktopNavbar() {
           ) : (
             <NavLink
               to="/login"
-              className="group flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-4 xl:px-5 py-2.5 font-semibold text-[#17120D] shadow-[0_8px_20px_-6px_rgba(185,102,11,0.55)] transition-all duration-300 hover:shadow-[0_10px_26px_-6px_rgba(185,102,11,0.75)] hover:brightness-105 active:scale-[0.97]"
+              className="group flex shrink-0 items-center gap-2 rounded-full gold-gradient-bg px-4 xl:px-5 py-2.5 font-bold text-guild-950 gold-glow transition-all duration-300 hover:brightness-110 active:scale-[0.97]"
             >
               <span className="hidden sm:inline">Login</span>
               <FiLogIn className="text-base transition-transform duration-300 group-hover:translate-x-0.5" />

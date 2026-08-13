@@ -25,18 +25,18 @@ const ROLE_LABEL = {
 function StepHeader({ step, total, title, description }) {
   return (
     <div className="mb-6">
-      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#B9660B]">
+      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold-400">
         Step {step} of {total}
       </p>
-      <h2 className="mt-1 text-xl font-bold text-[#17120D]">{title}</h2>
-      {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+      <h2 className="mt-1 text-xl font-display text-cream">{title}</h2>
+      {description && <p className="mt-1 text-sm text-guild-400">{description}</p>}
     </div>
   );
 }
 
 function ErrorBox({ message }) {
   if (!message) return null;
-  return <p className="mt-2 text-xs text-red-500">{message}</p>;
+  return <p className="mt-2 text-xs text-red-400">{message}</p>;
 }
 
 export default function OnboardingPage() {
@@ -60,10 +60,10 @@ export default function OnboardingPage() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <p className="text-sm text-slate-600">Please sign in first to continue onboarding.</p>
+        <p className="text-sm text-guild-400">Please sign in first to continue onboarding.</p>
         <button
           onClick={() => navigate("/login")}
-          className="mt-4 rounded-lg bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873]"
+          className="mt-4 rounded-lg gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 hover:brightness-110"
         >
           Sign in
         </button>
@@ -88,15 +88,15 @@ export default function OnboardingPage() {
   if (membership && membership.status !== "pending_approval") {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <p className="text-lg font-bold text-[#17120D]">You're all set!</p>
-        <p className="text-sm text-slate-600 mt-2">
-          You're an active member of guild <span className="font-mono font-semibold">{membership.guildUid}</span>
+        <p className="text-lg font-display text-cream">You're all set!</p>
+        <p className="text-sm text-guild-400 mt-2">
+          You're an active member of guild <span className="font-mono font-semibold text-gold-300">{membership.guildUid}</span>
           {membership.role !== "member" && ` (as ${ROLE_LABEL[membership.role]})`}.
         </p>
         <button
           onClick={handleAllSetDone}
           disabled={isBusy}
-          className="mt-4 rounded-lg bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873] disabled:opacity-60"
+          className="mt-4 rounded-lg gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60"
         >
           {isBusy ? "Finishing setup…" : "Go to dashboard"}
         </button>
@@ -256,7 +256,7 @@ export default function OnboardingPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
       {step === "game" && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <div className="card-surface p-6">
           <StepHeader step={1} total={4} title="Which game do you play?" description="Select the game you will compete with in this guild." />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {GAMES.map((g) => (
@@ -265,8 +265,8 @@ export default function OnboardingPage() {
                 onClick={() => setSelectedGame(g)}
                 className={`rounded-xl border-2 px-4 py-6 text-sm font-bold transition-all ${
                   selectedGame === g
-                    ? "border-[#E3A012] bg-[#FAF6EE] text-[#B9660B]"
-                    : "border-[#EDE1CB] bg-white text-slate-600 hover:border-[#E3A012]/50"
+                    ? "border-gold-500 bg-guild-800 text-gold-300 gold-glow"
+                    : "border-guild-700 bg-guild-900 text-guild-300 hover:border-gold-500/50"
                 }`}
               >
                 {g}
@@ -277,7 +277,7 @@ export default function OnboardingPage() {
           <button
             onClick={handleSelectGame}
             disabled={isBusy}
-            className="mt-6 w-full rounded-lg bg-[#17120D] py-2.5 text-sm font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+            className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isBusy ? <FiLoader className="animate-spin" /> : "Continue"}
           </button>
@@ -285,31 +285,31 @@ export default function OnboardingPage() {
       )}
 
       {step === "identity" && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <div className="card-surface p-6">
           <StepHeader step={2} total={4} title="Your game details" description={`Enter your ${selectedGame || ""} UID and in-game name. We'll detect your guild status automatically.`} />
           <div className="space-y-3">
             <div className="relative">
-              <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+              <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
               <input
                 inputMode="numeric"
                 value={gameUid}
                 onChange={(e) => setGameUid(e.target.value.replace(/\D/g, ""))}
                 placeholder="Game UID (numeric)"
-                className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
             <input
               value={inGameName}
               onChange={(e) => setInGameName(e.target.value)}
               placeholder="In-Game Name"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
             />
           </div>
           <ErrorBox message={error} />
           <button
             onClick={handleSubmitIdentity}
             disabled={isBusy}
-            className="mt-6 w-full rounded-lg bg-[#17120D] py-2.5 text-sm font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+            className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isBusy ? <FiLoader className="animate-spin" /> : "Check guild status"}
           </button>
@@ -317,26 +317,26 @@ export default function OnboardingPage() {
       )}
 
       {step === "leader-verify" && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <div className="card-surface p-6">
           <StepHeader step={3} total={4} title="Leader verification" description="You're the Leader of this guild. Confirm with your Leader password to continue." />
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-slate-700">Email (read-only)</label>
+              <label className="text-xs font-bold text-guild-300">Email (read-only)</label>
               <input
                 type="email"
                 value={user?.email ?? ""}
                 readOnly
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500"
+                className="mt-1 w-full rounded-lg border border-guild-700 bg-guild-900 px-3 py-2 text-sm text-guild-500"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">Leader Password</label>
+              <label className="text-xs font-bold text-guild-300">Leader Password</label>
               <input
                 type="password"
                 value={leaderPassword}
                 onChange={(e) => setLeaderPassword(e.target.value)}
                 placeholder="The password you set when creating the guild"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="mt-1 w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
           </div>
@@ -344,7 +344,7 @@ export default function OnboardingPage() {
           <button
             onClick={handleVerifyLeader}
             disabled={isBusy}
-            className="mt-6 w-full rounded-lg bg-[#17120D] py-2.5 text-sm font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+            className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isBusy ? <FiLoader className="animate-spin" /> : "Verify & continue"}
           </button>
@@ -352,7 +352,7 @@ export default function OnboardingPage() {
       )}
 
       {step === "no-guild" && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <div className="card-surface p-6">
           <StepHeader step={3} total={4} title="You are currently not in a guild" description="Create a new guild to become its Leader, or continue as a Free Player." />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
@@ -360,83 +360,83 @@ export default function OnboardingPage() {
                 setError("");
                 setStep("create-guild");
               }}
-              className="rounded-xl border-2 border-[#E3A012] bg-[#FAF6EE] p-6 text-left hover:brightness-95"
+              className="rounded-xl border-2 border-gold-500/60 bg-guild-800 p-6 text-left hover:brightness-110 transition-all"
             >
-              <FiPlus className="text-[#B9660B] text-xl" />
-              <p className="mt-2 text-sm font-bold text-[#17120D]">Create Guild</p>
-              <p className="text-xs text-slate-500 mt-1">Start a new guild and become its Leader.</p>
+              <FiPlus className="text-gold-400 text-xl" />
+              <p className="mt-2 text-sm font-bold text-cream">Create Guild</p>
+              <p className="text-xs text-guild-400 mt-1">Start a new guild and become its Leader.</p>
             </button>
             <button
               onClick={handleStayFree}
               disabled={isBusy}
-              className="rounded-xl border-2 border-slate-200 bg-white p-6 text-left hover:border-slate-300"
+              className="rounded-xl border-2 border-guild-700 bg-guild-900 p-6 text-left hover:border-guild-600 disabled:opacity-60"
             >
-              <FiLogOut className="text-slate-500 text-xl" />
-              <p className="mt-2 text-sm font-bold text-[#17120D]">Stay Without Guild</p>
-              <p className="text-xs text-slate-500 mt-1">Continue as a Free Player. You can join or create a guild later.</p>
+              <FiLogOut className="text-guild-400 text-xl" />
+              <p className="mt-2 text-sm font-bold text-cream">Stay Without Guild</p>
+              <p className="text-xs text-guild-400 mt-1">Continue as a Free Player. You can join or create a guild later.</p>
             </button>
           </div>
         </div>
       )}
 
       {step === "create-guild" && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <div className="card-surface p-6">
           <StepHeader step={4} total={4} title="Create your guild" />
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-semibold text-slate-700">Guild Name *</label>
+              <label className="text-xs font-bold text-guild-300">Guild Name *</label>
               <input
                 value={guildName}
                 onChange={(e) => setGuildName(e.target.value)}
                 placeholder="e.g. 7x Esport"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="mt-1 w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">Guild Slogan *</label>
+              <label className="text-xs font-bold text-guild-300">Guild Slogan *</label>
               <input
                 value={guildSlogan}
                 onChange={(e) => setGuildSlogan(e.target.value)}
                 placeholder="Short tagline for your guild"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="mt-1 w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">Guild UID *</label>
+              <label className="text-xs font-bold text-guild-300">Guild UID *</label>
               <div className="relative mt-1">
-                <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+                <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
                 <input
                   inputMode="numeric"
                   value={createUid}
                   onChange={(e) => setCreateUid(e.target.value.replace(/\D/g, ""))}
                   placeholder="Numeric Guild UID"
-                  className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
                 />
               </div>
             </div>
-            <div className="relative flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <FiShield className="text-slate-400 text-sm" />
-              <span className="text-xs text-slate-500">{user?.email ?? "your@email.com"}</span>
-              <span className="ml-auto text-[10px] uppercase tracking-wide text-slate-400">read-only</span>
+            <div className="relative flex items-center gap-2 rounded-lg border border-guild-700 bg-guild-900 px-3 py-2">
+              <FiShield className="text-guild-500 text-sm" />
+              <span className="text-xs text-guild-400">{user?.email ?? "your@email.com"}</span>
+              <span className="ml-auto text-[10px] uppercase tracking-wide text-guild-600">read-only</span>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">Leader Password</label>
+              <label className="text-xs font-bold text-guild-300">Leader Password</label>
               <input
                 type="password"
                 value={createPw}
                 onChange={(e) => setCreatePw(e.target.value)}
                 placeholder="Min 6 characters"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="mt-1 w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">Confirm Password</label>
+              <label className="text-xs font-bold text-guild-300">Confirm Password</label>
               <input
                 type="password"
                 value={createPwConfirm}
                 onChange={(e) => setCreatePwConfirm(e.target.value)}
                 placeholder="Re-enter password"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="mt-1 w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
           </div>
@@ -444,7 +444,7 @@ export default function OnboardingPage() {
           <button
             onClick={handleCreateGuild}
             disabled={isBusy}
-            className="mt-6 w-full rounded-lg bg-[#17120D] py-2.5 text-sm font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
+            className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isBusy ? <FiLoader className="animate-spin" /> : "Create Guild"}
           </button>
@@ -452,18 +452,18 @@ export default function OnboardingPage() {
       )}
 
       {step === "guild-success" && (
-        <div className="rounded-xl border border-[#EDE1CB] bg-white p-8 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-600/10 text-green-600">
+        <div className="card-surface p-8 text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full gold-gradient-bg text-guild-950 gold-glow">
             <FiCheck className="text-2xl" />
           </span>
-          <h2 className="mt-4 text-xl font-bold text-[#17120D]">Guild created successfully!</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            {guildName.trim()} · #{createUid.trim()}
+          <h2 className="mt-4 text-xl font-display text-cream">Guild created successfully!</h2>
+          <p className="mt-2 text-sm text-guild-300">
+            {guildName.trim()} · <span className="font-mono">#{createUid.trim()}</span>
           </p>
-          <p className="text-xs text-slate-500">Role: Leader</p>
+          <p className="text-xs text-guild-500">Role: Leader</p>
           <button
             onClick={() => navigate("/", { replace: true })}
-            className="mt-6 rounded-lg bg-[#17120D] px-6 py-2.5 text-sm font-semibold text-[#FFD873] hover:opacity-90"
+            className="mt-6 rounded-lg gold-gradient-bg px-6 py-2.5 text-sm font-bold text-guild-950 hover:brightness-110"
           >
             Go to homepage
           </button>

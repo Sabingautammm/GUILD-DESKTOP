@@ -123,7 +123,7 @@ export default function GuildPage() {
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 flex justify-center">
-        <FiLoader className="animate-spin text-2xl text-[#B9660B]" />
+        <FiLoader className="animate-spin text-2xl text-gold-400" />
       </div>
     );
   }
@@ -131,9 +131,9 @@ export default function GuildPage() {
   if (error || !data) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <FiAlertCircle className="mx-auto text-3xl text-[#B9660B]" />
-        <p className="mt-3 text-sm font-semibold text-[#17120D]">{error ?? "Guild not found."}</p>
-        <button onClick={() => navigate("/")} className="mt-4 rounded-full bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873]">
+        <FiAlertCircle className="mx-auto text-3xl text-gold-400" />
+        <p className="mt-3 text-sm font-semibold text-cream">{error ?? "Guild not found."}</p>
+        <button onClick={() => navigate("/")} className="mt-4 rounded-full gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110">
           Back home
         </button>
       </div>
@@ -147,55 +147,56 @@ export default function GuildPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <div className="rounded-2xl bg-gradient-to-br from-[#17120D] via-[#3A2712] to-[#B9660B] p-6 sm:p-8 text-white relative overflow-hidden">
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#FFD873]/10" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-guild-900 via-guild-850 to-guild-900 ring-1 ring-gold-500/30 p-6 sm:p-8 text-cream">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-gold-500/10 blur-2xl" />
+        <div className="absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-gold-600/10 blur-2xl" />
         <div className="relative">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/10 text-2xl font-bold text-[#FFD873] ring-1 ring-white/10">
+              <span className="flex h-14 w-14 items-center justify-center rounded-xl gold-gradient-bg text-2xl font-bold text-guild-950 gold-glow">
                 {g.name.charAt(0).toUpperCase()}
               </span>
               <div>
-                <h1 className="text-2xl font-bold">{g.name}</h1>
-                <p className="text-sm text-[#FFD873]/80">{g.slogan}</p>
-                <p className="text-xs font-mono text-white/50 mt-1">Guild UID {g.guildUid}</p>
+                <h1 className="text-2xl font-display">{g.name}</h1>
+                <p className="text-sm text-gold-300/90">{g.slogan}</p>
+                <p className="text-xs font-mono text-guild-500 mt-1">Guild UID {g.guildUid}</p>
               </div>
             </div>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-[#FFD873] ring-1 ring-white/10">
+            <span className="rounded-full bg-gold-500/10 px-3 py-1 text-[11px] font-bold text-gold-300 ring-1 ring-gold-500/30">
               {g.visibility === "private" ? "Private" : "Public"} guild
             </span>
           </div>
 
-          <div className="mt-5 flex items-center gap-2 text-sm text-white/80">
-            <FiUsers className="text-[#FFD873]" />
+          <div className="mt-5 flex items-center gap-2 text-sm text-guild-300">
+            <FiUsers className="text-gold-400" />
             <span>
               {roster.length} / {g.memberCap} members
             </span>
             {amMember && (
-              <span className="ml-2 rounded-full bg-[#FFD873]/15 px-3 py-1 text-[11px] font-semibold text-[#FFD873]">
+              <span className="ml-2 rounded-full gold-gradient-bg px-3 py-1 text-[11px] font-bold text-guild-950">
                 {ROLE_LABEL[membership.role]}
               </span>
             )}
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            {!amMember && isAuthenticated && (
-              <button onClick={handleApply} className="rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-5 py-2 text-sm font-bold text-[#17120D] hover:brightness-105">
+            {!amMember && isAuthenticated && !membership && (
+              <button onClick={handleApply} className="rounded-full gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 gold-glow hover:brightness-110">
                 Apply to join
               </button>
             )}
             {!amMember && !isAuthenticated && (
-              <button onClick={() => navigate("/login")} className="rounded-full border border-[#FFD873] px-5 py-2 text-sm font-semibold text-[#FFD873] hover:bg-[#FFD873]/10">
+              <button onClick={() => navigate("/login")} className="rounded-full border border-gold-500/50 px-5 py-2 text-sm font-semibold text-gold-300 hover:bg-gold-500/10">
                 Sign in to apply
               </button>
             )}
             {amMember && (role === "leader" || role === "acting_leader" || role === "officer") && (
-              <button onClick={() => navigate("/admin/members")} className="rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-5 py-2 text-sm font-bold text-[#17120D] hover:brightness-105 flex items-center gap-2">
+              <button onClick={() => navigate("/admin/members")} className="rounded-full gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 hover:brightness-110 flex items-center gap-2">
                 <FiShield className="text-xs" /> Admin dashboard
               </button>
             )}
             {amMember && membership.role !== "leader" && (
-              <button onClick={handleLeave} className="rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white/80 hover:bg-white/10">
+              <button onClick={handleLeave} className="rounded-full border border-guild-600 px-5 py-2 text-sm font-semibold text-guild-300 hover:bg-guild-800 hover:border-red-500/40 hover:text-red-300">
                 Leave guild
               </button>
             )}
@@ -203,7 +204,7 @@ export default function GuildPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto rounded-full bg-[#17120D] p-1.5">
+      <div className="flex gap-1 overflow-x-auto rounded-full bg-guild-900 p-1.5 ring-1 ring-guild-700">
         {[
           { key: "players", label: "Guild Players" },
           { key: "introduction", label: "Introduction" },
@@ -212,10 +213,10 @@ export default function GuildPage() {
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
+            className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold transition-colors ${
               activeTab === t.key
-                ? "bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] text-[#17120D]"
-                : "text-[#B3A488] hover:text-[#FBF3E2]"
+                ? "gold-gradient-bg text-guild-950"
+                : "text-guild-400 hover:text-cream"
             }`}
           >
             {t.label}
@@ -225,38 +226,38 @@ export default function GuildPage() {
 
       {activeTab === "players" && (
         <>
-          <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45] mb-4">Leadership</h2>
+          <section className="card-surface p-6">
+            <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300 mb-4">Leadership</h2>
             <div className="flex flex-wrap gap-3">
               {leader && <RoleChip member={leader} label="Leader" />}
               {officers.length > 0 && officers.map((m) => <RoleChip key={m._id} member={m} label={ROLE_LABEL[m.role]} />)}
-              {!leader && <p className="text-xs text-slate-400">No leader assigned.</p>}
+              {!leader && <p className="text-xs text-guild-500">No leader assigned.</p>}
             </div>
           </section>
 
-          <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+          <section className="card-surface p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Roster</h2>
-              <span className="text-xs text-slate-400">{roster.length} shown</span>
+              <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Roster</h2>
+              <span className="text-xs text-guild-500">{roster.length} shown</span>
             </div>
             {roster.length === 0 ? (
-              <p className="text-xs text-slate-400">No members yet.{amMember && " Invite friends to apply!"}</p>
+              <p className="text-xs text-guild-500">No members yet.{amMember && " Invite friends to apply!"}</p>
             ) : (
-              <ul className="divide-y divide-[#F3EADA]">
+              <ul className="divide-y divide-guild-800">
                 {roster.map((m) => (
                   <li key={m._id} className="flex items-center justify-between py-3">
                     <button
                       onClick={() => m.userId?._id && navigate(`/members/${m.userId._id}`)}
                       className="flex items-center gap-3 min-w-0 text-left flex-1"
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
                         {m.userId?.name?.charAt(0).toUpperCase() || "?"}
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#17120D] truncate">{m.userId?.name ?? "Player"}</p>
-                        <p className="text-[11px] text-slate-400">{ROLE_LABEL[m.role] ?? m.role}</p>
+                        <p className="text-sm font-bold text-cream truncate">{m.userId?.name ?? "Player"}</p>
+                        <p className="text-[11px] text-guild-500">{ROLE_LABEL[m.role] ?? m.role}</p>
                       </div>
-                      <FiArrowRight className="ml-auto text-xs text-slate-300" />
+                      <FiArrowRight className="ml-auto text-xs text-guild-600" />
                     </button>
                   </li>
                 ))}
@@ -267,22 +268,22 @@ export default function GuildPage() {
       )}
 
       {activeTab === "introduction" && (
-        <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <section className="card-surface p-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Guild Introduction</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Guild Introduction</h2>
             {canEditGuild && !editingIntro && (
               <button
                 onClick={() => {
                   setIntroDraft(g.introduction || "");
                   setEditingIntro(true);
                 }}
-                className="flex items-center gap-1.5 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
               >
                 <FiEdit3 /> Edit
               </button>
             )}
           </div>
-          <p className="text-xs text-slate-400 mb-3">Slogan: {g.slogan}</p>
+          <p className="text-xs text-guild-500 mb-3">Slogan: {g.slogan}</p>
           {editingIntro ? (
             <div className="space-y-3">
               <textarea
@@ -290,44 +291,44 @@ export default function GuildPage() {
                 onChange={(e) => setIntroDraft(e.target.value)}
                 rows={5}
                 placeholder="Describe your guild — goals, community, activity…"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
               <div className="flex gap-2">
                 <button
                   onClick={saveIntro}
                   disabled={saving}
-                  className="flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
                 >
                   <FiCheck /> {saving ? "Saving…" : "Save"}
                 </button>
                 <button
                   onClick={() => setEditingIntro(false)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
                 >
                   <FiX /> Cancel
                 </button>
               </div>
             </div>
           ) : g.introduction ? (
-            <p className="text-sm whitespace-pre-wrap text-[#17120D]">{g.introduction}</p>
+            <p className="text-sm whitespace-pre-wrap text-cream">{g.introduction}</p>
           ) : (
-            <p className="text-xs text-slate-400">No introduction yet.</p>
+            <p className="text-xs text-guild-500">No introduction yet.</p>
           )}
         </section>
       )}
 
       {activeTab === "history" && (
-        <section className="rounded-xl border border-[#EDE1CB] bg-white p-6">
+        <section className="card-surface p-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">Guild History</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">Guild History</h2>
             {canEditGuild && !editingHistory && (
               <button
                 onClick={() => {
                   setHistoryDraft(g.history || "");
                   setEditingHistory(true);
                 }}
-                className="flex items-center gap-1.5 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
               >
                 <FiEdit3 /> Edit
               </button>
@@ -340,49 +341,49 @@ export default function GuildPage() {
                 onChange={(e) => setHistoryDraft(e.target.value)}
                 rows={6}
                 placeholder="The story of your guild…"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
               <div className="flex gap-2">
                 <button
                   onClick={saveHistory}
                   disabled={saving}
-                  className="flex items-center gap-1.5 rounded-lg bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
                 >
                   <FiCheck /> {saving ? "Saving…" : "Save"}
                 </button>
                 <button
                   onClick={() => setEditingHistory(false)}
                   disabled={saving}
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
                 >
                   <FiX /> Cancel
                 </button>
               </div>
             </div>
           ) : g.history ? (
-            <p className="text-sm whitespace-pre-wrap text-[#17120D]">{g.history}</p>
+            <p className="text-sm whitespace-pre-wrap text-cream">{g.history}</p>
           ) : (
-            <p className="text-xs text-slate-400">No history recorded yet.</p>
+            <p className="text-xs text-guild-500">No history recorded yet.</p>
           )}
         </section>
       )}
 
       {membership?.role === "leader" && (
-        <div className="rounded-xl border border-red-100 bg-red-50 p-5">
-          <p className="text-sm font-semibold text-red-700">Leader controls</p>
-          <p className="text-xs text-red-500 mt-1">
+        <div className="rounded-xl border border-red-500/30 bg-red-950/40 p-5">
+          <p className="text-sm font-bold text-red-300">Leader controls</p>
+          <p className="text-xs text-red-400/80 mt-1">
             Disbanding is irreversible — every member (including you) becomes a free player and the guild is archived.
           </p>
           {!confirmingDisband ? (
-            <button onClick={() => setConfirmingDisband(true)} className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700">
+            <button onClick={() => setConfirmingDisband(true)} className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700">
               Disband guild
             </button>
           ) : (
             <div className="mt-3 flex gap-3">
-              <button onClick={handleDisband} className="rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700">
+              <button onClick={handleDisband} className="rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700">
                 Yes, disband permanently
               </button>
-              <button onClick={() => setConfirmingDisband(false)} className="rounded-lg border border-red-300 px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-100">
+              <button onClick={() => setConfirmingDisband(false)} className="rounded-lg border border-red-500/40 px-4 py-2 text-xs font-bold text-red-300 hover:bg-red-950/60">
                 Cancel
               </button>
             </div>
@@ -391,7 +392,7 @@ export default function GuildPage() {
       )}
 
       {(role === "leader" || role === "acting_leader" || role === "officer") && (
-        <button onClick={() => navigate("/admin/members")} className="flex items-center gap-2 text-sm font-semibold text-[#B9660B] hover:underline">
+        <button onClick={() => navigate("/admin/members")} className="flex items-center gap-2 text-sm font-bold text-gold-400 hover:text-gold-300 hover:underline">
           Admin dashboard <FiArrowRight className="text-xs" />
         </button>
       )}
@@ -401,10 +402,10 @@ export default function GuildPage() {
 
 function RoleChip({ member, label }) {
   return (
-    <div className="flex items-center gap-2 rounded-full border border-[#EDE1CB] bg-[#FAF6EE] px-3 py-1.5">
-      <FiShield className="text-xs text-[#B9660B]" />
-      <span className="text-xs font-semibold text-[#17120D]">{member.userId?.name ?? "Player"}</span>
-      <span className="text-[10px] uppercase tracking-wide text-[#6B5B45]">{label}</span>
+    <div className="flex items-center gap-2 rounded-full border border-guild-600 bg-guild-900 px-3 py-1.5">
+      <FiShield className="text-xs text-gold-400" />
+      <span className="text-xs font-bold text-cream">{member.userId?.name ?? "Player"}</span>
+      <span className="text-[10px] uppercase tracking-wide text-guild-400">{label}</span>
     </div>
   );
 }

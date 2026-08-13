@@ -52,17 +52,17 @@ export default function MediaCard({ media, onChanged }) {
   const uploader = media.uploaderId;
 
   return (
-    <article className="rounded-xl border border-[#EDE1CB] bg-white overflow-hidden">
+    <article className="rounded-xl border border-guild-700 bg-guild-900 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E3A012]/10 text-sm font-bold text-[#B9660B]">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/10 text-sm font-bold text-gold-400 ring-1 ring-gold-500/30">
           {uploader?.name?.charAt(0).toUpperCase() || "?"}
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-[#17120D] truncate">{uploader?.name ?? "Player"}</p>
-          {media.guildUid && <p className="text-[11px] text-slate-400 font-mono">Guild {media.guildUid}</p>}
+          <p className="text-sm font-semibold text-cream truncate">{uploader?.name ?? "Player"}</p>
+          {media.guildUid && <p className="text-[11px] text-guild-500 font-mono">Guild {media.guildUid}</p>}
         </div>
         {media.visibility === "private" && (
-          <span className="ml-auto rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+          <span className="ml-auto rounded-full bg-guild-800 px-2 py-0.5 text-[10px] font-semibold text-guild-400">
             Private
           </span>
         )}
@@ -78,16 +78,16 @@ export default function MediaCard({ media, onChanged }) {
       </div>
 
       <div className="px-4 py-3">
-        <div className="flex items-center gap-4 text-sm text-slate-600">
+        <div className="flex items-center gap-4 text-sm text-guild-300">
           <button
             onClick={handleReact}
             disabled={busy}
-            className={`flex items-center gap-1.5 font-semibold hover:opacity-80 ${iReacted ? "text-red-500" : ""}`}
+            className={`flex items-center gap-1.5 font-semibold hover:opacity-80 ${iReacted ? "text-red-400" : ""}`}
           >
-            <FiHeart className={iReacted ? "fill-red-500" : ""} />
+            <FiHeart className={iReacted ? "fill-red-400" : ""} />
             {media.reactions?.length ?? 0}
           </button>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-guild-500">
             {media.createdAt ? new Date(media.createdAt).toLocaleDateString() : "Recently"}
           </span>
         </div>
@@ -95,8 +95,8 @@ export default function MediaCard({ media, onChanged }) {
         {media.comments && media.comments.length > 0 && (
           <ul className="mt-3 space-y-1.5">
             {media.comments.map((c) => (
-              <li key={c._id ?? c.userId?.toString?.() ?? c.createdAt} className="text-xs text-slate-600">
-                <span className="font-semibold text-[#17120D]">{c.userId?.name ?? "Player"}</span>{" "}
+              <li key={c._id ?? c.userId?.toString?.() ?? c.createdAt} className="text-xs text-guild-300">
+                <span className="font-semibold text-cream">{c.userId?.name ?? "Player"}</span>{" "}
                 {c.text}
               </li>
             ))}
@@ -108,9 +108,9 @@ export default function MediaCard({ media, onChanged }) {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Add a comment…"
-            className="flex-1 rounded-full bg-[#FAF6EE] border border-transparent px-4 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="flex-1 rounded-full input-dark px-4 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gold-500"
           />
-          <button type="submit" disabled={busy || !comment.trim()} className="rounded-full bg-[#17120D] p-2 text-[#FFD873] hover:opacity-90 disabled:opacity-40">
+          <button type="submit" disabled={busy || !comment.trim()} className="rounded-full gold-gradient-bg p-2 text-guild-950 hover:brightness-110 disabled:opacity-40">
             <FiSend className="text-xs" />
           </button>
         </form>

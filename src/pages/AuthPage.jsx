@@ -2,11 +2,12 @@ import LoginForm from "../features/auth/components/LoginForm";
 
 export default function AuthPage() {
   return (
-    <div className="min-h-[80vh] w-full flex items-center justify-center bg-slate-100 px-4 py-8 sm:px-6">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="bg-gradient-to-br from-[#17120D] via-[#3A2712] to-[#B9660B] px-6 py-8 text-center">
-          <h1 className="text-2xl font-black text-white">GUILD</h1>
-          <p className="mt-1 text-xs text-[#FFD873]/80 uppercase tracking-[0.2em]">
+    <div className="min-h-[80vh] w-full flex items-center justify-center bg-transparent px-4 py-8 sm:px-6">
+      <div className="relative w-full max-w-md overflow-hidden rounded-3xl card-surface ring-1 ring-gold-500/20 shadow-2xl">
+        <div className="relative overflow-hidden bg-gradient-to-br from-guild-800 via-guild-850 to-guild-900 px-6 py-8 text-center border-b border-gold-500/20">
+          <div className="absolute -top-8 -right-8 h-28 w-28 rounded-full bg-gold-500/10 blur-2xl" />
+          <h1 className="relative text-3xl font-display gold-gradient-text">GUILD</h1>
+          <p className="mt-1 text-[11px] text-gold-300/80 uppercase tracking-[0.25em]">
             Rule it or join it
           </p>
         </div>

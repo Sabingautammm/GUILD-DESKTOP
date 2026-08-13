@@ -26,7 +26,7 @@ export default function MobileHeader() {
   }, [isAuthenticated]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-[#FFFDF7] border-b border-[#E9DCC0]">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-guild-950/90 backdrop-blur-xl border-b border-guild-700">
       <div className="flex h-full items-center justify-between px-5">
         <NavLink to="/" className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg flex items-center justify-center">
@@ -38,7 +38,7 @@ export default function MobileHeader() {
           {isAuthenticated && (
             <button
               onClick={() => navigate("/notifications")}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-600 hover:bg-[#17120D]/5"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-guild-300 hover:bg-guild-800 hover:text-gold-300"
             >
               <FiBell className="text-xl" />
               {unread > 0 && (
@@ -49,8 +49,8 @@ export default function MobileHeader() {
             </button>
           )}
           <NavLink
-            to={isAuthenticated ? "/onboarding" : "/login"}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#FFD873] to-[#B9660B] text-sm font-bold text-[#17120D]"
+            to={isAuthenticated ? "/profile" : "/login"}
+            className="flex h-10 w-10 items-center justify-center rounded-full gold-gradient-bg text-sm font-bold text-guild-950 ring-1 ring-gold-300/40"
           >
             {user?.name?.charAt(0).toUpperCase() || "?"}
           </NavLink>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PiTrophyFill, PiUsersFill } from "react-icons/pi";
-import { FiAlertCircle, FiRefreshCw } from "react-icons/fi";
+import { FiAlertCircle, FiRefreshCw, FiChevronRight } from "react-icons/fi";
 import PlayerIdCard from "../features/dashboard/components/PlayerIDCard";
 import SeasonStatsSection from "../features/dashboard/components/SeasonStatus";
 import RankingCard from "../features/dashboard/components/RankCard";
@@ -35,27 +35,34 @@ export default function HomePage() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
-        <section className="rounded-2xl bg-gradient-to-br from-[#17120D] via-[#2A2118] to-[#17120D] p-8 sm:p-10 text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#FFD873]">GUILD · Fantasy Memberships</p>
-          <h1 className="mt-3 text-3xl sm:text-4xl font-black text-white">
-            Find your guild, <span className="text-[#FFD873]">rule it or join it.</span>
-          </h1>
-          <p className="mt-3 text-sm text-white/70 max-w-md mx-auto">
-            Create a guild community with your UID, apply to join existing ones, and climb the leaderboard with your squad.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link
-              to="/login"
-              className="rounded-full bg-gradient-to-r from-[#FFD873] via-[#E3A012] to-[#B9660B] px-6 py-2.5 text-sm font-bold text-[#17120D] hover:brightness-105"
-            >
-              Get started with Google
-            </Link>
-            <Link
-              to="/leaderboard"
-              className="rounded-full border border-white/25 px-6 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-            >
-              Browse leaderboards
-            </Link>
+        <section className="relative overflow-hidden rounded-3xl border border-gold-500/20 bg-guild-900 p-8 sm:p-12 text-center animate-fade-up">
+          <div className="absolute -top-24 -right-16 h-64 w-64 rounded-full bg-gold-500/10 blur-3xl" />
+          <div className="absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-gold-600/10 blur-3xl" />
+          <div className="relative">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-gold-400">
+              GUILD · Fantasy Memberships
+            </p>
+            <h1 className="mt-4 text-3xl sm:text-5xl font-display text-cream leading-tight">
+              Find your guild, <span className="gold-gradient-text">rule it or join it.</span>
+            </h1>
+            <p className="mt-4 text-sm sm:text-base text-guild-300 max-w-md mx-auto">
+              Create a guild community with your UID, apply to join existing ones, and climb the
+              leaderboard with your squad.
+            </p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/login"
+                className="rounded-full gold-gradient-bg px-6 py-2.5 text-sm font-bold text-guild-950 gold-glow hover:brightness-110 transition-all active:scale-[0.97]"
+              >
+                Get started with Google
+              </Link>
+              <Link
+                to="/leaderboard"
+                className="rounded-full border border-guild-600 px-6 py-2.5 text-sm font-semibold text-guild-200 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
+              >
+                Browse leaderboards
+              </Link>
+            </div>
           </div>
         </section>
         <LeagueTable topGuilds={topGuilds} feedError={feedError} />
@@ -71,14 +78,14 @@ export default function HomePage() {
   if (error || !player) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 flex flex-col items-center text-center gap-3">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#B9660B]/10 text-[#B9660B]">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-500/10 text-gold-400">
           <FiAlertCircle className="text-2xl" />
         </span>
-        <p className="text-sm font-semibold text-[#17120D]">Couldn't load your profile</p>
-        <p className="text-xs text-[#6B5B45] max-w-xs">{error ?? "Something went wrong."}</p>
+        <p className="text-sm font-semibold text-cream">Couldn't load your profile</p>
+        <p className="text-xs text-guild-400 max-w-xs">{error ?? "Something went wrong."}</p>
         <button
           onClick={refetch}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#17120D] px-4 py-2 text-xs font-semibold text-[#FFD873] hover:opacity-90"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-full gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110"
         >
           <FiRefreshCw className="text-xs" />
           Try again
@@ -91,15 +98,15 @@ export default function HomePage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8">
       <PlayerIdCard player={player} />
 
-      <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45] mb-3">
+      <section className="animate-fade-up">
+        <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-400 mb-3">
           Season Stats
         </h2>
         <SeasonStatsSection stats={player.stats} />
       </section>
 
-      <section>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45] mb-3">
+      <section className="animate-fade-up">
+        <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-400 mb-3">
           Rankings
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -129,37 +136,37 @@ export default function HomePage() {
 
 function LeagueTable({ topGuilds, feedError }) {
   return (
-    <section className="rounded-xl border border-[#EDE1CB] bg-white p-5">
+    <section className="card-surface p-5 animate-fade-up">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
+        <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">
           Top Guilds
         </h2>
-        <Link to="/leaderboard" className="text-xs font-semibold text-[#B9660B] hover:underline">
-          View all →
+        <Link to="/leaderboard" className="inline-flex items-center gap-1 text-xs font-bold text-gold-400 hover:text-gold-300">
+          View all <FiChevronRight />
         </Link>
       </div>
       {feedError ? (
-        <p className="text-xs text-slate-400">{feedError}</p>
+        <p className="text-xs text-guild-500">{feedError}</p>
       ) : topGuilds.length === 0 ? (
-        <p className="text-xs text-slate-400">No guilds on the leaderboard yet.</p>
+        <p className="text-xs text-guild-500">No guilds on the leaderboard yet.</p>
       ) : (
-        <ul className="divide-y divide-[#F3EADA]">
+        <ul className="divide-y divide-guild-800">
           {topGuilds.map((g, i) => (
             <li key={g._id}>
               <Link to={`/guild/${g.guildUid}`} className="flex items-center gap-3 py-2.5 group">
-                <span className={`w-6 text-center text-xs font-bold ${i < 3 ? "text-[#E3A012]" : "text-slate-300"}`}>
+                <span className={`w-6 text-center text-xs font-bold ${i < 3 ? "text-gold-400" : "text-guild-600"}`}>
                   {i + 1}
                 </span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E3A012]/10 text-xs font-bold text-[#B9660B]">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold-500/10 text-xs font-bold text-gold-400 ring-1 ring-gold-500/20">
                   {g.name.charAt(0).toUpperCase()}
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-semibold text-[#17120D] truncate group-hover:underline">
+                  <span className="block text-sm font-semibold text-cream truncate group-hover:text-gold-300">
                     {g.name}
                   </span>
-                  <span className="block text-[10px] font-mono text-slate-400">UID {g.guildUid}</span>
+                  <span className="block text-[10px] font-mono text-guild-500">UID {g.guildUid}</span>
                 </span>
-                <span className="text-sm font-bold text-[#17120D]">{g.score.toLocaleString()}</span>
+                <span className="text-sm font-bold text-cream">{g.score.toLocaleString()}</span>
               </Link>
             </li>
           ))}
@@ -171,26 +178,26 @@ function LeagueTable({ topGuilds, feedError }) {
 
 function MediaPreviewCard({ previewMedia, feedError }) {
   return (
-    <section className="rounded-xl border border-[#EDE1CB] bg-white p-5">
+    <section className="card-surface p-5 animate-fade-up">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#6B5B45]">
+        <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-300">
           Latest Media
         </h2>
-        <Link to="/gallery" className="text-xs font-semibold text-[#B9660B] hover:underline">
-          Open gallery →
+        <Link to="/gallery" className="inline-flex items-center gap-1 text-xs font-bold text-gold-400 hover:text-gold-300">
+          Open gallery <FiChevronRight />
         </Link>
       </div>
       {feedError ? (
-        <p className="text-xs text-slate-400">{feedError}</p>
+        <p className="text-xs text-guild-500">{feedError}</p>
       ) : previewMedia.length === 0 ? (
-        <p className="text-xs text-slate-400">No approved media yet. Uploads appear after admin approval.</p>
+        <p className="text-xs text-guild-500">No approved media yet. Uploads appear after admin approval.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {previewMedia.map((m) => (
             <Link
               key={m._id}
               to="/gallery"
-              className="aspect-video rounded-lg bg-black overflow-hidden flex items-center justify-center"
+              className="aspect-video rounded-lg bg-guild-950 overflow-hidden flex items-center justify-center ring-1 ring-guild-700 hover:ring-gold-500/40 transition-all"
             >
               {m.type === "video" ? (
                 <video src={resolveMediaUrl(m.url)} className="w-full h-full object-contain" muted playsInline />
@@ -208,18 +215,18 @@ function MediaPreviewCard({ previewMedia, feedError }) {
 function HomepageSkeleton() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 animate-pulse">
-      <div className="h-48 rounded-2xl bg-[#EDE1CB]/60" />
+      <div className="h-48 rounded-2xl bg-guild-800" />
       <div className="space-y-3">
-        <div className="h-4 w-28 rounded bg-[#EDE1CB]/60" />
-        <div className="h-28 rounded-xl bg-[#EDE1CB]/40" />
-        <div className="h-28 rounded-xl bg-[#EDE1CB]/40" />
-        <div className="h-28 rounded-xl bg-[#EDE1CB]/40" />
+        <div className="h-4 w-28 rounded bg-guild-800" />
+        <div className="h-28 rounded-xl bg-guild-850" />
+        <div className="h-28 rounded-xl bg-guild-850" />
+        <div className="h-28 rounded-xl bg-guild-850" />
       </div>
       <div className="space-y-3">
-        <div className="h-4 w-24 rounded bg-[#EDE1CB]/60" />
+        <div className="h-4 w-24 rounded bg-guild-800" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="h-20 rounded-xl bg-[#EDE1CB]/40" />
-          <div className="h-20 rounded-xl bg-[#EDE1CB]/40" />
+          <div className="h-20 rounded-xl bg-guild-850" />
+          <div className="h-20 rounded-xl bg-guild-850" />
         </div>
       </div>
     </div>
