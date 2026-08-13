@@ -45,7 +45,14 @@ function AvatarUploadZone({
   inputRef,
 }) {
   const [dragActive, setDragActive] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const dropZoneRef = useRef(null);
+
+  // Reset the broken-image flag whenever the source changes (new upload,
+  // refreshed avatar URL, cleared selection).
+  useEffect(() => {
+    setImgFailed(false);
+  }, [avatarSrc]);
 
   const handleDrag = useCallback((e) => {
     e.preventDefault();
@@ -93,12 +100,12 @@ function AvatarUploadZone({
         aria-label="Change profile picture"
       >
         <span className="relative flex h-28 w-28 sm:h-32 sm:w-32 items-center justify-center overflow-hidden rounded-3xl bg-guild-800 ring-2 ring-gold-500/40 gold-glow transition-all duration-300 hover:ring-gold-500/80">
-          {avatarSrc ? (
+          {avatarSrc && !imgFailed ? (
             <img
               src={avatarSrc}
               alt="Profile"
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              onError={(e) => { e.currentTarget.style.display = "none"; }}
+              onError={() => setImgFailed(true)}
             />
           ) : (
             <FiUser className="text-4xl sm:text-5xl text-gold-400/50" />
@@ -213,9 +220,19 @@ function AvatarUploadZone({
       
       {/* Help Text */}
       {!isUploading && (
-        <p className="mt-3 text-center text-[11px] text-guild-500">
-          JPG, PNG or WEBP &middot; Max 2MB &middot; Square aspect ratio recommended
-        </p>
+        <>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="mt-3 mx-auto flex items-center gap-1.5 rounded-full border border-gold-500/40 bg-gold-500/10 px-4 py-2 text-xs font-bold text-gold-300 hover:bg-gold-500/20 hover:border-gold-500 transition-colors"
+          >
+            <FiCamera className="text-sm" />
+            Change profile picture
+          </button>
+          <p className="mt-2 text-center text-[11px] text-guild-500">
+            JPG, PNG or WEBP &middot; Max 2MB &middot; Square aspect ratio recommended
+          </p>
+        </>
       )}
     </div>
   );
