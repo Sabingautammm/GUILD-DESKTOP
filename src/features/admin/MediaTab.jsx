@@ -3,6 +3,7 @@ import { FiCheck, FiX, FiLoader, FiAlertCircle } from "react-icons/fi";
 import { getPendingMedia, moderateMedia } from "../../services/api/mediaApi";
 import { ApiError } from "../../services/api/client";
 import { useToast } from "../../components/toast/ToastProvider";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 
 export default function MediaTab() {
   const toast = useToast();
@@ -77,9 +78,9 @@ export default function MediaTab() {
       {items.map((m) => (
         <div key={m._id} className="flex items-center gap-4 rounded-xl border border-[#EDE1CB] bg-white p-4">
           {m.type === "video" ? (
-            <video src={m.url} className="h-16 w-24 rounded-lg bg-black object-contain" muted />
+            <video src={resolveMediaUrl(m.url)} className="h-16 w-24 rounded-lg bg-black object-contain" muted />
           ) : (
-            <img src={m.url} alt="" className="h-16 w-24 rounded-lg bg-black object-contain" />
+            <img src={resolveMediaUrl(m.url)} alt="" className="h-16 w-24 rounded-lg bg-black object-contain" />
           )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-[#17120D] truncate">{m.uploaderId?.name ?? "Unknown player"}</p>

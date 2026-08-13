@@ -4,6 +4,7 @@ import { useToast } from "../toast/ToastProvider";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { toggleReaction, addComment } from "../../services/api/mediaApi";
 import { ApiError } from "../../services/api/client";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 
 export default function MediaCard({ media, onChanged }) {
   const toast = useToast();
@@ -69,9 +70,9 @@ export default function MediaCard({ media, onChanged }) {
 
       <div className="bg-black aspect-video flex items-center justify-center overflow-hidden">
         {media.type === "video" ? (
-          <video src={media.url} controls className="w-full h-full object-contain" />
+          <video src={resolveMediaUrl(media.url)} controls className="w-full h-full object-contain" />
         ) : (
-          <img src={media.url} alt="Media" className="w-full h-full object-contain bg-black"
+          <img src={resolveMediaUrl(media.url)} alt="Media" className="w-full h-full object-contain bg-black"
             onError={(e) => { e.currentTarget.style.display = "none"; }} />
         )}
       </div>

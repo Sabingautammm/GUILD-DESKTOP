@@ -9,6 +9,7 @@ import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
 import { getGuildLeaderboard } from "../services/api/leaderboardApi";
 import { getGallery } from "../services/api/mediaApi";
 import { useAuth } from "../features/auth/context/AuthContext";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -192,9 +193,9 @@ function MediaPreviewCard({ previewMedia, feedError }) {
               className="aspect-video rounded-lg bg-black overflow-hidden flex items-center justify-center"
             >
               {m.type === "video" ? (
-                <video src={m.url} className="w-full h-full object-contain" muted playsInline />
+                <video src={resolveMediaUrl(m.url)} className="w-full h-full object-contain" muted playsInline />
               ) : (
-                <img src={m.url} alt="Media preview" className="w-full h-full object-contain" />
+                <img src={resolveMediaUrl(m.url)} alt="Media preview" className="w-full h-full object-contain" />
               )}
             </Link>
           ))}

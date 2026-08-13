@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { PiTrophyFill, PiUsersFill } from "react-icons/pi";
 import { FiLoader, FiAlertCircle, FiChevronDown, FiUsers } from "react-icons/fi";
 import { getGuildLeaderboard, getPlayerLeaderboard } from "../services/api/leaderboardApi";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 
 const RANK_STYLES = {
   gold: { ring: "ring-2 ring-[#E3A012]/40", badge: "bg-gradient-to-br from-[#FFD873] via-[#E3A012] to-[#B9660B] text-[#17120D]", label: "bg-[#E3A012]/15 text-[#8a5200]" },
@@ -28,7 +29,7 @@ function Avatar({ user, inGameName, size = "h-10 w-10 text-sm" }) {
   const initial = (user?.name || inGameName || "?").charAt(0).toUpperCase();
   return user?.avatar ? (
     <img
-      src={user.avatar}
+      src={resolveMediaUrl(user.avatar)}
       alt={user?.name || "avatar"}
       className={`${size} shrink-0 rounded-full object-cover ring-1 ring-[#E3A012]/30`}
       onError={(e) => { e.currentTarget.style.display = "none"; }}

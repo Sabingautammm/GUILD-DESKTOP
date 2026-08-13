@@ -7,6 +7,7 @@ import { MdOutlinePhotoLibrary, MdPhotoLibrary } from "react-icons/md";
 import { FiLogIn, FiBell } from "react-icons/fi";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { getUnreadCount } from "../../services/api/notificationApi";
+import { resolveMediaUrl } from "../../utils/mediaUrl";
 import { useEffect, useRef } from "react";
 
 const logo = "/Logo-removebg-preview.png";
@@ -153,9 +154,18 @@ export default function DesktopNavbar() {
                 onClick={() => setDropdown((d) => !d)}
                 className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-[#17120D]/5"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#FFD873] to-[#B9660B] text-sm font-bold text-[#17120D]">
-                  {user?.name?.charAt(0).toUpperCase() || "?"}
-                </span>
+                {user?.avatar ? (
+                  <img
+                    src={resolveMediaUrl(user.avatar)}
+                    alt={user?.name || "avatar"}
+                    className="h-8 w-8 rounded-full object-cover ring-2 ring-[#E3A012]/40"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                ) : (
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#FFD873] to-[#B9660B] text-sm font-bold text-[#17120D]">
+                    {user?.name?.charAt(0).toUpperCase() || "?"}
+                  </span>
+                )}
               </button>
               {dropdown && (
                 <div

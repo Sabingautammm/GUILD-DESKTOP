@@ -9,6 +9,7 @@ import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
 import { updateMyProfile } from "../features/dashboard/services/playerApi";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 
 const ACCEPT_AVATAR = "image/jpeg,image/png,image/webp";
 const AVATAR_MIMES = ["image/jpeg", "image/png", "image/webp"];
@@ -297,7 +298,7 @@ export default function ProfilePage() {
       <div className="flex items-center gap-4">
         {user?.avatar ? (
           <img
-            src={user.avatar}
+            src={resolveMediaUrl(user.avatar)}
             alt={user?.name}
             className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-[#E3A012]/30"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
@@ -381,7 +382,7 @@ export default function ProfilePage() {
           <span className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E3A012]/15 ring-2 ring-[#E3A012]/30">
             {avatarPreview || user?.avatar ? (
               <img
-                src={avatarPreview || user.avatar}
+                src={avatarPreview || resolveMediaUrl(user?.avatar) || ""}
                 alt="Profile preview"
                 className="h-full w-full object-cover"
                 onError={(e) => { e.currentTarget.style.display = "none"; }}
