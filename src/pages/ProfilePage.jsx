@@ -121,7 +121,7 @@ export default function ProfilePage() {
     try {
       await apiFetch("/auth/change-password", {
         method: "PUT",
-        body: JSON.stringify({ newPassword: password }),
+        body: { newPassword: password },
       });
       toast.success("Password updated", "This session is now signed out. Please sign in again.");
       await logout();

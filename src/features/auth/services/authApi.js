@@ -4,7 +4,7 @@ import { apiFetch } from "../../../services/api/client";
 export function login(payload) {
   return apiFetch("/auth/admin-login", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
 
@@ -12,7 +12,7 @@ export function login(payload) {
 export function googleLogin(token) {
   return apiFetch("/auth/google", {
     method: "POST",
-    body: JSON.stringify({ idToken: token }),
+    body: { idToken: token },
   });
 }
 

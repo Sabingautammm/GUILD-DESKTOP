@@ -7,6 +7,6 @@ export async function getMyProfile() {
 export async function updateMyProfile(payload) {
   return apiFetch("/players/me", {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }
