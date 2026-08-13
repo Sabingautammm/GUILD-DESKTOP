@@ -70,8 +70,9 @@ class ErrorBoundary extends Component {
 }
 
 function AppRoutes() {
-  const { isAuthenticated, isAdmin, isLoading, user } = useAuth();
-  const needsOnboarding = isAuthenticated && !user?.onboardingCompleted;
+  const { isAuthenticated, isAdmin, isLoading, user, membership } = useAuth();
+  const needsOnboarding =
+    isAuthenticated && !user?.onboardingCompleted && !membership;
 
   if (isLoading) {
     return (

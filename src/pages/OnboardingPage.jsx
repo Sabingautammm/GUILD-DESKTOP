@@ -71,6 +71,20 @@ export default function OnboardingPage() {
     );
   }
 
+  const handleAllSetDone = async () => {
+    setError("");
+    setIsBusy(true);
+    try {
+      await completeOnboarding();
+    } catch {
+      // Non-fatal: an active member is always allowed into the dashboard.
+    } finally {
+      setIsBusy(false);
+    }
+    await refresh();
+    navigate("/", { replace: true });
+  };
+
   if (membership && membership.status !== "pending_approval") {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
@@ -80,10 +94,11 @@ export default function OnboardingPage() {
           {membership.role !== "member" && ` (as ${ROLE_LABEL[membership.role]})`}.
         </p>
         <button
-          onClick={() => navigate("/")}
-          className="mt-4 rounded-lg bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873]"
+          onClick={handleAllSetDone}
+          disabled={isBusy}
+          className="mt-4 rounded-lg bg-[#17120D] px-5 py-2 text-sm font-semibold text-[#FFD873] disabled:opacity-60"
         >
-          Go to dashboard
+          {isBusy ? "Finishing setup…" : "Go to dashboard"}
         </button>
       </div>
     );
@@ -130,7 +145,8 @@ export default function OnboardingPage() {
       });
       await refresh();
       const kind = res.status?.kind;
-      if (kind === "leader") {
+      const needsVerification = res.status?.needsVerification;
+      if (kind === "leader" && needsVerification) {
         setStep("leader-verify");
       } else if (kind === "free") {
         setStep("no-guild");
