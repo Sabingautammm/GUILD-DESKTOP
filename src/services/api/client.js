@@ -142,7 +142,7 @@ function defaultMessageForStatus(status) {
     case 401: return "Incorrect email or password.";
     case 403: return "You don't have permission to do that.";
     case 404: return "We couldn't find that.";
-    case 409: return "An account with that email already exists.";
+    case 409: return "A conflict occurred. This may be a duplicate guild UID, game UID, or email.";
     case 422: return "Please fix the highlighted fields.";
     case 429: return "Too many attempts. Please wait a moment and try again.";
     case 500:

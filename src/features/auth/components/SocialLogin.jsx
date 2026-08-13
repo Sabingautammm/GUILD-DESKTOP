@@ -135,6 +135,42 @@ export default function SocialLogin() {
     }
   };
 
+const handlePopupLogin = useCallback(async () => {
+    if (busyRef.current || !GOOGLE_CLIENT_ID) return;
+    busyRef.current = true;
+    setIsSubmitting(true);
+
+    try {
+      await loadGsiScript();
+      if (!window.google?.accounts?.id) throw new Error("GSI not loaded");
+
+      // The GSI callback already routes through cbRef.current
+      // (handleCredentialResponse), which performs the actual login. We only
+      // need prompt() to confirm the popup was displayed — if it wasn't,
+      // reject immediately so the button never hangs in a loading state.
+      await new Promise((resolve, reject) => {
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            reject(new Error("not-displayed"));
+          } else if (notification.getMomentType() === "display") {
+            // Popup shown — the credential callback will fire and complete
+            // the login via handleCredentialResponse. Resolve here; spinner
+            // state is managed by handleCredentialResponse's busyRef.
+            resolve();
+          }
+        });
+      });
+    } catch (err) {
+      console.warn("[SocialLogin] Popup login failed:", err);
+      toast.error(
+        "Google sign-in popup couldn't open. Allow popups for this site, then try the Google button above."
+      );
+    } finally {
+      busyRef.current = false;
+      setIsSubmitting(false);
+    }
+  }, [toast]);
+
   // Mobile: use popup-based flow for better compatibility
   const isMobile = isMobileDevice();
 
@@ -142,59 +178,22 @@ export default function SocialLogin() {
     <div className="flex flex-col items-center gap-3 w-full my-4">
       {GOOGLE_CLIENT_ID ? (
         <>
-          {/* Show GSI button when ready, otherwise show custom button with popup fallback */}
-          {!gsiInitError && gsiButtonReady ? (
-            // GSI button ready - show it
-            <div
-              ref={googleBtnRef}
-              className="flex justify-center w-full min-w-[280px]"
-              aria-label="Continue with Google"
-              style={{ maxWidth: "100%" }}
-            />
-          ) : (
-            // GSI not ready or failed - show custom button with popup
+          {/* GSI button container — always mounted so renderButton always has
+              a target. Hidden (but present) until GSI finishes initializing;
+              the custom popup button shows below while it loads or if GSI
+              fails. */}
+          <div
+            ref={googleBtnRef}
+            className={`justify-center w-full min-w-[280px] ${gsiButtonReady ? "flex" : "hidden"}`}
+            aria-label="Continue with Google"
+            style={{ maxWidth: "100%" }}
+          />
+
+          {/* Fallback custom button while GSI initializes or after a failure */}
+          {(!gsiButtonReady || gsiInitError) && (
             <button
               type="button"
-              onClick={async () => {
-                if (busyRef.current || !GOOGLE_CLIENT_ID) return;
-                busyRef.current = true;
-                setIsSubmitting(true);
-
-                try {
-                  await loadGsiScript();
-                  if (!window.google?.accounts?.id) throw new Error("GSI not loaded");
-
-                  const credential = await new Promise((resolve, reject) => {
-                    window.google.accounts.id.prompt((notification) => {
-                      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        window.google.accounts.id.renderButton(document.createElement("div"), {
-                          theme: "outline",
-                          size: "large",
-                          ux_mode: "popup",
-                        });
-                        setTimeout(() => reject(new Error("User interaction required")), 30000);
-                      }
-                    });
-
-                    window.google.accounts.id.initialize({
-                      client_id: GOOGLE_CLIENT_ID,
-                      callback: (response) => {
-                        if (response?.credential) resolve(response.credential);
-                        else reject(new Error("No credential received"));
-                      },
-                      ux_mode: "popup",
-                    });
-                  });
-
-                  await handleCredentialResponse(credential);
-                } catch (err) {
-                  console.warn("[SocialLogin] Popup login failed:", err);
-                  toast.error("Google sign-in popup was blocked. Please allow popups for this site.");
-                } finally {
-                  busyRef.current = false;
-                  setIsSubmitting(false);
-                }
-              }}
+              onClick={handlePopupLogin}
               disabled={isSubmitting}
               className="flex items-center justify-center gap-2 w-full max-w-[400px] min-h-[48px] rounded-lg border border-gold-500/50 bg-gold-500/10 px-4 py-3 text-sm font-semibold text-gold-300 hover:bg-gold-500/20 hover:border-gold-500 disabled:opacity-50 transition-all"
               aria-label="Continue with Google"
