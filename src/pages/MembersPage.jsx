@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FiSearch, FiUsers, FiLoader, FiAlertCircle, FiShield, FiClock } from "react-icons/fi";
+import { useNavigate, Navigate } from "react-router-dom";
+import { FiSearch, FiUsers, FiLoader, FiAlertCircle, FiClock } from "react-icons/fi";
 import { getGuildLeaderboard } from "../services/api/leaderboardApi";
 import { useAuth } from "../features/auth/context/AuthContext";
-import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 
 export default function MembersPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, role, membership, guild, isAdmin } = useAuth();
+  const { isAuthenticated, role, membership } = useAuth();
   const [guilds, setGuilds] = useState([]);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -48,40 +47,7 @@ export default function MembersPage() {
   }
 
   if (membership && membership.status === "active") {
-    return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 animate-fade-up">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-guild-900 via-guild-850 to-guild-900 ring-1 ring-gold-500/30 p-8 text-cream">
-          <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gold-500/10 blur-3xl" />
-          <p className="relative text-[11px] font-bold uppercase tracking-[0.25em] text-gold-400">Your Guild</p>
-          <h1 className="relative mt-2 text-2xl font-display">{guild?.name ?? `Guild ${membership.guildUid}`}</h1>
-          <p className="relative mt-1 text-xs font-mono text-guild-500">Guild UID {membership.guildUid}</p>
-          <div className="relative mt-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-full gold-gradient-bg px-3 py-1 text-[11px] font-bold text-guild-950">
-              {ROLE_LABEL[membership.role] ?? membership.role}
-            </span>
-          </div>
-          <div className="relative mt-6 flex flex-wrap gap-3">
-            <button
-              onClick={() => navigate(`/guild/${membership.guildUid}`)}
-              className="rounded-full gold-gradient-bg px-5 py-2 text-sm font-bold text-guild-950 gold-glow hover:brightness-110"
-            >
-              View your guild
-            </button>
-            {isAdmin && (
-              <button
-                onClick={() => navigate("/admin/members")}
-                className="flex items-center gap-2 rounded-full border border-guild-600 px-5 py-2 text-sm font-semibold text-guild-200 hover:bg-guild-800"
-              >
-                <FiShield className="text-xs" /> Admin dashboard
-              </button>
-            )}
-          </div>
-        </div>
-        <p className="mt-4 text-center text-xs text-guild-500">
-          You're already a member of a guild — members belong to one guild at a time.
-        </p>
-      </div>
-    );
+    return <Navigate to={`/guild/${membership.guildUid}`} replace />;
   }
 
   return (
