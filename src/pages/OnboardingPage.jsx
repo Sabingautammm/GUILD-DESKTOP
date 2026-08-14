@@ -127,9 +127,10 @@ export default function OnboardingPage() {
       const socialInfo = profileData.socialinfo || {};
       const petInfo = profileData.petinfo || {};
 
-      const extractSoloStats = (modeStats) => {
+      const extractSoloStats = (modeStats, isCS = false) => {
         if (!modeStats) return { matches: 0, kd: 0, headshotRate: 0, winRate: 0, rankPoints: 0 };
-        const solo = modeStats.solostats || {};
+        // BR: stats in solostats, CS: stats in csstats
+        const solo = isCS ? (modeStats.csstats || {}) : (modeStats.solostats || {});
         return {
           matches: Number(solo.gamesplayed || 0),
           kd: Number(solo.kd || 0),
@@ -196,11 +197,11 @@ export default function OnboardingPage() {
         } : null,
         stats: {
           // BR Ranked -> brRank (for "BR Rank" display)
-          brRanked: extractSoloStats(brStatsData.ranked),
+          brRanked: extractSoloStats(brStatsData.ranked, false),
           // CS Ranked -> csRank (for "CS Rank" display)
-          csRanked: extractSoloStats(csStatsData.ranked),
+          csRanked: extractSoloStats(csStatsData.ranked, true),
           // CS Normal -> clashSquadCustom (for "Clash Squad (Custom)" display)
-          csNormal: extractSoloStats(csStatsData.normal),
+          csNormal: extractSoloStats(csStatsData.normal, true),
         },
       };
 
