@@ -131,12 +131,20 @@ export default function OnboardingPage() {
         if (!modeStats) return { matches: 0, kd: 0, headshotRate: 0, winRate: 0, rankPoints: 0 };
         // BR: stats in solostats, CS: stats in csstats
         const solo = isCS ? (modeStats.csstats || {}) : (modeStats.solostats || {});
+        // FF API field names: gamesplayed, wins, kills, detailedstats.headshotKills, detailedstats.deaths
+        // Computed by addRates: kd, headshotRate, winRate
+        // rankPoints may be in score or rankPoints field
+        const games = Number(solo.gamesplayed || 0);
+        const kd = Number(solo.kd || 0);
+        const headshotRate = Number(solo.headshotRate || 0);
+        const winRate = Number(solo.winRate || 0);
+        const rankPoints = Number(solo.rankPoints || solo.score || 0);
         return {
-          matches: Number(solo.gamesplayed || 0),
-          kd: Number(solo.kd || 0),
-          headshotRate: Number(solo.headshotRate || 0),
-          winRate: Number(solo.winRate || 0),
-          rankPoints: Number(solo.rankPoints || solo.score || 0),
+          matches: games,
+          kd,
+          headshotRate,
+          winRate,
+          rankPoints,
         };
       };
 
