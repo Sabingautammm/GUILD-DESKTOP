@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2,
+  FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiTrash2,
   FiUsers, FiArrowRight, FiCamera, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle, FiAlertCircle,
-  FiWifi, FiWifiOff,
+  FiWifi, FiWifiOff, FiCheck,
 } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
@@ -13,7 +13,6 @@ import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
 import { usePlayerStatsSocket } from "../hooks/usePlayerStatsSocket";
-import { updateMyProfile } from "../features/dashboard/services/playerApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import { SkeletonProfile } from "../components/ui/Skeleton";
 
@@ -247,47 +246,6 @@ const STAT_MODES = [
   { key: "clashSquadCustom", title: "Clash Squad (Custom) Match", hasPoints: false },
 ];
 
-const emptyMode = (hasPoints) => ({
-  matches: 0,
-  kd: 0,
-  headshotRate: 0,
-  winRate: 0,
-  ...(hasPoints ? { rankPoints: 0 } : {}),
-});
-
-const num = (v) => {
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : 0;
-};
-
-const statsValid = (stats) => {
-  for (const key of Object.keys(stats)) {
-    const m = stats[key];
-    if (m.matches < 0 || m.kd < 0 || m.headshotRate < 0 || m.headshotRate > 100 || m.winRate < 0 || m.winRate > 100 || (m.rankPoints !== undefined && m.rankPoints < 0)) {
-      return false;
-    }
-  }
-  return true;
-};
-
-function StatField({ label, value, onChange, max, step = "0.01" }) {
-  return (
-    <label className="block">
-      <span className="text-[10px] font-medium uppercase tracking-wide text-guild-400 block mb-1">{label}</span>
-      <input
-        type="number"
-        inputMode="decimal"
-        min="0"
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(num(e.target.value))}
-        className="w-full input-dark px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
-      />
-    </label>
-  );
-}
-
 function SectionCard({ icon: Icon, title, action, children }) {
   return (
     <section className="card-surface p-6 space-y-4 animate-fade-up">
@@ -318,7 +276,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const navigate = useNavigate();
   const { user, membership, role, isAdmin, logout, refresh } = useAuth();
-  const { player, isLoading, refetch } = usePlayerProfile({ enabled: true });
+  const { player, isLoading } = usePlayerProfile({ enabled: true });
   const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?._id, true);
 
   // Merge REST API stats with WebSocket updates (WebSocket takes precedence)
@@ -330,10 +288,6 @@ export default function ProfilePage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [pwError, setPwError] = useState("");
-  const [inGameName, setInGameName] = useState(player?.inGameName || user?.inGameName || "");
-  const nameTouchedRef = useRef(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSavingPw, setIsSavingPw] = useState(false);
 
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
   const avatarInputRef = useRef(null);
@@ -341,13 +295,6 @@ export default function ProfilePage() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState("");
   const [avatarError, setAvatarError] = useState("");
-
-  const [editingStats, setEditingStats] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [statsError, setStatsError] = useState("");
-  const [savingStats, setSavingStats] = useState(false);
-
-  const [editingName, setEditingName] = useState(false);
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -386,70 +333,6 @@ export default function ProfilePage() {
     await logout();
     toast.success("Logged out");
     navigate("/");
-  };
-
-  const saveName = async (e) => {
-    e.preventDefault();
-    if (!inGameName.trim()) return;
-    setIsSaving(true);
-    try {
-      await toast.promise(updateMyProfile({ inGameName: inGameName.trim() }), {
-        loading: "Saving&hellip;",
-        success: "Profile updated",
-        error: (err) => (err instanceof ApiError ? err.message : "Could not update profile."),
-      });
-      nameTouchedRef.current = true;
-      setEditingName(false);
-      await Promise.all([refresh(), refetch()]);
-    } catch {
-      // toast handled it
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Sync the input once the profile loads (or after a save) without
-  // overwriting whatever the user is currently typing.
-  useEffect(() => {
-    if (player?.inGameName && !nameTouchedRef.current) {
-      setInGameName(player.inGameName);
-    }
-  }, [player?.inGameName]);
-
-  const startEditStats = () => {
-    const base = mergedStats || {};
-    const next = {};
-    for (const mode of STAT_MODES) {
-      next[mode.key] = { ...emptyMode(mode.hasPoints) };
-      if (base[mode.key]) {
-        next[mode.key] = { ...next[mode.key], ...base[mode.key] };
-      }
-    }
-    setStats(next);
-    setStatsError("");
-    setEditingStats(true);
-  };
-
-  const saveStats = async () => {
-    if (!stats || !statsValid(stats)) {
-      setStatsError("Invalid values. Use non-negative numbers; Headshot % and Win Rate % must be 0&ndash;100.");
-      return;
-    }
-    setStatsError("");
-    setSavingStats(true);
-    try {
-      await toast.promise(updateMyProfile({ seasonStats: stats }), {
-        loading: "Saving statistics&hellip;",
-        success: "Season stats updated",
-        error: (err) => (err instanceof ApiError ? err.message : "Could not save statistics."),
-      });
-      setEditingStats(false);
-      refetch();
-    } catch {
-      // toast handled it
-    } finally {
-      setSavingStats(false);
-    }
   };
 
   const handleDeleteAccount = async () => {
@@ -658,84 +541,27 @@ export default function ProfilePage() {
       </SectionCard>
 
       {/* PERSONAL INFORMATION */}
-      <SectionCard
-        icon={FiUser}
-        title="Personal Information"
-        action={
-          !editingName && (
-            <button
-              onClick={() => setEditingName(true)}
-              className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
-            >
-              <FiEdit3 /> Edit personal information
-            </button>
-          )
-        }
-      >
-        {editingName ? (
-          <form onSubmit={saveName} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-            <div>
-              <label className="text-xs font-bold text-guild-400">Game</label>
-              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
-                {user?.game || "&mdash;"}
-              </p>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
-              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
-                {user?.gameUid || "&mdash;"}
-              </p>
-            </div>
-            <div className="flex flex-col">
-              <label htmlFor="in-game-name" className="text-xs font-bold text-guild-400">In-Game Name</label>
-              <input
-                id="in-game-name"
-                value={inGameName}
-                onChange={(e) => setInGameName(e.target.value)}
-                placeholder="Your in-game name"
-                className="mt-1 w-full input-dark px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
-              />
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="submit"
-                  disabled={isSaving || !inGameName.trim()}
-                  className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
-                >
-                  {isSaving ? <FiLoader className="animate-spin" /> : <FiCheck />} Save name
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditingName(false)}
-                  disabled={isSaving}
-                  className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
-                >
-                  <FiX /> Cancel
-                </button>
-              </div>
-            </div>
-          </form>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="text-xs font-bold text-guild-400">Game</label>
-              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
-                {user?.game || "&mdash;"}
-              </p>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
-              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
-                {user?.gameUid || "&mdash;"}
-              </p>
-            </div>
-            <div>
-              <label className="text-xs font-bold text-guild-400">In-Game Name</label>
-              <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
-                {user?.inGameName || user?.name || "&mdash;"}
-              </p>
-            </div>
+      <SectionCard icon={FiUser} title="Personal Information">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs font-bold text-guild-400">Game</label>
+            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
+              {user?.game || "&mdash;"}
+            </p>
           </div>
-        )}
+          <div>
+            <label className="text-xs font-bold text-guild-400">Game UID (locked)</label>
+            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm font-mono text-gold-300">
+              {user?.gameUid || "&mdash;"}
+            </p>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-guild-400">In-Game Name</label>
+            <p className="mt-1 rounded-lg border border-guild-800 bg-guild-900 px-3 py-2 text-sm text-guild-200">
+              {user?.inGameName || user?.name || "&mdash;"}
+            </p>
+          </div>
+        </div>
       </SectionCard>
 
       {/* SEASON STATISTICS */}
@@ -743,79 +569,31 @@ export default function ProfilePage() {
         icon={FiAward}
         title="Season Statistics"
         action={
-          <>
-            <span className={`inline-flex items-center gap-1 text-xs ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-              {isConnected ? <FiWifi className="text-xs" /> : <FiWifiOff className="text-xs" />}
-              {isConnected ? 'Live' : 'Offline'}
-            </span>
-            {!editingStats && (
-              <button
-                onClick={startEditStats}
-                className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
-              >
-                <FiEdit3 /> Edit stats
-              </button>
-            )}
-          </>
+          <span className={`inline-flex items-center gap-1 text-xs ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
+            {isConnected ? <FiWifi className="text-xs" /> : <FiWifiOff className="text-xs" />}
+            {isConnected ? 'Live' : 'Offline'}
+          </span>
         }
       >
-        {editingStats && stats ? (
-          <>
-            <div className="space-y-5">
-              {STAT_MODES.map((mode) => (
-                <div key={mode.key} className="rounded-xl border border-guild-700 bg-guild-900 p-4">
-                  <p className="text-sm font-bold text-cream mb-3">{mode.title}</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                    {mode.hasPoints && (
-                      <StatField label={mode.pointsLabel} value={stats[mode.key].rankPoints} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], rankPoints: v } }))} max={undefined} step="1" />
-                    )}
-                    <StatField label="Matches" value={stats[mode.key].matches} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], matches: v } }))} max={undefined} step="1" />
-                    <StatField label="K/D" value={stats[mode.key].kd} onChange={(v) => setStats((s) => ({ ...s, [mode.key]: { ...s[mode.key], kd: v } }))} max={undefined} />
-                    <StatField label="Headshot %" value={stats[mode.key].headshotRate} onChange={(v) => setStats((s) => ({ ...s[mode.key], headshotRate: v }))} max={100} />
-                    <StatField label="Win Rate %" value={stats[mode.key].winRate} onChange={(v) => setStats((s) => ({ ...s[mode.key], winRate: v }))} max={100} />
-                  </div>
+        <div className="space-y-3">
+          {STAT_MODES.map((mode) => {
+            const m = mergedStats?.[mode.key] || {};
+            return (
+              <div key={mode.key} className="rounded-xl border border-guild-700 bg-guild-900 p-4">
+                <p className="text-sm font-bold text-cream mb-2">{mode.title}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+                  {mode.hasPoints && (
+                    <StatTile label={mode.pointsLabel} value={(m.rankPoints ?? 0).toLocaleString()} highlight />
+                  )}
+                  <StatTile label="Matches" value={(m.matches ?? 0).toLocaleString()} />
+                  <StatTile label="K/D" value={(m.kd ?? 0).toFixed(2)} />
+                  <StatTile label="Headshot" value={`${(m.headshotRate ?? 0).toFixed(1)}%`} />
+                  <StatTile label="Win Rate" value={`${(m.winRate ?? 0).toFixed(1)}%`} />
                 </div>
-              ))}
-            </div>
-            {statsError && <p className="text-xs text-red-400">{statsError}</p>}
-            <div className="flex gap-2">
-              <button
-                onClick={saveStats}
-                disabled={savingStats}
-                className="flex items-center gap-1.5 rounded-lg gold-gradient-bg px-4 py-2 text-xs font-bold text-guild-950 hover:brightness-110 disabled:opacity-50"
-              >
-                {savingStats ? <FiLoader className="animate-spin" /> : <FiCheck />} Save stats
-              </button>
-              <button
-                onClick={() => setEditingStats(false)}
-                disabled={savingStats}
-                className="flex items-center gap-1.5 rounded-lg border border-guild-600 px-4 py-2 text-xs font-bold text-guild-300 hover:bg-guild-800 disabled:opacity-50"
-              >
-                <FiX /> Cancel
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-3">
-            {STAT_MODES.map((mode) => {
-              const m = mergedStats?.[mode.key] || {};
-              return (
-                <div key={mode.key} className="rounded-xl border border-guild-700 bg-guild-900 p-4">
-                  <p className="text-sm font-bold text-cream mb-2">{mode.title}</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-                    {mode.hasPoints && (
-                      <StatTile label={mode.pointsLabel} value={(m.rankPoints ?? 0).toLocaleString()} highlight />
-                    )}
-                    <StatTile label="Matches" value={(m.matches ?? 0).toLocaleString()} />
-                    <StatTile label="K/D" value={(m.kd ?? 0).toFixed(2)} />
-                    <StatTile label="Headshot" value={`${(m.headshotRate ?? 0).toFixed(1)}%`} />
-                    <StatTile label="Win Rate" value={`${(m.winRate ?? 0).toFixed(1)}%`} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
       </SectionCard>
 
       {isFree && (
