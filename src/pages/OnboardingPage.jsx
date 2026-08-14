@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiHash, FiCheck } from "react-icons/fi";
-import { getPlayerProfile, getPlayerBRStats, getPlayerCSStats } from "../services/api/ffApi";
-import { completeOnboarding } from "../features/auth/services/authApi";
+import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -99,65 +98,28 @@ export default function OnboardingPage() {
     setFetchedData(null);
 
     try {
-      const [profileRes, brStatsRes, csStatsRes] = await Promise.all([
-        toast.promise(getPlayerProfile(region, uid.trim()), {
-          loading: "Fetching Free Fire profile…",
-          success: "Profile fetched!",
-          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch profile."),
-        }),
-        toast.promise(getPlayerBRStats(region, uid.trim()), {
-          loading: "Fetching BR stats (career/normal/ranked)…",
-          success: "BR stats fetched!",
-          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch BR stats."),
-        }),
-        toast.promise(getPlayerCSStats(region, uid.trim()), {
-          loading: "Fetching CS stats (career/normal/ranked)…",
-          success: "CS stats fetched!",
-          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch CS stats."),
-        }),
-      ]);
+      // Use backend endpoint to fetch Free Fire data with correct UID + Region
+      // This ensures the frontend sends the uid and server (region) to the backend
+      const res = await toast.promise(submitUidRegion(uid.trim(), region), {
+        loading: "Fetching Free Fire profile & stats…",
+        success: "Profile fetched!",
+        error: (e) => (e instanceof ApiError ? e.message : "Could not fetch profile."),
+      });
 
-      const profileData = profileRes;
-      const brStatsData = brStatsRes;
-      const csStatsData = csStatsRes;
+      const bi = res.profile?.profileData?.basicInfo || res.profile?.basicInfo || {};
+      const pi = res.profile?.profileInfo || res.profile?.profileData?.profileInfo || {};
+      const clanBasicInfo = res.profile?.profileData?.clanBasicInfo || res.profile?.clanBasicInfo || {};
+      const socialInfo = res.profile?.profileData?.socialInfo || res.profile?.socialInfo || {};
+      const petInfo = res.profile?.profileData?.petInfo || res.profile?.petInfo || {};
 
-      const bi = profileData.basicinfo || {};
-      const pi = profileData.profileinfo || {};
-      const clanBasicInfo = profileData.clanbasicinfo || {};
-      const socialInfo = profileData.socialinfo || {};
-      const petInfo = profileData.petinfo || {};
-
-      const extractSoloStats = (modeStats, isCS = false) => {
-        if (!modeStats) return { matches: 0, kd: 0, headshotRate: 0, winRate: 0, rankPoints: 0 };
-        // BR: stats in solostats, CS: stats in csstats
-        const solo = isCS ? (modeStats.csstats || {}) : (modeStats.solostats || {});
-        // FF API field names: gamesplayed, wins, kills, detailedstats.headshotKills, detailedstats.deaths
-        // Computed by addRates: kd, headshotRate, winRate
-        // rankPoints may be in score or rankPoints field
-        const games = Number(solo.gamesplayed || 0);
-        const kd = Number(solo.kd || 0);
-        const headshotRate = Number(solo.headshotRate || 0);
-        const winRate = Number(solo.winRate || 0);
-        const rankPoints = Number(solo.rankPoints || solo.score || 0);
-        return {
-          matches: games,
-          kd,
-          headshotRate,
-          winRate,
-          rankPoints,
-        };
-      };
-
-      // Map correctly:
-      // BR Rank = BR Ranked details
-      // CS Rank = CS Ranked details
-      // Clash Squad (Custom) = CS Normal details
+      // Build combinedData from what submitUidRegion returned
+      const stats = res.profile?.stats || {};
       const combinedData = {
-        uid: uid.trim(),
-        region,
-        game: "Free Fire",
-        inGameName: bi.nickname || `Player${uid.trim()}`,
-        avatar: bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : "",
+        uid: res.user?.gameUid || uid.trim(),
+        region: res.user?.region || region,
+        game: res.user?.game || "Free Fire",
+        inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
+        avatar: res.user?.avatar || bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : "",
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
@@ -204,12 +166,26 @@ export default function OnboardingPage() {
           rankShow: socialInfo.rankshow,
         } : null,
         stats: {
-          // BR Ranked -> brRank (for "BR Rank" display)
-          brRanked: extractSoloStats(brStatsData.ranked, false),
-          // CS Ranked -> csRank (for "CS Rank" display)
-          csRanked: extractSoloStats(csStatsData.ranked, true),
-          // CS Normal -> clashSquadCustom (for "Clash Squad (Custom)" display)
-          csNormal: extractSoloStats(csStatsData.normal, true),
+          brRanked: {
+            matches: stats?.brRank?.matches ?? 0,
+            kd: stats?.brRank?.kd ?? 0,
+            headshotRate: stats?.brRank?.headshotRate ?? 0,
+            winRate: stats?.brRank?.winRate ?? 0,
+            rankPoints: stats?.brRank?.rankPoints ?? 0,
+          },
+          csRanked: {
+            matches: stats?.csRank?.matches ?? 0,
+            kd: stats?.csRank?.kd ?? 0,
+            headshotRate: stats?.csRank?.headshotRate ?? 0,
+            winRate: stats?.csRank?.winRate ?? 0,
+            rankPoints: stats?.csRank?.rankPoints ?? 0,
+          },
+          csNormal: {
+            matches: stats?.clashSquadCustom?.matches ?? 0,
+            kd: stats?.clashSquadCustom?.kd ?? 0,
+            headshotRate: stats?.clashSquadCustom?.headshotRate ?? 0,
+            winRate: stats?.clashSquadCustom?.winRate ?? 0,
+          },
         },
       };
 
