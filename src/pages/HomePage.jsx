@@ -1,22 +1,30 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PiTrophyFill, PiUsersFill } from "react-icons/pi";
-import { FiAlertCircle, FiRefreshCw, FiChevronRight } from "react-icons/fi";
+import { FiAlertCircle, FiRefreshCw, FiChevronRight, FiWifi, FiWifiOff } from "react-icons/fi";
 import PlayerIdCard from "../features/dashboard/components/PlayerIDCard";
 import SeasonStatsSection from "../features/dashboard/components/SeasonStatus";
 import RankingCard from "../features/dashboard/components/RankCard";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
+import { usePlayerStatsSocket } from "../hooks/usePlayerStatsSocket";
 import { getGuildLeaderboard } from "../services/api/leaderboardApi";
 import { getGallery } from "../services/api/mediaApi";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { player, isLoading, error, refetch } = usePlayerProfile({ enabled: isAuthenticated });
+  const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?._id, isAuthenticated);
   const [topGuilds, setTopGuilds] = useState([]);
   const [previewMedia, setPreviewMedia] = useState([]);
   const [feedError, setFeedError] = useState(null);
+
+  // Merge REST API stats with WebSocket updates (WebSocket takes precedence)
+  const mergedStats = player?.stats ? {
+    ...player.stats,
+    ...socketStats,
+  } : socketStats;
 
   useEffect(() => {
     let cancelled = false;
@@ -99,10 +107,16 @@ export default function HomePage() {
       <PlayerIdCard player={player} />
 
       <section className="animate-fade-up">
-        <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-400 mb-3">
-          Season Stats
-        </h2>
-        <SeasonStatsSection stats={player.stats} />
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold uppercase tracking-[0.15em] text-guild-400">
+            Season Stats
+          </h2>
+          <span className={`inline-flex items-center gap-1 text-xs ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
+            {isConnected ? <FiWifi className="text-xs" /> : <FiWifiOff className="text-xs" />}
+            {isConnected ? 'Live' : 'Offline'}
+          </span>
+        </div>
+        <SeasonStatsSection stats={mergedStats} />
       </section>
 
       <section className="animate-fade-up">

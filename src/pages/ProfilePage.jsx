@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   FiUser, FiMail, FiShield, FiLogOut, FiPlusCircle, FiLoader, FiEdit3, FiCheck, FiX, FiTrash2,
   FiUsers, FiArrowRight, FiCamera, FiHash, FiAward, FiLock, FiUploadCloud, FiXCircle, FiAlertCircle,
+  FiWifi, FiWifiOff,
 } from "react-icons/fi";
 import PasswordInput from "../features/auth/components/PasswordInput";
 import { apiFetch, ApiError } from "../services/api/client";
@@ -11,6 +12,7 @@ import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
+import { usePlayerStatsSocket } from "../hooks/usePlayerStatsSocket";
 import { updateMyProfile } from "../features/dashboard/services/playerApi";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import { SkeletonProfile } from "../components/ui/Skeleton";
@@ -317,6 +319,13 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, membership, role, isAdmin, logout, refresh } = useAuth();
   const { player, isLoading, refetch } = usePlayerProfile({ enabled: true });
+  const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?._id, true);
+
+  // Merge REST API stats with WebSocket updates (WebSocket takes precedence)
+  const mergedStats = player?.stats ? {
+    ...player.stats,
+    ...socketStats,
+  } : socketStats;
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -408,7 +417,7 @@ export default function ProfilePage() {
   }, [player?.inGameName]);
 
   const startEditStats = () => {
-    const base = player?.stats || {};
+    const base = mergedStats || {};
     const next = {};
     for (const mode of STAT_MODES) {
       next[mode.key] = { ...emptyMode(mode.hasPoints) };
@@ -734,14 +743,20 @@ export default function ProfilePage() {
         icon={FiAward}
         title="Season Statistics"
         action={
-          !editingStats && (
-            <button
-              onClick={startEditStats}
-              className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
-            >
-              <FiEdit3 /> Edit stats
-            </button>
-          )
+          <>
+            <span className={`inline-flex items-center gap-1 text-xs ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
+              {isConnected ? <FiWifi className="text-xs" /> : <FiWifiOff className="text-xs" />}
+              {isConnected ? 'Live' : 'Offline'}
+            </span>
+            {!editingStats && (
+              <button
+                onClick={startEditStats}
+                className="flex items-center gap-1.5 rounded-full border border-guild-600 px-3 py-1.5 text-xs font-bold text-guild-300 hover:bg-guild-800 hover:border-gold-500/40 transition-colors"
+              >
+                <FiEdit3 /> Edit stats
+              </button>
+            )}
+          </>
         }
       >
         {editingStats && stats ? (
@@ -783,7 +798,7 @@ export default function ProfilePage() {
         ) : (
           <div className="space-y-3">
             {STAT_MODES.map((mode) => {
-              const m = player?.stats?.[mode.key] || {};
+              const m = mergedStats?.[mode.key] || {};
               return (
                 <div key={mode.key} className="rounded-xl border border-guild-700 bg-guild-900 p-4">
                   <p className="text-sm font-bold text-cream mb-2">{mode.title}</p>
