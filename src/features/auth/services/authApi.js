@@ -1,14 +1,6 @@
 import { apiFetch } from "../../../services/api/client";
 
-// Leader standalone login (UID + password)
-export function login(payload) {
-  return apiFetch("/auth/admin-login", {
-    method: "POST",
-    body: payload,
-  });
-}
-
-// Google OAuth (dev: mock token; prod: real ID token)
+// Google OAuth (real ID token)
 export function googleLogin(token) {
   return apiFetch("/auth/google", {
     method: "POST",
@@ -22,4 +14,71 @@ export function logout() {
 
 export function getCurrentUser() {
   return apiFetch("/auth/me", { method: "GET" });
+}
+
+// Onboarding steps
+export function submitUidRegion(uid, region) {
+  return apiFetch("/auth/onboarding/uid-region", {
+    method: "POST",
+    body: { uid, region },
+  });
+}
+
+export function selectGame(game) {
+  return apiFetch("/auth/onboarding/game", {
+    method: "POST",
+    body: { game },
+  });
+}
+
+export function submitGameIdentity(gameUid, inGameName) {
+  return apiFetch("/auth/onboarding/game-identity", {
+    method: "POST",
+    body: { gameUid, inGameName: inGameName.trim() },
+  });
+}
+
+export function verifyLeaderPassword(password) {
+  return apiFetch("/auth/onboarding/verify-leader", {
+    method: "POST",
+    body: { password },
+  });
+}
+
+export function checkGuildUid(guildUid) {
+  return apiFetch("/auth/onboarding/guild-uid", {
+    method: "POST",
+    body: { guildUid },
+  });
+}
+
+export function createGuild({ guildUid, name, slogan, leaderPassword, confirmPassword }) {
+  return apiFetch("/auth/onboarding/create-guild", {
+    method: "POST",
+    body: { guildUid, name, slogan, leaderPassword, confirmPassword },
+  });
+}
+
+export function completeOnboarding() {
+  return apiFetch("/auth/onboarding/complete", { method: "POST" });
+}
+
+// Legacy leader login (if needed)
+export function leaderLogin(guildUid, password) {
+  return apiFetch("/auth/admin-login", {
+    method: "POST",
+    body: { guildUid, password },
+  });
+}
+
+// Account management
+export function changePassword(currentPassword, newPassword) {
+  return apiFetch("/auth/change-password", {
+    method: "PUT",
+    body: { currentPassword, newPassword },
+  });
+}
+
+export function deleteAccount() {
+  return apiFetch("/auth/account", { method: "DELETE" });
 }

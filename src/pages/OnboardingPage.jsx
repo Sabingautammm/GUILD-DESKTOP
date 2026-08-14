@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiHash, FiShield, FiCheck, FiPlus, FiLogOut } from "react-icons/fi";
 import {
+  submitUidRegion,
   selectGame,
   submitGameIdentity,
   verifyLeaderPassword,
   createGuild,
   completeOnboarding,
-} from "../services/api/authApi";
+} from "../features/auth/services/authApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -44,8 +45,10 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, membership, refresh } = useAuth();
 
-  const [step, setStep] = useState("game");
+  const [step, setStep] = useState("uid-region");
   const [selectedGame, setSelectedGame] = useState("");
+  const [uid, setUid] = useState("");
+  const [region, setRegion] = useState("");
   const [gameUid, setGameUid] = useState("");
   const [inGameName, setInGameName] = useState("");
   const [leaderPassword, setLeaderPassword] = useState("");
@@ -119,6 +122,32 @@ export default function OnboardingPage() {
       });
       await refresh();
       setStep("identity");
+    } catch {
+      // toast handled
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleSubmitUidRegion = async () => {
+    if (!/^\d+$/.test(uid.trim())) {
+      setError("UID must be numeric.");
+      return;
+    }
+    if (!region) {
+      setError("Please select a region.");
+      return;
+    }
+    setError("");
+    setIsBusy(true);
+    try {
+      await toast.promise(submitUidRegion(uid.trim(), region), {
+        loading: "Saving UID and region…",
+        success: "UID and region saved",
+        error: (e) => (e instanceof ApiError ? e.message : "Could not save UID and region."),
+      });
+      await refresh();
+      setStep("game");
     } catch {
       // toast handled
     } finally {
@@ -253,11 +282,71 @@ export default function OnboardingPage() {
     }
   };
 
+  const REGIONS = [
+    { code: "IND", label: "India" },
+    { code: "BR", label: "Brazil" },
+    { code: "US", label: "United States" },
+    { code: "SAC", label: "South America" },
+    { code: "NA", label: "North America" },
+    { code: "SG", label: "Singapore" },
+    { code: "BD", label: "Bangladesh" },
+    { code: "VN", label: "Vietnam" },
+    { code: "TH", label: "Thailand" },
+    { code: "ID", label: "Indonesia" },
+    { code: "RU", label: "Russia" },
+    { code: "TW", label: "Taiwan" },
+    { code: "ME", label: "Middle East" },
+    { code: "PK", label: "Pakistan" },
+    { code: "CIS", label: "CIS" },
+    { code: "EUROPE", label: "Europe" },
+  ];
+
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
+      {step === "uid-region" && (
+        <div className="card-surface p-6">
+          <StepHeader step={1} total={5} title="Enter your UID and Region" description="This is required to fetch your Free Fire profile." />
+          <div className="space-y-3">
+            <div className="relative">
+              <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
+              <input
+                inputMode="numeric"
+                value={uid}
+                onChange={(e) => setUid(e.target.value.replace(/\D/g, ""))}
+                placeholder="Free Fire UID (numeric)"
+                className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-guild-300 mb-1 block">Region</label>
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+              >
+                <option value="">Select Region</option>
+                {REGIONS.map((r) => (
+                  <option key={r.code} value={r.code}>
+                    {r.label} ({r.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <ErrorBox message={error} />
+          <button
+            onClick={handleSubmitUidRegion}
+            disabled={isBusy}
+            className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {isBusy ? <FiLoader className="animate-spin" /> : "Continue"}
+          </button>
+        </div>
+      )}
+
       {step === "game" && (
         <div className="card-surface p-6">
-          <StepHeader step={1} total={4} title="Which game do you play?" description="Select the game you will compete with in this guild." />
+          <StepHeader step={2} total={5} title="Which game do you play?" description="Select the game you will compete with in this guild." />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {GAMES.map((g) => (
               <button
@@ -286,7 +375,7 @@ export default function OnboardingPage() {
 
       {step === "identity" && (
         <div className="card-surface p-6">
-          <StepHeader step={2} total={4} title="Your game details" description={`Enter your ${selectedGame || ""} UID and in-game name. We'll detect your guild status automatically.`} />
+          <StepHeader step={3} total={5} title="Your game details" description={`Enter your ${selectedGame || ""} UID and in-game name. We'll detect your guild status automatically.`} />
           <div className="space-y-3">
             <div className="relative">
               <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
@@ -318,7 +407,7 @@ export default function OnboardingPage() {
 
       {step === "leader-verify" && (
         <div className="card-surface p-6">
-          <StepHeader step={3} total={4} title="Leader verification" description="You're the Leader of this guild. Confirm with your Leader password to continue." />
+          <StepHeader step={4} total={5} title="Leader verification" description="You're the Leader of this guild. Confirm with your Leader password to continue." />
           <div className="space-y-3">
             <div>
               <label className="text-xs font-bold text-guild-300">Email (read-only)</label>
@@ -353,7 +442,7 @@ export default function OnboardingPage() {
 
       {step === "no-guild" && (
         <div className="card-surface p-6">
-          <StepHeader step={3} total={4} title="You are currently not in a guild" description="Create a new guild to become its Leader, or continue as a Free Player." />
+          <StepHeader step={4} total={5} title="You are currently not in a guild" description="Create a new guild to become its Leader, or continue as a Free Player." />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={() => {
@@ -381,7 +470,7 @@ export default function OnboardingPage() {
 
       {step === "create-guild" && (
         <div className="card-surface p-6">
-          <StepHeader step={4} total={4} title="Create your guild" />
+          <StepHeader step={5} total={5} title="Create your guild" />
           <div className="space-y-3">
             <div>
               <label className="text-xs font-bold text-guild-300">Guild Name *</label>

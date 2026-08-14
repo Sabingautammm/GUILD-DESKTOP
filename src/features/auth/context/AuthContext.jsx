@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getCurrentUser, logout as logoutApi } from "../../../services/api/authApi";
+import { getCurrentUser, logout as logoutApi, googleLogin as googleLoginApi } from "../services/authApi";
 
 const AuthContext = createContext(null);
 
@@ -7,23 +7,52 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [membership, setMembership] = useState(null);
   const [guild, setGuild] = useState(null);
+  const [onboarding, setOnboarding] = useState({
+    needsOnboarding: false,
+    profileCompleted: false,
+    game: null,
+    gameUid: null,
+    region: null,
+    inGameName: null,
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const refresh = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const data = await getCurrentUser();
       setUser(data.user);
-      setMembership(data.membership || data.pendingMembership || null);
+      setMembership(data.membership);
       setGuild(data.guild);
+      setOnboarding(data.onboarding || {});
       setIsAuthenticated(true);
-    } catch {
+    } catch (err) {
       setUser(null);
       setMembership(null);
       setGuild(null);
+      setOnboarding({ needsOnboarding: false, profileCompleted: false });
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const loginWithGoogle = useCallback(async (idToken) => {
+    setError(null);
+    try {
+      const data = await googleLoginApi(idToken);
+      setUser(data.user);
+      setMembership(data.membership);
+      setGuild(data.guild);
+      setOnboarding(data.onboarding || {});
+      setIsAuthenticated(true);
+      return { success: true, onboarding: data.onboarding };
+    } catch (err) {
+      setError(err.message || "Google sign-in failed");
+      return { success: false, error: err.message };
     }
   }, []);
 
@@ -31,21 +60,33 @@ export function AuthProvider({ children }) {
     try {
       await logoutApi();
     } catch {
-      // ignore logout errors
+      // ignore
     }
     setUser(null);
     setMembership(null);
     setGuild(null);
+    setOnboarding({ needsOnboarding: false, profileCompleted: false });
     setIsAuthenticated(false);
+  }, []);
+
+  const updateOnboarding = useCallback((data) => {
+    setOnboarding((prev) => ({ ...prev, ...data }));
+  }, []);
+
+  const setUserData = useCallback((data) => {
+    if (data.user) setUser(data.user);
+    if (data.membership) setMembership(data.membership);
+    if (data.guild) setGuild(data.guild);
+    if (data.onboarding) setOnboarding(data.onboarding);
   }, []);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  // Only compute membership role for clarity of use
-  const role = membership ? membership.role : "free";
+  const role = membership?.role ?? "free";
   const isAdmin = ["leader", "acting_leader", "officer"].includes(role);
+  const needsOnboarding = isAuthenticated && onboarding?.needsOnboarding && !membership;
 
   const value = {
     user,
@@ -55,10 +96,14 @@ export function AuthProvider({ children }) {
     isAdmin,
     isAuthenticated,
     isLoading,
+    onboarding,
+    error,
     refresh,
+    loginWithGoogle,
     logout,
-    setMembership,
-    setGuild,
+    updateOnboarding,
+    setUserData,
+    needsOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
