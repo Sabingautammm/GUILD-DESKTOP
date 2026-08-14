@@ -59,8 +59,11 @@ export function createGuild({ guildUid, name, slogan, leaderPassword, confirmPas
   });
 }
 
-export function completeOnboarding() {
-  return apiFetch("/auth/onboarding/complete", { method: "POST" });
+export function completeOnboarding(ffData) {
+  return apiFetch("/auth/onboarding/complete", {
+    method: "POST",
+    body: ffData,
+  });
 }
 
 // Legacy leader login (if needed)

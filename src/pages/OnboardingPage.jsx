@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLoader, FiHash } from "react-icons/fi";
-import {
-  submitUidRegion,
-} from "../features/auth/services/authApi";
+import { FiLoader, FiHash, FiCheck } from "react-icons/fi";
+import { getPlayerProfile, getPlayerStats } from "../services/api/ffApi";
+import { completeOnboarding } from "../features/auth/services/authApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -47,13 +46,13 @@ const REGIONS = [
 export default function OnboardingPage() {
   const toast = useToast();
   const navigate = useNavigate();
-  const { user, isAuthenticated, membership, refresh } = useAuth();
+  const { isAuthenticated, membership, refresh } = useAuth();
 
-  const [step, setStep] = useState("uid-region");
   const [uid, setUid] = useState("");
   const [region, setRegion] = useState("");
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [fetchedData, setFetchedData] = useState(null);
 
   if (!isAuthenticated) {
     return (
@@ -86,7 +85,7 @@ export default function OnboardingPage() {
     );
   }
 
-  const handleSubmitUidRegion = async () => {
+  const handleFetchProfile = async () => {
     if (!/^\d+$/.test(uid.trim())) {
       setError("UID must be numeric.");
       return;
@@ -97,16 +96,124 @@ export default function OnboardingPage() {
     }
     setError("");
     setIsBusy(true);
+    setFetchedData(null);
+
     try {
-      await toast.promise(submitUidRegion(uid.trim(), region), {
-        loading: "Fetching your Free Fire profile…",
-        success: "Profile fetched! Redirecting…",
-        error: (e) => (e instanceof ApiError ? e.message : "Could not fetch profile."),
+      const [profileRes, statsRes] = await Promise.all([
+        toast.promise(getPlayerProfile(region, uid.trim()), {
+          loading: "Fetching Free Fire profile…",
+          success: "Profile fetched!",
+          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch profile."),
+        }),
+        toast.promise(getPlayerStats(region, uid.trim(), "br"), {
+          loading: "Fetching BR stats (career/normal/ranked)…",
+          success: "Stats fetched!",
+          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch stats."),
+        }),
+      ]);
+
+      const profileData = profileRes;
+      const statsData = statsRes;
+
+      const bi = profileData.basicinfo || {};
+      const pi = profileData.profileinfo || {};
+      const clanBasicInfo = profileData.clanbasicinfo || {};
+      const socialInfo = profileData.socialinfo || {};
+      const petInfo = profileData.petinfo || {};
+
+      const extractSoloStats = (modeStats) => {
+        if (!modeStats) return { matches: 0, kd: 0, headshotRate: 0, winRate: 0, rankPoints: 0 };
+        const solo = modeStats.solostats || {};
+        return {
+          matches: Number(solo.gamesplayed || 0),
+          kd: Number(solo.kd || 0),
+          headshotRate: Number(solo.headshotRate || 0),
+          winRate: Number(solo.winRate || 0),
+          rankPoints: Number(solo.rankPoints || solo.score || 0),
+        };
+      };
+
+      const combinedData = {
+        uid: uid.trim(),
+        region,
+        game: "Free Fire",
+        inGameName: bi.nickname || `Player${uid.trim()}`,
+        avatar: bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : "",
+        basicInfo: {
+          accountId: bi.accountid,
+          level: bi.level,
+          exp: bi.exp,
+          rank: bi.rank,
+          csRank: bi.csrank,
+          badgeId: bi.badgeid,
+          bannerId: bi.bannerid,
+          headPic: bi.headpic,
+          title: bi.title,
+          releaseVersion: bi.releaseversion,
+          liked: bi.liked,
+          lastLoginAt: bi.lastloginat,
+          createAt: bi.createat,
+        },
+        profileInfo: {
+          avatarId: pi.avatarid,
+          clothes: pi.clothes,
+          equipedSkills: pi.equipedskills,
+          pvePrimaryWeapon: pi.pveprimaryweapon,
+        },
+        clanBasicInfo: clanBasicInfo ? {
+          clanId: clanBasicInfo.clanid,
+          clanName: clanBasicInfo.clanname,
+          clanLevel: clanBasicInfo.clanlevel,
+          memberNum: clanBasicInfo.membernum,
+          captainId: clanBasicInfo.captainid,
+        } : null,
+        petInfo: petInfo ? {
+          id: petInfo.id,
+          level: petInfo.level,
+          exp: petInfo.exp,
+          isSelected: petInfo.isselected,
+          skinId: petInfo.skinid,
+          selectedSkillId: petInfo.selectedskillid,
+        } : null,
+        socialInfo: socialInfo ? {
+          gender: socialInfo.gender,
+          language: socialInfo.language,
+          battleTag: socialInfo.battletag,
+          socialTag: socialInfo.socialtag,
+          modePrefer: socialInfo.modeprefer,
+          signature: socialInfo.signature,
+          rankShow: socialInfo.rankshow,
+        } : null,
+        stats: {
+          career: extractSoloStats(statsData.career),
+          normal: extractSoloStats(statsData.normal),
+          ranked: extractSoloStats(statsData.ranked),
+        },
+      };
+
+      setFetchedData(combinedData);
+      toast.success("Data fetched successfully! Click confirm to complete onboarding.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to fetch data. Please try again.");
+    } finally {
+      setIsBusy(false);
+    }
+  };
+
+  const handleCompleteOnboarding = async () => {
+    if (!fetchedData) return;
+    setIsBusy(true);
+    setError("");
+    try {
+      await toast.promise(completeOnboarding(fetchedData), {
+        loading: "Completing onboarding…",
+        success: "Onboarding complete! Redirecting…",
+        error: (e) => (e instanceof ApiError ? e.message : "Could not complete onboarding."),
       });
       await refresh();
       navigate("/", { replace: true });
-    } catch {
-      // toast handled
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to complete onboarding.");
     } finally {
       setIsBusy(false);
     }
@@ -115,42 +222,96 @@ export default function OnboardingPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-10">
       <div className="card-surface p-6">
-        <StepHeader step={1} total={1} title="Enter your UID and Region" description="This will fetch your Free Fire profile and stats automatically." />
-        <div className="space-y-3">
-          <div className="relative">
-            <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
-            <input
-              inputMode="numeric"
-              value={uid}
-              onChange={(e) => setUid(e.target.value.replace(/\D/g, ""))}
-              placeholder="Free Fire UID (numeric)"
-              className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-guild-300 mb-1 block">Region</label>
-            <select
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+        {!fetchedData ? (
+          <>
+            <StepHeader step={1} total={2} title="Enter your UID and Region" description="We'll fetch your Free Fire profile and stats automatically." />
+            <div className="space-y-3">
+              <div className="relative">
+                <FiHash className="absolute left-3 top-1/2 -translate-y-1/2 text-guild-500 text-sm" />
+                <input
+                  inputMode="numeric"
+                  value={uid}
+                  onChange={(e) => setUid(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Free Fire UID (numeric)"
+                  className="w-full input-dark rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-guild-300 mb-1 block">Region</label>
+                <select
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  className="w-full input-dark rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500"
+                >
+                  <option value="">Select Region</option>
+                  {REGIONS.map((r) => (
+                    <option key={r.code} value={r.code}>
+                      {r.label} ({r.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <ErrorBox message={error} />
+            <button
+              onClick={handleFetchProfile}
+              disabled={isBusy}
+              className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <option value="">Select Region</option>
-              {REGIONS.map((r) => (
-                <option key={r.code} value={r.code}>
-                  {r.label} ({r.code})
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <ErrorBox message={error} />
-        <button
-          onClick={handleSubmitUidRegion}
-          disabled={isBusy}
-          className="mt-6 w-full rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
-        >
-          {isBusy ? <FiLoader className="animate-spin" /> : "Fetch Profile & Continue"}
-        </button>
+              {isBusy ? <FiLoader className="animate-spin" /> : "Fetch Profile & Stats"}
+            </button>
+          </>
+        ) : (
+          <>
+            <StepHeader step={2} total={2} title="Confirm & Complete" description="Review your fetched data and complete onboarding." />
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3 p-3 bg-guild-800/50 rounded-lg">
+                {fetchedData.avatar ? (
+                  <img src={fetchedData.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 font-bold text-xl">
+                    {fetchedData.inGameName?.[0] || "P"}
+                  </div>
+                )}
+                <div>
+                  <p className="font-display text-cream font-semibold">{fetchedData.inGameName}</p>
+                  <p className="text-guild-400">UID: <span className="font-mono">{fetchedData.uid}</span></p>
+                  <p className="text-guild-400">Region: <span className="font-mono">{fetchedData.region}</span></p>
+                  <p className="text-guild-400">Level: <span className="font-semibold text-gold-300">{fetchedData.basicInfo?.level || "N/A"}</span></p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-2 bg-guild-800/50 rounded-lg">
+                  <p className="text-xs text-guild-400">Career Matches</p>
+                  <p className="font-bold text-cream">{fetchedData.stats?.career?.matches || 0}</p>
+                </div>
+                <div className="p-2 bg-guild-800/50 rounded-lg">
+                  <p className="text-xs text-guild-400">Normal Matches</p>
+                  <p className="font-bold text-cream">{fetchedData.stats?.normal?.matches || 0}</p>
+                </div>
+                <div className="p-2 bg-guild-800/50 rounded-lg">
+                  <p className="text-xs text-guild-400">Ranked Matches</p>
+                  <p className="font-bold text-cream">{fetchedData.stats?.ranked?.matches || 0}</p>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setFetchedData(null)}
+                  className="flex-1 rounded-lg bg-guild-700 py-2.5 text-sm font-bold text-guild-300 hover:bg-guild-600"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleCompleteOnboarding}
+                  disabled={isBusy}
+                  className="flex-1 rounded-lg gold-gradient-bg py-2.5 text-sm font-bold text-guild-950 hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {isBusy ? <FiLoader className="animate-spin" /> : <>Complete Onboarding <FiCheck className="w-4 h-4" /></>}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
