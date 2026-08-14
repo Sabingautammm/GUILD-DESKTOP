@@ -4,8 +4,9 @@ import { resolveMediaUrl } from "../../../utils/mediaUrl";
 import Avatar from "../../../components/ui/Avatar";
 
 export default function PlayerIdCard({ player }) {
-  const { personalUid, inGameName, role, guildUid, guildName, avatar } = player;
+  const { gameUid, personalUid, inGameName, role, guildUid, guildName, avatar } = player;
   const initial = inGameName.trim().charAt(0).toUpperCase() || "?";
+  const displayUid = gameUid || personalUid;
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-guild-900 via-guild-850 to-guild-900 ring-1 ring-gold-500/25 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]">
@@ -40,7 +41,7 @@ export default function PlayerIdCard({ player }) {
             <p className="truncate text-xl sm:text-2xl font-display text-cream">{inGameName}</p>
             <div className="mt-1 flex items-center gap-1.5 text-gold-400/90">
               <FiHash className="text-xs shrink-0" />
-              <span className="font-mono text-xs sm:text-sm tracking-[0.15em]">{personalUid}</span>
+              <span className="font-mono text-xs sm:text-sm tracking-[0.15em]">{displayUid}</span>
             </div>
           </div>
         </div>

@@ -7,6 +7,7 @@ export const ROLE_LABEL = {
 };
 
 export const MOCK_PLAYER = {
+  gameUid: "1806252625",
   personalUid: "1806252625",
   inGameName: "Desert7x",
   role: "leader",
