@@ -6,8 +6,14 @@ export function getPlayerProfile(server, uid) {
   });
 }
 
-export function getPlayerStats(server, uid, mode = "br") {
-  return apiFetch(`/ff/player/stats?server=${server}&uid=${uid}&mode=${mode}`, {
+export function getPlayerBRStats(server, uid) {
+  return apiFetch(`/ff/player/stats?server=${server}&uid=${uid}&mode=br`, {
+    method: "GET",
+  });
+}
+
+export function getPlayerCSStats(server, uid) {
+  return apiFetch(`/ff/player/stats?server=${server}&uid=${uid}&mode=cs`, {
     method: "GET",
   });
 }

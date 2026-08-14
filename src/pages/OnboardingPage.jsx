@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiHash, FiCheck } from "react-icons/fi";
-import { getPlayerProfile, getPlayerStats } from "../services/api/ffApi";
+import { getPlayerProfile, getPlayerBRStats, getPlayerCSStats } from "../services/api/ffApi";
 import { completeOnboarding } from "../features/auth/services/authApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
@@ -99,21 +99,27 @@ export default function OnboardingPage() {
     setFetchedData(null);
 
     try {
-      const [profileRes, statsRes] = await Promise.all([
+      const [profileRes, brStatsRes, csStatsRes] = await Promise.all([
         toast.promise(getPlayerProfile(region, uid.trim()), {
           loading: "Fetching Free Fire profile…",
           success: "Profile fetched!",
           error: (e) => (e instanceof ApiError ? e.message : "Could not fetch profile."),
         }),
-        toast.promise(getPlayerStats(region, uid.trim(), "br"), {
+        toast.promise(getPlayerBRStats(region, uid.trim()), {
           loading: "Fetching BR stats (career/normal/ranked)…",
-          success: "Stats fetched!",
-          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch stats."),
+          success: "BR stats fetched!",
+          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch BR stats."),
+        }),
+        toast.promise(getPlayerCSStats(region, uid.trim()), {
+          loading: "Fetching CS stats (career/normal/ranked)…",
+          success: "CS stats fetched!",
+          error: (e) => (e instanceof ApiError ? e.message : "Could not fetch CS stats."),
         }),
       ]);
 
       const profileData = profileRes;
-      const statsData = statsRes;
+      const brStatsData = brStatsRes;
+      const csStatsData = csStatsRes;
 
       const bi = profileData.basicinfo || {};
       const pi = profileData.profileinfo || {};
@@ -133,6 +139,10 @@ export default function OnboardingPage() {
         };
       };
 
+      // Map correctly:
+      // BR Rank = BR Ranked details
+      // CS Rank = CS Ranked details
+      // Clash Squad (Custom) = CS Normal details
       const combinedData = {
         uid: uid.trim(),
         region,
@@ -185,9 +195,12 @@ export default function OnboardingPage() {
           rankShow: socialInfo.rankshow,
         } : null,
         stats: {
-          career: extractSoloStats(statsData.career),
-          normal: extractSoloStats(statsData.normal),
-          ranked: extractSoloStats(statsData.ranked),
+          // BR Ranked -> brRank (for "BR Rank" display)
+          brRanked: extractSoloStats(brStatsData.ranked),
+          // CS Ranked -> csRank (for "CS Rank" display)
+          csRanked: extractSoloStats(csStatsData.ranked),
+          // CS Normal -> clashSquadCustom (for "Clash Squad (Custom)" display)
+          csNormal: extractSoloStats(csStatsData.normal),
         },
       };
 
@@ -282,16 +295,16 @@ export default function OnboardingPage() {
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="p-2 bg-guild-800/50 rounded-lg">
-                  <p className="text-xs text-guild-400">Career Matches</p>
-                  <p className="font-bold text-cream">{fetchedData.stats?.career?.matches || 0}</p>
+                  <p className="text-xs text-guild-400">BR Ranked</p>
+                  <p className="font-bold text-cream">{fetchedData.stats?.brRanked?.matches || 0}</p>
                 </div>
                 <div className="p-2 bg-guild-800/50 rounded-lg">
-                  <p className="text-xs text-guild-400">Normal Matches</p>
-                  <p className="font-bold text-cream">{fetchedData.stats?.normal?.matches || 0}</p>
+                  <p className="text-xs text-guild-400">CS Ranked</p>
+                  <p className="font-bold text-cream">{fetchedData.stats?.csRanked?.matches || 0}</p>
                 </div>
                 <div className="p-2 bg-guild-800/50 rounded-lg">
-                  <p className="text-xs text-guild-400">Ranked Matches</p>
-                  <p className="font-bold text-cream">{fetchedData.stats?.ranked?.matches || 0}</p>
+                  <p className="text-xs text-guild-400">CS Normal</p>
+                  <p className="font-bold text-cream">{fetchedData.stats?.csNormal?.matches || 0}</p>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
