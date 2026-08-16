@@ -4,6 +4,7 @@ export default function RankingCard({ icon: Icon, title, rank, subtitle, emptyLa
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full gold-gradient-bg text-guild-950">
         <Icon className="text-lg" />
       </span>
+      {/* hekkhgghfkjgf */}
       <div className="min-w-0">
         <p className="text-[11px] font-medium uppercase tracking-wide text-guild-400">{title}</p>
         {rank > 0 ? (
