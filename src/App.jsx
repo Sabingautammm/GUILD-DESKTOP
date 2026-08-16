@@ -13,6 +13,7 @@ const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const MembersPage = lazy(() => import("./pages/MembersPage"));
 const MemberDetailsPage = lazy(() => import("./pages/MemberDetailsPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const EnterUidRegionPage = lazy(() => import("./pages/EnterUidRegionPage"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const GalleryPage = lazy(() => import("./pages/GalleryPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
@@ -95,8 +96,8 @@ class ErrorBoundary extends Component {
 
 function AppRoutes() {
   const { isAuthenticated, isAdmin, isLoading, user, membership } = useAuth();
-  const needsOnboarding =
-    isAuthenticated && !user?.onboardingCompleted && !membership;
+  // Redirect to Enter UID/Region page if user needs to complete initial profile setup
+  const needsUidRegion = isAuthenticated && !user?.onboardingCompleted && !membership;
 
   if (isLoading) {
     return <AppLoadingSkeleton />;
@@ -106,7 +107,7 @@ function AppRoutes() {
     <Suspense fallback={<RouteFallback />}>
       <ErrorBoundary>
         <Routes>
-        <Route path="/" element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <HomePage />} />
+        <Route path="/" element={needsUidRegion ? <Navigate to="/enter-uid-region" replace /> : <HomePage />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/reel" element={<ReelPage />} />
@@ -117,20 +118,24 @@ function AppRoutes() {
 
         <Route element={<ProtectedRoutes isAuthenticated={isAuthenticated} />}>
           <Route
+            path="/enter-uid-region"
+            element={needsUidRegion ? <EnterUidRegionPage /> : <Navigate to="/" replace />}
+          />
+          <Route
             path="/onboarding"
-            element={needsOnboarding ? <OnboardingPage /> : <Navigate to="/" replace />}
+            element={needsUidRegion ? <OnboardingPage /> : <Navigate to="/" replace />}
           />
           <Route
             path="/profile"
-            element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <ProfilePage />}
+            element={needsUidRegion ? <Navigate to="/enter-uid-region" replace /> : <ProfilePage />}
           />
           <Route
             path="/notifications"
-            element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <NotificationsPage />}
+            element={needsUidRegion ? <Navigate to="/enter-uid-region" replace /> : <NotificationsPage />}
           />
           <Route
             path="/members/:id"
-            element={needsOnboarding ? <Navigate to="/onboarding" replace /> : <MemberDetailsPage />}
+            element={needsUidRegion ? <Navigate to="/enter-uid-region" replace /> : <MemberDetailsPage />}
           />
           <Route element={<ProtectedRoutes isAuthenticated={isAuthenticated && isAdmin} />}>
             <Route path="/admin/*" element={<AdminPage />} />

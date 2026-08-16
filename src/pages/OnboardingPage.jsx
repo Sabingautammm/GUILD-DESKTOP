@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLoader, FiHash, FiCheck } from "react-icons/fi";
+import { FiLoader, FiHash, FiCheck, FiHeart, FiStar, FiTrendingUp } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
+import { getPlayerProfile, getPlayerRank } from "../services/api/ffApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -21,6 +22,73 @@ function StepHeader({ step, total, title, description }) {
 function ErrorBox({ message }) {
   if (!message) return null;
   return <p className="mt-2 text-xs text-red-400">{message}</p>;
+}
+
+// Pick the first defined value (merges /ff/player/rank + /ff/player/profile data).
+function firstDefined(...values) {
+  return values.find((v) => v !== undefined && v !== null && v !== "");
+}
+
+// Small live Free Fire preview shown after the onboarding fetch succeeds.
+// Fed by getPlayerProfile + getPlayerRank; failures degrade to subtle text only.
+function FfPreviewBox({ preview, fallback }) {
+  const bi = preview.profile?.basicinfo ?? {};
+  const rank = preview.rank ?? {};
+  const nickname = firstDefined(rank.nickname, bi.nickname, fallback.inGameName) ?? "—";
+  const level = firstDefined(rank.level, bi.level, fallback.basicInfo?.level) ?? "—";
+  const region = firstDefined(rank.region, bi.region, fallback.region) ?? "—";
+  const likes = firstDefined(rank.likes, bi.liked);
+  const brTier = firstDefined(rank.br?.tier, bi.rank);
+  const brSub = firstDefined(rank.br?.sub);
+  const brPoints = firstDefined(rank.br?.points, bi.rankingpoints);
+  const csTier = firstDefined(rank.cs?.tier, bi.csrank);
+  const csStars = firstDefined(rank.cs?.stars, rank.cs?.marks, bi.csrankingpoints);
+
+  return (
+    <div className="rounded-lg border border-guild-700 bg-guild-900 p-3 space-y-2">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-gold-400">Free Fire Preview</p>
+      {preview.status === "loading" && <p className="text-xs text-guild-500">Loading live profile &amp; rank…</p>}
+      {preview.status === "error" && <p className="text-xs text-guild-500">Couldn't load preview.</p>}
+      {preview.status === "loaded" && (
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-bold text-cream truncate">{nickname}</p>
+            <p className="text-xs text-guild-400 shrink-0">
+              {region} · Level <span className="font-semibold text-gold-300">{level}</span>
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-2 bg-guild-800/50 rounded-lg">
+              <p className="flex items-center justify-center gap-1 text-[10px] font-medium uppercase tracking-wide text-guild-400">
+                <FiTrendingUp className="text-xs" /> BR Rank
+              </p>
+              <p className="text-sm font-bold text-cream truncate">
+                {brTier != null ? [brTier, brSub].filter(Boolean).join(" ") : "—"}
+              </p>
+              <p className="text-[11px] text-gold-300">
+                {brPoints != null ? `${Number(brPoints).toLocaleString()} pts` : ""}
+              </p>
+            </div>
+            <div className="p-2 bg-guild-800/50 rounded-lg">
+              <p className="flex items-center justify-center gap-1 text-[10px] font-medium uppercase tracking-wide text-guild-400">
+                <FiStar className="text-xs" /> CS Stars
+              </p>
+              <p className="text-sm font-bold text-cream truncate">{csTier != null ? csTier : "—"}</p>
+              <p className="text-[11px] text-gold-300">{csStars != null ? `${csStars}★` : ""}</p>
+            </div>
+            <div className="p-2 bg-guild-800/50 rounded-lg">
+              <p className="flex items-center justify-center gap-1 text-[10px] font-medium uppercase tracking-wide text-guild-400">
+                <FiHeart className="text-xs" /> Likes
+              </p>
+              <p className="text-sm font-bold text-cream truncate">
+                {likes != null ? Number(likes).toLocaleString() : "—"}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 const REGIONS = [
@@ -52,6 +120,8 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [fetchedData, setFetchedData] = useState(null);
+  // Live FF preview: { status: "loading" | "loaded" | "error", profile, rank }
+  const [ffPreview, setFfPreview] = useState(null);
 
   if (!isAuthenticated) {
     return (
@@ -96,6 +166,7 @@ export default function OnboardingPage() {
     setError("");
     setIsBusy(true);
     setFetchedData(null);
+    setFfPreview(null);
 
     try {
       // Use backend endpoint to fetch Free Fire data with correct UID + Region
@@ -191,10 +262,33 @@ export default function OnboardingPage() {
 
       setFetchedData(combinedData);
       toast.success("Data fetched successfully! Click confirm to complete onboarding.");
+      // Non-blocking live Free Fire preview — never blocks (or breaks) onboarding.
+      loadFfPreview(uid.trim(), region);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to fetch data. Please try again.");
     } finally {
       setIsBusy(false);
+    }
+  };
+
+  // Optional live preview via the real FF API. Failure only shows a subtle
+  // "couldn't load preview" text — onboarding stays fully functional.
+  const loadFfPreview = async (server, previewUid) => {
+    setFfPreview({ status: "loading", profile: null, rank: null });
+    try {
+      const [profileResult, rankResult] = await Promise.allSettled([
+        getPlayerProfile(server, previewUid),
+        getPlayerRank(server, previewUid),
+      ]);
+      const profile = profileResult.status === "fulfilled" ? profileResult.value?.data ?? null : null;
+      const rank = rankResult.status === "fulfilled" ? rankResult.value?.data ?? null : null;
+      if (!profile && !rank) {
+        setFfPreview({ status: "error", profile: null, rank: null });
+        return;
+      }
+      setFfPreview({ status: "loaded", profile, rank });
+    } catch {
+      setFfPreview({ status: "error", profile: null, rank: null });
     }
   };
 
@@ -292,6 +386,7 @@ export default function OnboardingPage() {
                   <p className="font-bold text-cream">{fetchedData.stats?.csNormal?.matches || 0}</p>
                 </div>
               </div>
+              {ffPreview && <FfPreviewBox preview={ffPreview} fallback={fetchedData} />}
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setFetchedData(null)}
