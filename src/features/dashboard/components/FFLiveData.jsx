@@ -106,6 +106,21 @@ function PassGrid({ kind, passes }) {
                 : "border-guild-700 bg-guild-950"
             }`}
           >
+            {p.url ? (
+              <img
+                src={resolveMediaUrl(p.url)}
+                alt={p.icon || `Season ${p.eventId}`}
+                className="mb-1 h-9 w-9 rounded-md object-contain"
+                onError={(e) => {
+                  if (p.fallbackUrl) {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = resolveMediaUrl(p.fallbackUrl);
+                  } else {
+                    e.currentTarget.style.display = "none";
+                  }
+                }}
+              />
+            ) : null}
             <span className={`text-xs font-display font-bold ${p.owned ? "text-gold-300" : "text-guild-300"}`}>
               {kind === "booyah" ? `Lv. ${capped.toLocaleString()}` : capped.toLocaleString()}
             </span>
