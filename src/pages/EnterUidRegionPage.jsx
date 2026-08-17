@@ -147,7 +147,7 @@ export default function EnterUidRegionPage() {
           headPic: bi.headpic,
           title: bi.title,
           releaseVersion: bi.releaseversion,
-          liked: bi.liked,
+          liked: bi.likes ?? bi.liked,
           lastLoginAt: bi.lastloginat,
           createAt: bi.createat,
         },

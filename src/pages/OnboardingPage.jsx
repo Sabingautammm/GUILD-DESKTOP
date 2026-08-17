@@ -37,7 +37,7 @@ function FfPreviewBox({ preview, fallback }) {
   const nickname = firstDefined(rank.nickname, bi.nickname, fallback.inGameName) ?? "—";
   const level = firstDefined(rank.level, bi.level, fallback.basicInfo?.level) ?? "—";
   const region = firstDefined(rank.region, bi.region, fallback.region) ?? "—";
-  const likes = firstDefined(rank.likes, bi.liked);
+  const likes = firstDefined(rank.likes, bi.liked, bi.likes);
   const brTier = firstDefined(rank.br?.tier, bi.rank);
   const brSub = firstDefined(rank.br?.sub);
   const brPoints = firstDefined(rank.br?.points, bi.rankingpoints);
@@ -202,7 +202,7 @@ export default function OnboardingPage() {
           headPic: bi.headpic,
           title: bi.title,
           releaseVersion: bi.releaseversion,
-          liked: bi.liked,
+          liked: bi.likes ?? bi.liked,
           lastLoginAt: bi.lastloginat,
           createAt: bi.createat,
         },
