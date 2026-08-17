@@ -14,7 +14,7 @@ export default function ModeStatsCard({ icon: Icon, title, stats, rankPointsIcon
         {stats.rankPoints !== undefined && (
           <span className="inline-flex items-center gap-1 rounded-full gold-gradient-bg px-2.5 py-1 text-[11px] font-bold text-guild-950">
             {RankIcon && <RankIcon className="text-xs" />}
-            {stats.rankPoints.toLocaleString()} {rankPointsLabel}
+            {stats.stars != null ? `\u2605 ${stats.stars}` : `${stats.rankPoints.toLocaleString()}`} {stats.stars != null ? "" : rankPointsLabel}
           </span>
         )}
       </div>
