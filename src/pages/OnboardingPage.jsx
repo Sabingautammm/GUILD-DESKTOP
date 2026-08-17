@@ -198,7 +198,8 @@ export default function OnboardingPage() {
         region: res.user?.region || region,
         game: res.user?.game || "Free Fire",
         inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
-        avatar: res.user?.avatar || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : ""),
+        avatar: res.user?.avatar || (bi.avatarUrl || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : "")),
+        avatarUrl: bi.avatarUrl || "",
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
@@ -368,7 +369,7 @@ export default function OnboardingPage() {
               <div className="flex items-center gap-3 p-3 bg-guild-800/50 rounded-lg">
                 {fetchedData.avatar && !avatarImgFailed ? (
                   <img
-                    src={ffAssetUrl(fetchedData.avatar, "300x300")}
+                    src={fetchedData.avatarUrl || ffAssetUrl(fetchedData.avatar, "300x300")}
                     alt=""
                     onError={() => setAvatarImgFailed(true)}
                     className="w-12 h-12 rounded-full object-cover"

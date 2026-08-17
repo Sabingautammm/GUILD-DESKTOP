@@ -147,8 +147,9 @@ export default function EnterUidRegionPage() {
         inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
         // avatar = numeric headpic id from the backend basicInfo (902000306…);
         // ffAssetUrl() attempts the public CDN — onError falls back to initials.
-        avatar: res.user?.avatar || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : ""),
-        banner: bi.bannerid || bi.bannerId ? String(bi.bannerid || bi.bannerId) : "",
+        avatar: res.user?.avatar || (bi.avatarUrl || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : "")),
+        avatarUrl: bi.avatarUrl || "",
+        banner: bi.bannerUrl || String(bi.bannerid || bi.bannerId || ""),
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
@@ -369,7 +370,7 @@ export default function EnterUidRegionPage() {
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
                   {fetchedData.avatar && !avatarImgFailed ? (
                     <img 
-                      src={ffAssetUrl(fetchedData.avatar, "300x300")}
+                      src={fetchedData.avatarUrl || ffAssetUrl(fetchedData.avatar, "300x300")}
                       alt={fetchedData.inGameName} 
                       onError={() => setAvatarImgFailed(true)}
                       className="w-full h-full rounded-full object-cover border-2 border-gold-500/50"
