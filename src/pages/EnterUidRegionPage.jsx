@@ -374,63 +374,55 @@ export default function EnterUidRegionPage() {
                   Live verification skipped — could not reach Free Fire. Proceed only if the data below matches your in-game profile.
                 </p>
               )}
-              {/* Banner Section */}
-              {/* {fetchedData.banner && (
-                <div className="relative h-32 w-full rounded-xl overflow-hidden bg-gradient-to-r from-guild-800 to-guild-900">
-                  <img 
-                    src={fetchedData.bannerUrl || ffAssetUrl(fetchedData.banner, "300x300")}
-                    alt="Game Banner" 
-                    className="w-full h-full object-cover opacity-80"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
-                </div>
-              )} */}
-
-              {/* Profile Card — banner photo as the background */}
-              <div className="relative overflow-hidden flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border border-guild-700/50">
+              {/* Profile Header — banner as full background, avatar left (FF style) */}
+              <div className="relative h-36 w-full overflow-hidden rounded-xl border border-guild-700/50">
                 {fetchedData.banner && (
-                  <>
-                    <img
-                      src={fetchedData.bannerUrl || ffAssetUrl(fetchedData.banner, "300x300")}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover opacity-25"
-                      onError={(e) => { e.target.style.display = "none"; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-guild-900 via-guild-900/55 to-guild-900/25" />
-                  </>
+                  <img
+                    src={fetchedData.bannerUrl || ffAssetUrl(fetchedData.banner, "300x300")}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
                 )}
-                <div className="relative flex flex-col sm:flex-row items-center gap-4 w-full">
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                  {fetchedData.avatar && !avatarImgFailed ? (
-                    <img 
-                      src={fetchedData.avatarUrl || ffAssetUrl(fetchedData.avatar, "300x300")}
-                      alt={fetchedData.inGameName} 
-                      onError={() => setAvatarImgFailed(true)}
-                      className="w-full h-full rounded-full object-cover border-2 border-gold-500/50"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 font-bold text-2xl border-2 border-gold-500/50">
-                      {fetchedData.inGameName?.[0] || "P"}
+                <div className="absolute inset-0 bg-gradient-to-t from-guild-950/95 via-guild-950/50 to-guild-950/20" />
+                <div className="relative z-10 flex h-full items-center gap-4 p-4">
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                    {fetchedData.avatar && !avatarImgFailed ? (
+                      <img
+                        src={fetchedData.avatarUrl || ffAssetUrl(fetchedData.avatar, "300x300")}
+                        alt={fetchedData.inGameName}
+                        onError={() => setAvatarImgFailed(true)}
+                        className="w-full h-full rounded-full object-cover border-[3px] border-gold-500/70 shadow-lg shadow-black/40"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 font-bold text-2xl border-[3px] border-gold-500/70">
+                        {fetchedData.inGameName?.[0] || "P"}
+                      </div>
+                    )}
+                    {/* Level Badge */}
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center text-guild-950 font-bold text-sm border-2 border-guild-900 shadow-md">
+                      {fetchedData.basicInfo?.level || 1}
                     </div>
-                  )}
-                  {/* Level Badge */}
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center text-guild-950 font-bold text-sm border-2 border-guild-900">
-                    {fetchedData.basicInfo?.level || 1}
                   </div>
-                </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="font-display text-cream text-xl sm:text-2xl">{fetchedData.inGameName}</h3>
-                  <p className="text-guild-400 mt-1">UID: <span className="font-mono text-cream">{fetchedData.uid}</span></p>
-                  <p className="text-guild-400">Region: <span className="font-mono text-cream">{fetchedData.region}</span></p>
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-3">
-                    <span className="flex items-center gap-1 text-xs bg-gold-500/10 text-gold-300 px-2 py-1 rounded-full">
-                      <FiHeart className="w-3 h-3" /> {fetchedData.basicInfo?.liked || 0} Likes
-                    </span>
-                    <span className="flex items-center gap-1 text-xs bg-guild-700 text-guild-300 px-2 py-1 rounded-full">
-                      <FiAward className="w-3 h-3" /> Level {fetchedData.basicInfo?.level || 1}
-                    </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-display text-cream text-xl sm:text-2xl truncate drop-shadow">{fetchedData.inGameName}</h3>
+                    {fetchedData.clanBasicInfo?.clanName && (
+                      <p className="text-gold-300 text-sm font-semibold mt-0.5 truncate">
+                        {fetchedData.clanBasicInfo.clanName}
+                      </p>
+                    )}
+                    <p className="text-guild-300 text-xs mt-1 truncate">
+                      UID <span className="font-mono text-cream">{fetchedData.uid}</span> · {fetchedData.region}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="flex items-center gap-1 text-[11px] bg-black/30 text-gold-300 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                        <FiHeart className="w-3 h-3" /> {fetchedData.basicInfo?.liked || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-[11px] bg-black/30 text-guild-200 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                        <FiAward className="w-3 h-3" /> Level {fetchedData.basicInfo?.level || 1}
+                      </span>
+                    </div>
                   </div>
-                </div>
                 </div>
               </div>
 
