@@ -375,7 +375,7 @@ export default function EnterUidRegionPage() {
                 </p>
               )}
               {/* Banner Section */}
-              {/* {fetchedData.banner && (
+              {fetchedData.banner && (
                 <div className="relative h-32 w-full rounded-xl overflow-hidden bg-gradient-to-r from-guild-800 to-guild-900">
                   <img 
                     src={fetchedData.bannerUrl || ffAssetUrl(fetchedData.banner, "300x300")}
@@ -384,7 +384,7 @@ export default function EnterUidRegionPage() {
                     onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 </div>
-              )} */}
+              )}
 
               {/* Profile Card — banner photo as the background */}
               <div className="relative overflow-hidden flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border border-guild-700/50">
