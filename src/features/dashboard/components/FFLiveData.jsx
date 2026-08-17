@@ -230,7 +230,7 @@ export default function FFLiveData({ region, uid }) {
               <img
                 src={resolveMediaUrl(b.bannerUrl)}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full "
                 onError={(e) => (e.currentTarget.style.display = "none")}
               />
             ) : (
