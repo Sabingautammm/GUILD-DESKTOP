@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiLoader, FiHash, FiCheck, FiUser, FiAward, FiStar, FiHeart, FiTrendingUp } from "react-icons/fi";
+import { FiLoader, FiHash, FiCheck, FiUser, FiAward, FiStar, FiHeart, FiTrendingUp, FiZap } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
 import { getPlayerProfile, getPlayerRank } from "../services/api/ffApi";
 import { ApiError } from "../services/api/client";
@@ -168,6 +168,8 @@ export default function EnterUidRegionPage() {
           title: bi.title,
           releaseVersion: bi.releaseversion,
           liked: bi.likes ?? bi.liked,
+          primeLevel: bi.primeLevel ?? 0,
+          primePoints: bi.primePoints ?? 0,
           lastLoginAt: bi.lastloginat,
           createAt: bi.createat,
         },
@@ -414,13 +416,18 @@ export default function EnterUidRegionPage() {
                     <p className="text-guild-300 text-xs mt-1 truncate">
                       UID <span className="font-mono text-cream">{fetchedData.uid}</span> · {fetchedData.region}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <span className="flex items-center gap-1 text-[11px] bg-black/30 text-gold-300 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                        <FiHeart className="w-3 h-3" /> {fetchedData.basicInfo?.liked || 0}
+<div className="flex flex-wrap items-center gap-2 mt-2">
+                      <span className="flex items-center gap-1 text-xs bg-gold-500/10 text-gold-300 px-2 py-1 rounded-full">
+                        <FiHeart className="w-3 h-3" /> {fetchedData.basicInfo?.liked || 0} Likes
                       </span>
-                      <span className="flex items-center gap-1 text-[11px] bg-black/30 text-guild-200 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                      <span className="flex items-center gap-1 text-xs bg-guild-700 text-guild-300 px-2 py-1 rounded-full">
                         <FiAward className="w-3 h-3" /> Level {fetchedData.basicInfo?.level || 1}
                       </span>
+                      {fetchedData.basicInfo?.primeLevel > 0 && (
+                        <span className="flex items-center gap-1 text-xs bg-purple-500/10 text-purple-300 px-2 py-1 rounded-full">
+                          <FiZap className="w-3 h-3" /> Prime {fetchedData.basicInfo?.primeLevel}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

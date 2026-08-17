@@ -1,13 +1,7 @@
 import { useState, useEffect } from "react";
 
-// Best-effort asset URL — numeric FF ids are NOT on the public CDN (verified);
-// the <img> onError hook falls back to the initials avatar.
-function ffAssetUrl(id, size = "300x300") {
-  const s = String(id ?? "");
-  return s ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/${size}/${s}.png` : "";
-}
+import { FiLoader, FiHash, FiCheck, FiHeart, FiTrendingUp, FiZap } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { FiLoader, FiHash, FiCheck, FiHeart, FiStar, FiTrendingUp } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
 import { getPlayerProfile, getPlayerRank } from "../services/api/ffApi";
 import { ApiError } from "../services/api/client";
@@ -217,6 +211,8 @@ export default function OnboardingPage() {
           title: bi.title,
           releaseVersion: bi.releaseversion,
           liked: bi.likes ?? bi.liked,
+          primeLevel: bi.primeLevel ?? 0,
+          primePoints: bi.primePoints ?? 0,
           lastLoginAt: bi.lastloginat,
           createAt: bi.createat,
         },
@@ -389,6 +385,11 @@ export default function OnboardingPage() {
                   <p className="text-guild-400">UID: <span className="font-mono">{fetchedData.uid}</span></p>
                   <p className="text-guild-400">Region: <span className="font-mono">{fetchedData.region}</span></p>
                   <p className="text-guild-400">Level: <span className="font-semibold text-gold-300">{fetchedData.basicInfo?.level || "N/A"}</span></p>
+                {fetchedData.basicInfo?.primeLevel > 0 && (
+                  <span className="inline-flex items-center gap-1 mt-1 text-xs bg-purple-500/10 text-purple-300 px-2 py-1 rounded-full">
+                    <FiZap className="w-3 h-3" /> Prime {fetchedData.basicInfo.primeLevel}
+                  </span>
+                )}
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
