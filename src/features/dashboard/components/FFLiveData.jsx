@@ -164,6 +164,28 @@ export default function FFLiveData({ region, uid }) {
   const csStats = data?.stats?.cs?.csstats || null;
   const guild = data?.guild || {};
   const passes = rank.passes || null;
+  const pi = data?.profileInfo || {};
+  const skills = pi.equipedSkills || [];
+  const clothes = pi.clothes || [];
+  const weaponSkins = b.weaponSkins || [];
+  const titleItem = b.titleItem;
+  const frameItem = b.avatarFrameItem;
+
+  const itemLabel = (icon) => {
+    if (!icon) return null;
+    return icon
+      .replace(/^Icon_avatar_/, "")
+      .replace(/^Icon_/, "")
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
+  const hasLoadout =
+    (skills.length > 0 && skills.some((s) => s.icon)) ||
+    (clothes.length > 0 && clothes.some((c) => c.icon)) ||
+    weaponSkins.some((w) => w.icon) ||
+    (titleItem && titleItem.icon) ||
+    (frameItem && frameItem.icon);
 
   return (
     <section className="card-surface p-6 space-y-5 animate-fade-up">
@@ -278,6 +300,78 @@ export default function FFLiveData({ region, uid }) {
             <CombatBlock title="BR · Duo (Ranked)" data={brDuo} />
             <CombatBlock title="BR · Solo (Ranked)" data={brSolo} />
           </div>
+
+          {/* EQUIPPED / LOADOUT */}
+          {hasLoadout && (
+            <div className="rounded-xl border border-guild-700 bg-guild-900 p-4 space-y-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-guild-500">Equipped</p>
+
+              {weaponSkins.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[10px] text-guild-500">Weapon Skins</p>
+                  <div className="flex flex-wrap gap-2">
+                    {weaponSkins.map((w) => (
+                      <div key={w.id} className="flex items-center gap-2 rounded-lg border border-guild-700 bg-guild-950 px-2 py-1.5">
+                        {w.url ? (
+                          <img src={resolveMediaUrl(w.url)} alt="" className="h-9 w-9 rounded-md object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+                        ) : null}
+                        <span className="text-xs font-semibold text-guild-200">{itemLabel(w.icon) || `Item #${w.id}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {skills.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[10px] text-guild-500">Equipped Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((s) => (
+                      <div key={s.id} className="flex items-center gap-2 rounded-lg border border-guild-700 bg-guild-950 px-2 py-1.5">
+                        {s.url ? (
+                          <img src={resolveMediaUrl(s.url)} alt="" className="h-9 w-9 rounded-md object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+                        ) : null}
+                        <span className="text-xs font-semibold text-guild-200">{itemLabel(s.icon) || `Skill #${s.id}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {clothes.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[10px] text-guild-500">Clothes</p>
+                  <div className="flex flex-wrap gap-2">
+                    {clothes.map((c) => (
+                      <div key={c.id} className="flex items-center gap-2 rounded-lg border border-guild-700 bg-guild-950 px-2 py-1.5">
+                        {c.url ? (
+                          <img src={resolveMediaUrl(c.url)} alt="" className="h-9 w-9 rounded-md object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
+                        ) : null}
+                        <span className="text-xs font-semibold text-guild-200">{itemLabel(c.icon) || `Item #${c.id}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(titleItem?.icon || frameItem?.icon) && (
+                <div className="flex flex-wrap gap-4">
+                  {titleItem?.icon && (
+                    <div className="flex items-center gap-2 rounded-lg border border-gold-500/30 bg-gold-500/5 px-2 py-1.5">
+                      <span className="text-[10px] text-guild-500">Title</span>
+                      <span className="text-xs font-semibold text-gold-200">{itemLabel(titleItem.icon)}</span>
+                    </div>
+                  )}
+                  {frameItem?.icon && (
+                    <div className="flex items-center gap-2 rounded-lg border border-gold-500/30 bg-gold-500/5 px-2 py-1.5">
+                      <span className="text-[10px] text-guild-500">Avatar Frame</span>
+                      <span className="text-xs font-semibold text-gold-200">{itemLabel(frameItem.icon)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* PET + SOCIAL */}
           {(pet.id != null || social.signature) && (
