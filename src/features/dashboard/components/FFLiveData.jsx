@@ -19,6 +19,13 @@ const fmtEpoch = (v) => {
   return isNaN(d) ? null : d.toLocaleDateString();
 };
 
+const fmtAge = (v) => {
+  const s = Number(v);
+  if (!Number.isFinite(s) || s <= 0) return null;
+  const years = Math.floor((Date.now() - s * 1000) / (365.25 * 24 * 3600 * 1000));
+  return years > 0 ? `${years} year${years === 1 ? "" : "s"}` : "New";
+};
+
 const fmtDuration = (sec) => {
   const s = Number(sec);
   if (!Number.isFinite(s) || s <= 0) return null;
@@ -42,16 +49,24 @@ function Progress({ value, nextMin }) {
   );
 }
 
-function TierCard({ title, tier, points, stars, progress, extra }) {
+const tierDisplay = (tier, sub) => {
+  if (!tier) return "Unranked";
+  if (!sub) return tier;
+  if (tier === "Grandmaster" && sub === "+") return `${tier} +`;
+  return `${tier} ${sub}`;
+};
+
+function TierCard({ title, tier, sub, points, stars, marks, progress, seasonId, unit }) {
   const tierColor =
     tier === "Grandmaster" ? "text-gold-300" : tier === "Master" ? "text-violet-300" : "text-guild-200";
+  const value = points != null && Number.isFinite(Number(points)) ? Number(points) : marks;
   return (
     <div className="rounded-xl border border-guild-700 bg-guild-900 p-4 space-y-2">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-guild-500">{title}</p>
       <div className="flex items-end justify-between gap-2">
-        <p className={`text-lg font-display font-bold ${tierColor}`}>{tier || "Unranked"}</p>
-        {Number.isFinite(Number(points)) && (
-          <p className="text-sm font-mono text-gold-400">{Number(points).toLocaleString()}</p>
+        <p className={`text-lg font-display font-bold ${tierColor}`}>{tierDisplay(tier, sub)}</p>
+        {Number.isFinite(Number(value)) && (
+          <p className="text-sm font-mono text-gold-400">{Number(value).toLocaleString()} {unit || (marks != null ? "marks" : "pts")}</p>
         )}
       </div>
       {stars != null && (
@@ -60,13 +75,44 @@ function TierCard({ title, tier, points, stars, progress, extra }) {
           {Number(stars).toLocaleString()} stars
         </p>
       )}
-      <Progress value={points} nextMin={progress && progress.nextMin} />
+      <Progress value={value} nextMin={progress && progress.nextMin} />
       {progress && progress.toNext != null && (
         <p className="text-[11px] text-guild-400">
-          {Number(progress.toNext).toLocaleString()} pts to {progress.nextTier || "next tier"}
+          {Number(progress.toNext).toLocaleString()} to {progress.nextTier || "next tier"}
         </p>
       )}
-      {extra}
+      {seasonId != null && <p className="text-[11px] text-guild-500">Season {seasonId}</p>}
+    </div>
+  );
+}
+
+function PassGrid({ kind, passes }) {
+  const list = (passes || [])
+    .slice()
+    .sort((a, b) => Number(b.eventId) - Number(a.eventId))
+    .slice(0, 60);
+  if (list.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {list.map((p) => {
+        const lvl = Number(p.badges);
+        const capped = p.maxLevel != null ? Math.min(lvl, Number(p.maxLevel)) : lvl;
+        return (
+          <div
+            key={`${kind}-${p.eventId}`}
+            className={`flex min-w-[3.4rem] flex-col items-center rounded-lg border px-2 py-1.5 ${
+              p.owned
+                ? "border-gold-500/40 bg-gold-500/10"
+                : "border-guild-700 bg-guild-950"
+            }`}
+          >
+            <span className={`text-xs font-display font-bold ${p.owned ? "text-gold-300" : "text-guild-300"}`}>
+              {kind === "booyah" ? `Lv. ${capped.toLocaleString()}` : capped.toLocaleString()}
+            </span>
+            <span className="text-[9px] text-guild-500">S{p.eventId}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -225,12 +271,12 @@ export default function FFLiveData({ region, uid }) {
       {!isLoading && !error && data && (
         <>
           {/* BANNER + IDENTITY */}
-          <div className="relative h-40 sm:h-52 w-full overflow-hidden rounded-2xl ring-1 ring-gold-500/25">
+          <div className="relative h-44 sm:h-56 w-full overflow-hidden rounded-2xl ring-1 ring-gold-500/25">
             {b.bannerUrl ? (
               <img
                 src={resolveMediaUrl(b.bannerUrl)}
                 alt=""
-                className="absolute inset-0 w-full h-full "
+                className="absolute inset-0 w-full h-full object-cover"
                 onError={(e) => (e.currentTarget.style.display = "none")}
               />
             ) : (
@@ -252,7 +298,7 @@ export default function FFLiveData({ region, uid }) {
                   <span className="flex items-center gap-1 font-mono text-gold-400">UID {b.uid}</span>
                   {b.region && <span className="flex items-center gap-1"><FiGlobe /> {b.region}</span>}
                   {b.level != null && (
-                    <span className="flex items-center gap-1"><FiAward /> Level {Number(b.level).toLocaleString()}</span>
+                    <span className="flex items-center gap-1"><FiAward /> Lv. {Number(b.level).toLocaleString()}</span>
                   )}
                   {b.liked != null && (
                     <span className="flex items-center gap-1"><FiHeart className="text-red-400" /> {Number(b.liked).toLocaleString()}</span>
@@ -260,41 +306,62 @@ export default function FFLiveData({ region, uid }) {
                   {b.badgeCount != null && (
                     <span className="flex items-center gap-1"><FiFlag /> {Number(b.badgeCount).toLocaleString()} badges</span>
                   )}
+                  {b.hasElitePass && (
+                    <span className="rounded-full border border-gold-500/40 bg-gold-500/15 px-2 py-0.5 text-[10px] font-bold text-gold-300">
+                      ELITE PASS
+                    </span>
+                  )}
                 </div>
               </div>
               {b.primeLevel > 0 && (
-                <span className="rounded-full gold-gradient-bg px-3 py-1 text-[11px] font-bold text-guild-950">
-                  PRIME {b.primeLevel}
-                </span>
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="rounded-full gold-gradient-bg px-3 py-1 text-[11px] font-bold text-guild-950">
+                    PRIME {b.primeLevel}
+                  </span>
+                  {b.primePoints != null && (
+                    <span className="mt-1 text-[10px] text-gold-200/80">{Number(b.primePoints).toLocaleString()} pts</span>
+                  )}
+                </div>
               )}
             </div>
           </div>
 
           {/* ACCOUNT METRICS */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <StatRow icon={FiCalendar} label="Account created" value={fmtEpoch(b.createdAt)} />
+            <StatRow icon={FiCalendar} label="Account age" value={fmtAge(b.createdAt)} />
             <StatRow icon={FiClock} label="Last login" value={fmtEpoch(b.lastLoginAt)} />
             <StatRow icon={FiZap} label="Experience" value={n(b.exp)} />
             <StatRow icon={FiShield} label="Elite Pass" value={b.hasElitePass ? "Active" : "None"} />
           </div>
+
+          {/* PRIME */}
+          {(b.primeLevel != null || b.primePoints != null) && (
+            <div className="rounded-xl border border-gold-500/25 bg-gold-500/5 p-4 flex flex-wrap items-center gap-x-8 gap-y-2">
+              <span className="flex items-center gap-2 text-sm font-bold text-cream">
+                <FiZap className="text-gold-400" /> Prime
+              </span>
+              <span className="text-xs text-guild-300">Level {b.primeLevel ?? "—"}</span>
+              <span className="text-xs text-guild-300">{Number(b.primePoints).toLocaleString()} points</span>
+            </div>
+          )}
 
           {/* RANKS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <TierCard
               title="Battle Royale Rank"
               tier={rank.br?.tier}
+              sub={rank.br?.sub}
               points={rank.br?.points}
               progress={rank.br?.progress}
-              extra={
-                rank.br?.seasonId != null ? (
-                  <p className="text-[11px] text-guild-500">Season {rank.br.seasonId}</p>
-                ) : null
-              }
+              seasonId={rank.br?.seasonId}
+              unit="pts"
             />
             <TierCard
               title="Clash Squad Rank"
               tier={rank.cs?.tier}
-              points={rank.cs?.points ?? rank.cs?.marks}
+              sub={rank.cs?.sub}
+              points={rank.cs?.points}
+              marks={rank.cs?.marks}
               stars={rank.cs?.stars}
               progress={rank.cs?.progress}
             />
@@ -433,15 +500,20 @@ export default function FFLiveData({ region, uid }) {
           )}
 
           {/* PASSES */}
-          {passes && (
-            <div className="rounded-xl border border-guild-700 bg-guild-900 p-4 space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-guild-500">Booyah &amp; Elite Passes</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <StatRow icon={FiFlag} label="Booyah Passes" value={passes.booyahCount} />
-                <StatRow icon={FiFlag} label="Elite Passes" value={passes.fireCount} />
-                <StatRow icon={FiStar} label="Owned" value={passes.ownedCount} />
-                <StatRow icon={FiCalendar} label="Seasons" value={passes.seasonCount} />
-              </div>
+          {(passes?.booyah?.length > 0 || passes?.fire?.length > 0) && (
+            <div className="rounded-xl border border-guild-700 bg-guild-900 p-4 space-y-5">
+              {passes?.booyah?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-400">Booyah Pass</p>
+                  <PassGrid kind="booyah" passes={passes.booyah} />
+                </div>
+              )}
+              {passes?.fire?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-400">Elite Pass</p>
+                  <PassGrid kind="fire" passes={passes.fire} />
+                </div>
+              )}
             </div>
           )}
         </>
