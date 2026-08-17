@@ -277,7 +277,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, membership, role, isAdmin, logout, refresh } = useAuth();
   const { player, isLoading } = usePlayerProfile({ enabled: true });
-  const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?._id, true);
+  const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?.id, true);
 
   // Merge REST API stats with WebSocket updates (WebSocket takes precedence)
   const mergedStats = player?.stats ? {
@@ -285,6 +285,7 @@ export default function ProfilePage() {
     ...socketStats,
   } : socketStats;
 
+  const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [pwError, setPwError] = useState("");
@@ -313,11 +314,18 @@ export default function ProfilePage() {
       setPwError("Passwords do not match.");
       return;
     }
+    // The backend requires the CURRENT password whenever the account has a
+    // leader password hash (authController.changePassword) — without it the
+    // request always fails with 400 "Current password is required."
+    if (!current) {
+      setPwError("Please enter your current password.");
+      return;
+    }
     setIsSavingPw(true);
     try {
       await apiFetch("/auth/change-password", {
         method: "PUT",
-        body: { newPassword: password },
+        body: { currentPassword: current, newPassword: password },
       });
       toast.success("Password updated", "This session is now signed out. Please sign in again.");
       await logout();
@@ -627,6 +635,7 @@ export default function ProfilePage() {
             </div>
             <p className="text-xs text-guild-400">Your Leader login uses Guild UID + this password. Changing it signs you out everywhere (session version).</p>
             <div className="space-y-3">
+              <PasswordInput value={current} onChange={(e) => setCurrent(e.target.value)} placeholder="Current password" />
               <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="New password" />
               <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirm new password" />
             </div>

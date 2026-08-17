@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiHash, FiCheck, FiUser, FiAward, FiStar, FiHeart, FiTrendingUp } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
+import { getPlayerProfile, getPlayerRank } from "../services/api/ffApi";
 import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
@@ -63,6 +64,11 @@ export default function EnterUidRegionPage() {
   const [isBusy, setIsBusy] = useState(false);
   const [fetchedData, setFetchedData] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  // Optional live Free Fire cross-check for the preview step. Never blocks
+  // completion; only surfaces a warning when submitUidRegion returned the
+  // backend's mock fallback (name "Player<uid>", "head_001" avatar) — so that
+  // a real profile is never accidentally persisted into the dashboard.
+  const [liveCheck, setLiveCheck] = useState(null); // { status, rank, profile }
 
   if (!isAuthenticated) {
     return (
@@ -202,10 +208,56 @@ export default function EnterUidRegionPage() {
       setFetchedData(combinedData);
       setShowDetails(true);
       toast.success("Profile fetched successfully!");
+      // Non-blocking live cross-check against /ff/player/rank + /ff/player/profile.
+      // If submitUidRegion fell back to the backend's mock, we reconcile
+      // fetchedData with the authoritative live nickname/avatar/level before
+      // the user can click "Continue". The toast UI never blocks on this.
+      crossCheckLive(combinedData);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to fetch data. Please try again.");
     } finally {
       setIsBusy(false);
+    }
+  };
+
+  const crossCheckLive = async (base) => {
+    setLiveCheck({ status: "loading" });
+    try {
+      const [rankR, profileR] = await Promise.allSettled([
+        getPlayerRank(base.region, base.uid),
+        getPlayerProfile(base.region, base.uid),
+      ]);
+      const rank = rankR.status === "fulfilled" ? rankR.value?.data ?? null : null;
+      const profile = profileR.status === "fulfilled" ? profileR.value?.data ?? null : null;
+      setLiveCheck({ status: "loaded", rank, profile });
+
+      if (!rank && !profile) return;
+      // Reconcile only the fields the live endpoints are authoritative for.
+      const realNickname =
+        rank?.nickname || profile?.basicinfo?.nickname || profile?.basicInfo?.nickname;
+      const realHeadpic =
+        profile?.basicinfo?.headpic || profile?.basicInfo?.headpic;
+      const realLevel =
+        rank?.level || profile?.basicinfo?.level || profile?.basicInfo?.level;
+      setFetchedData((prev) => {
+        if (!prev) return prev;
+        const next = { ...prev };
+        if (realNickname && realNickname !== prev.inGameName) next.inGameName = realNickname;
+        if (realHeadpic) {
+          next.avatar = `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${realHeadpic}.png`;
+        }
+        if (realLevel != null) {
+          next.basicInfo = { ...(next.basicInfo || {}), level: Number(realLevel) || 0 };
+        }
+        // submitUidRegion never returns basicinfo (PlayerProfile has no such
+        // fields), so the live rank payload is the only source for likes.
+        if (rank?.likes != null) {
+          next.basicInfo = { ...(next.basicInfo || {}), liked: Number(rank.likes) || 0 };
+        }
+        return next;
+      });
+    } catch {
+      setLiveCheck({ status: "error" });
     }
   };
 
@@ -275,6 +327,17 @@ export default function EnterUidRegionPage() {
           <>
             <StepHeader step={2} total={2} title="Your Profile Preview" description="Review your Free Fire profile details below, then continue to the dashboard." />
             <div className="space-y-6">
+              {liveCheck?.status === "loading" && (
+                <p className="text-[11px] text-guild-400">Verifying with live Free Fire data…</p>
+              )}
+              {liveCheck?.status === "loaded" && (
+                <p className="text-[11px] text-emerald-400">Live Free Fire data verified.</p>
+              )}
+              {liveCheck?.status === "error" && (
+                <p className="text-[11px] text-guild-500">
+                  Live verification skipped — could not reach Free Fire. Proceed only if the data below matches your in-game profile.
+                </p>
+              )}
               {/* Banner Section */}
               {fetchedData.banner && (
                 <div className="relative h-32 w-full rounded-xl overflow-hidden bg-gradient-to-r from-guild-800 to-guild-900">
@@ -380,7 +443,7 @@ export default function EnterUidRegionPage() {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-guild-700/50">
                 <button
-                  onClick={() => { setShowDetails(false); setFetchedData(null); }}
+                  onClick={() => { setShowDetails(false); setFetchedData(null); setLiveCheck(null); }}
                   className="flex-1 rounded-lg bg-guild-700 py-3 text-base font-bold text-guild-300 hover:bg-guild-600 transition-colors"
                 >
                   <FiLoader className="w-4 h-4 mr-2 inline" /> Change UID

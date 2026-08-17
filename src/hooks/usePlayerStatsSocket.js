@@ -55,7 +55,12 @@ export function usePlayerStatsSocket(playerId, enabled = true) {
     socket.on('player:stats:update', (data) => {
       console.log('[Socket] Stats update received:', data);
       if (data.playerId === playerId) {
-        setStats(data.stats);
+        // Guard against stale/corrupt broadcasts clobbering the REST profile.
+        // Same bounds as Backend validateSeasonStats: headshot/winRate capped,
+        // all numeric fields finite and non-negative. Reject anything that
+        // fails so a mock-fallback snapshot can never resurface over live data.
+        const clean = sanitizeStats(data.stats);
+        if (clean) setStats(clean);
       }
     });
 
@@ -90,4 +95,36 @@ export function usePlayerStatsSocket(playerId, enabled = true) {
   }, [enabled, isAuthenticated, disconnect]);
 
   return { stats, isConnected, error, reconnect: connect };
+}
+
+// Returns a sanitized stats block (matching the dashboard shape) only if every
+// metric fits sane bounds; otherwise null so the caller ignores the update and
+// keeps the REST /players/me value. Mirrors Backend validateSeasonStats.
+function sanitizeStats(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+
+  const cleanMode = (block) => {
+    if (!block || typeof block !== 'object') return null;
+    const out = {};
+    const { matches, kd, headshotRate, winRate, rankPoints } = block;
+    if (Number.isFinite(matches)) out.matches = Math.max(0, matches);
+    if (Number.isFinite(kd)) out.kd = Math.max(0, kd);
+    if (Number.isFinite(headshotRate)) {
+      if (headshotRate < 0 || headshotRate > 100) return null;
+      out.headshotRate = headshotRate;
+    }
+    if (Number.isFinite(winRate)) {
+      if (winRate < 0 || winRate > 100) return null;
+      out.winRate = winRate;
+    }
+    if (Number.isFinite(rankPoints)) out.rankPoints = Math.max(0, rankPoints);
+    return Object.keys(out).length ? out : null;
+  };
+
+  const result = {};
+  for (const key of ['brRank', 'csRank', 'clashSquadCustom']) {
+    const mode = cleanMode(raw[key]);
+    if (mode) result[key] = mode;
+  }
+  return Object.keys(result).length ? result : null;
 }

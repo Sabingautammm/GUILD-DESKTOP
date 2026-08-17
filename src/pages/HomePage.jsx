@@ -15,7 +15,7 @@ import { resolveMediaUrl } from "../utils/mediaUrl";
 export default function HomePage() {
   const { isAuthenticated, user } = useAuth();
   const { player, isLoading, error, refetch } = usePlayerProfile({ enabled: isAuthenticated });
-  const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?._id, isAuthenticated);
+  const { stats: socketStats, isConnected } = usePlayerStatsSocket(user?.id, isAuthenticated);
   const [topGuilds, setTopGuilds] = useState([]);
   const [previewMedia, setPreviewMedia] = useState([]);
   const [feedError, setFeedError] = useState(null);

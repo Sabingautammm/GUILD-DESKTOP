@@ -190,7 +190,7 @@ export default function OnboardingPage() {
         region: res.user?.region || region,
         game: res.user?.game || "Free Fire",
         inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
-        avatar: res.user?.avatar || bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : "",
+        avatar: res.user?.avatar || (bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : ""),
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
