@@ -320,6 +320,13 @@ export default function FFLiveData({ region, uid }) {
                 <span className="text-xs text-guild-300">{guild.memberNum} / {guild.capacity ?? "?"} members</span>
               )}
               {guild.captainId != null && <span className="text-xs font-mono text-guild-500">Captain {guild.captainId}</span>}
+              {guild.points != null && (
+                <span className="text-xs text-guild-300">{Number(guild.points).toLocaleString()} points</span>
+              )}
+              {guild.contribution != null && (
+                <span className="text-xs text-guild-300">{Number(guild.contribution).toLocaleString()} contribution</span>
+              )}
+              {guild.createdTime && <span className="text-xs text-guild-500">Founded {fmtEpoch(guild.createdTime)}</span>}
               {guild.slogan && <span className="w-full text-xs italic text-guild-400">"{guild.slogan}"</span>}
             </div>
           )}
