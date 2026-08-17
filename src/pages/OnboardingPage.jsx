@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Best-effort asset URL — numeric FF ids are NOT on the public CDN (verified);
 // the <img> onError hook falls back to the initials avatar.
@@ -128,6 +128,10 @@ export default function OnboardingPage() {
   const [isBusy, setIsBusy] = useState(false);
   const [fetchedData, setFetchedData] = useState(null);
   const [avatarImgFailed, setAvatarImgFailed] = useState(false);
+  // Fresh resolved photo URL (backend item catalog) -> retry rendering.
+  useEffect(() => {
+    setAvatarImgFailed(false);
+  }, [fetchedData?.avatarUrl]);
   // Live FF preview: { status: "loading" | "loaded" | "error", profile, rank }
   const [ffPreview, setFfPreview] = useState(null);
 
@@ -200,6 +204,7 @@ export default function OnboardingPage() {
         inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
         avatar: res.user?.avatar || (bi.avatarUrl || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : "")),
         avatarUrl: bi.avatarUrl || "",
+        bannerUrl: bi.bannerUrl || "",
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,

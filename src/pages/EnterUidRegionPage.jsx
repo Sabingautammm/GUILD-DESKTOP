@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiHash, FiCheck, FiUser, FiAward, FiStar, FiHeart, FiTrendingUp } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
@@ -75,6 +75,11 @@ export default function EnterUidRegionPage() {
   // any public CDN today (verified 404 across repositories) — render the
   // initials fallback when the image attempt fails.
   const [avatarImgFailed, setAvatarImgFailed] = useState(false);
+  // A fresh resolved photo URL (from the backend item catalog) means the
+  // previous failure state is stale — retry rendering it.
+  useEffect(() => {
+    setAvatarImgFailed(false);
+  }, [fetchedData?.avatarUrl]);
   // Optional live Free Fire cross-check for the preview step. Never blocks
   // completion; only surfaces a warning when submitUidRegion returned the
   // backend's mock fallback (name "Player<uid>", "head_001" avatar) — so that
@@ -150,6 +155,7 @@ export default function EnterUidRegionPage() {
         avatar: res.user?.avatar || (bi.avatarUrl || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : "")),
         avatarUrl: bi.avatarUrl || "",
         banner: bi.bannerUrl || String(bi.bannerid || bi.bannerId || ""),
+        bannerUrl: bi.bannerUrl || "",
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
@@ -258,8 +264,12 @@ export default function EnterUidRegionPage() {
         if (!prev) return prev;
         const next = { ...prev };
         if (realNickname && realNickname !== prev.inGameName) next.inGameName = realNickname;
-        if (realHeadpic) {
-          next.avatar = `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${realHeadpic}.png`;
+        // The live profile carries the numeric headpic id — the real photo URL
+        // was already resolved by the backend item catalog (avatarUrl). Never
+        // overwrite it with a numeric-id CDN URL (404s); keep the numeric id
+        // only as the asset fallback key.
+        if (realHeadpic && !next.avatarUrl) {
+          next.avatar = String(realHeadpic);
         }
         if (realLevel != null) {
           next.basicInfo = { ...(next.basicInfo || {}), level: Number(realLevel) || 0 };
@@ -357,7 +367,7 @@ export default function EnterUidRegionPage() {
               {fetchedData.banner && (
                 <div className="relative h-32 w-full rounded-xl overflow-hidden bg-gradient-to-r from-guild-800 to-guild-900">
                   <img 
-                    src={fetchedData.banner} 
+                    src={fetchedData.bannerUrl || ffAssetUrl(fetchedData.banner, "300x300")}
                     alt="Game Banner" 
                     className="w-full h-full object-cover opacity-80"
                     onError={(e) => { e.target.style.display = 'none'; }}
