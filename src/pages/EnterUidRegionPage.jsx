@@ -386,8 +386,20 @@ export default function EnterUidRegionPage() {
                 </div>
               )}
 
-              {/* Profile Card */}
-              <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-guild-800/30 rounded-xl border border-guild-700/50">
+              {/* Profile Card — banner photo as the background */}
+              <div className="relative overflow-hidden flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border border-guild-700/50">
+                {fetchedData.banner && (
+                  <>
+                    <img
+                      src={fetchedData.bannerUrl || ffAssetUrl(fetchedData.banner, "300x300")}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover opacity-25"
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-guild-900 via-guild-900/55 to-guild-900/25" />
+                  </>
+                )}
+                <div className="relative flex flex-col sm:flex-row items-center gap-4 w-full">
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
                   {fetchedData.avatar && !avatarImgFailed ? (
                     <img 
@@ -418,6 +430,7 @@ export default function EnterUidRegionPage() {
                       <FiAward className="w-3 h-3" /> Level {fetchedData.basicInfo?.level || 1}
                     </span>
                   </div>
+                </div>
                 </div>
               </div>
 
