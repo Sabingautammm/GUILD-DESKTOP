@@ -1,4 +1,11 @@
 import { useState } from "react";
+
+// Best-effort asset URL — numeric FF ids are NOT on the public CDN (verified);
+// the <img> onError hook falls back to the initials avatar.
+function ffAssetUrl(id, size = "300x300") {
+  const s = String(id ?? "");
+  return s ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/${size}/${s}.png` : "";
+}
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiHash, FiCheck, FiHeart, FiStar, FiTrendingUp } from "react-icons/fi";
 import { submitUidRegion, completeOnboarding } from "../features/auth/services/authApi";
@@ -120,6 +127,7 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [fetchedData, setFetchedData] = useState(null);
+  const [avatarImgFailed, setAvatarImgFailed] = useState(false);
   // Live FF preview: { status: "loading" | "loaded" | "error", profile, rank }
   const [ffPreview, setFfPreview] = useState(null);
 
@@ -190,7 +198,7 @@ export default function OnboardingPage() {
         region: res.user?.region || region,
         game: res.user?.game || "Free Fire",
         inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
-        avatar: res.user?.avatar || (bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : ""),
+        avatar: res.user?.avatar || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : ""),
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
@@ -358,8 +366,13 @@ export default function OnboardingPage() {
             <StepHeader step={2} total={2} title="Confirm & Complete" description="Review your fetched data and complete onboarding." />
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-3 p-3 bg-guild-800/50 rounded-lg">
-                {fetchedData.avatar ? (
-                  <img src={fetchedData.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
+                {fetchedData.avatar && !avatarImgFailed ? (
+                  <img
+                    src={ffAssetUrl(fetchedData.avatar, "300x300")}
+                    alt=""
+                    onError={() => setAvatarImgFailed(true)}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-400 font-bold text-xl">
                     {fetchedData.inGameName?.[0] || "P"}

@@ -7,6 +7,13 @@ import { ApiError } from "../services/api/client";
 import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 
+// Best-effort asset URL from the public ff-resources CDN. Numeric FF ids are
+// NOT hosted there (verified) — the <img> onError hook falls back to initials.
+function ffAssetUrl(id, size = "300x300") {
+  const s = String(id ?? "");
+  return s ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/${size}/${s}.png` : "";
+}
+
 function StepHeader({ step, total, title, description }) {
   return (
     <div className="mb-6">
@@ -64,6 +71,10 @@ export default function EnterUidRegionPage() {
   const [isBusy, setIsBusy] = useState(false);
   const [fetchedData, setFetchedData] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  // Numeric headpic/banner ids from the FF API cannot be resolved to photos by
+  // any public CDN today (verified 404 across repositories) — render the
+  // initials fallback when the image attempt fails.
+  const [avatarImgFailed, setAvatarImgFailed] = useState(false);
   // Optional live Free Fire cross-check for the preview step. Never blocks
   // completion; only surfaces a warning when submitUidRegion returned the
   // backend's mock fallback (name "Player<uid>", "head_001" avatar) — so that
@@ -134,8 +145,10 @@ export default function EnterUidRegionPage() {
         region: res.user?.region || region,
         game: res.user?.game || "Free Fire",
         inGameName: res.user?.inGameName || bi.nickname || bi.accountId,
-        avatar: res.user?.avatar || (bi.headpic ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/300x300/${bi.headpic}.png` : ""),
-        banner: bi.bannerId ? `https://cdn.jsdelivr.net/gh/0xme/ff-resources@main/pngs/banner/${bi.bannerId}.png` : "",
+        // avatar = numeric headpic id from the backend basicInfo (902000306…);
+        // ffAssetUrl() attempts the public CDN — onError falls back to initials.
+        avatar: res.user?.avatar || (bi.avatar ? String(bi.avatar) : bi.headpic ? String(bi.headpic) : ""),
+        banner: bi.bannerid || bi.bannerId ? String(bi.bannerid || bi.bannerId) : "",
         basicInfo: {
           accountId: bi.accountid,
           level: bi.level,
@@ -144,7 +157,7 @@ export default function EnterUidRegionPage() {
           csRank: bi.csrank,
           badgeId: bi.badgeid,
           bannerId: bi.bannerid,
-          headPic: bi.headpic,
+          headPic: bi.avatar ?? bi.headpic,
           title: bi.title,
           releaseVersion: bi.releaseversion,
           liked: bi.likes ?? bi.liked,
@@ -206,6 +219,7 @@ export default function EnterUidRegionPage() {
       };
 
       setFetchedData(combinedData);
+      setAvatarImgFailed(false);
       setShowDetails(true);
       toast.success("Profile fetched successfully!");
       // Non-blocking live cross-check against /ff/player/rank + /ff/player/profile.
@@ -353,10 +367,11 @@ export default function EnterUidRegionPage() {
               {/* Profile Card */}
               <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-guild-800/30 rounded-xl border border-guild-700/50">
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                  {fetchedData.avatar ? (
+                  {fetchedData.avatar && !avatarImgFailed ? (
                     <img 
-                      src={fetchedData.avatar} 
+                      src={ffAssetUrl(fetchedData.avatar, "300x300")}
                       alt={fetchedData.inGameName} 
+                      onError={() => setAvatarImgFailed(true)}
                       className="w-full h-full rounded-full object-cover border-2 border-gold-500/50"
                     />
                   ) : (
