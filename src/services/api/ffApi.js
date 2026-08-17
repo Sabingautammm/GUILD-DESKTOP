@@ -24,6 +24,12 @@ export function getPlayerRank(server, uid) {
   });
 }
 
+export function getPlayerFull(server, uid) {
+  return apiFetch(`/ff/player/full?server=${server}&uid=${uid}`, {
+    method: "GET",
+  });
+}
+
 export function getGuildInfo(server, clanId) {
   return apiFetch(`/ff/guild/info?server=${server}&clanId=${clanId}`, {
     method: "GET",

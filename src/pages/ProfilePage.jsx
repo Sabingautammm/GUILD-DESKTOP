@@ -12,6 +12,7 @@ import { useToast } from "../components/toast/ToastProvider";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { ROLE_LABEL } from "../features/dashboard/data/playerTypes";
 import { usePlayerProfile } from "../features/dashboard/hooks/usePlayerProfile";
+import FFLiveData from "../features/dashboard/components/FFLiveData";
 import { usePlayerStatsSocket } from "../hooks/usePlayerStatsSocket";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 import { SkeletonProfile } from "../components/ui/Skeleton";
@@ -603,6 +604,9 @@ export default function ProfilePage() {
           })}
         </div>
       </SectionCard>
+
+      {/* FREE FIRE LIVE DATA */}
+      <FFLiveData region={user?.region} uid={user?.gameUid} />
 
       {isFree && (
         <button
