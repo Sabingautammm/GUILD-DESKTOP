@@ -271,6 +271,17 @@ export default function EnterUidRegionPage() {
         if (realHeadpic && !next.avatarUrl) {
           next.avatar = String(realHeadpic);
         }
+        // The /ff proxy now injects the resolved photo URLs — trust them over
+        // the numeric ids whenever the backend provided them.
+        if (profile?.basicinfo?.avatarUrl) {
+          next.avatarUrl = profile.basicinfo.avatarUrl;
+        }
+        if (profile?.basicinfo?.bannerUrl) {
+          next.bannerUrl = profile.basicinfo.bannerUrl;
+        }
+        if (profile?.basicinfo?.bannerUrl) {
+          next.banner = profile.basicinfo.bannerUrl;
+        }
         if (realLevel != null) {
           next.basicInfo = { ...(next.basicInfo || {}), level: Number(realLevel) || 0 };
         }
