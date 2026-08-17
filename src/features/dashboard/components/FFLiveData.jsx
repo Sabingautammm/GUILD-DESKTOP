@@ -226,16 +226,25 @@ export default function FFLiveData({ region, uid }) {
         <>
           {/* BANNER + IDENTITY */}
           <div className="relative overflow-hidden rounded-2xl ring-1 ring-gold-500/25">
-            {b.bannerUrl ? (
-              <img src={resolveMediaUrl(b.bannerUrl)} alt="" className="absolute inset-0 h-full w-full object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
-            ) : null}
-            <div className="absolute inset-0 bg-gradient-to-r from-guild-950/95 via-guild-950/80 to-guild-950/40" />
-            <div className="relative flex flex-wrap items-center gap-4 p-5">
+            <div className="relative h-40 sm:h-48 bg-guild-900">
+              {b.bannerUrl ? (
+                <img
+                  src={resolveMediaUrl(b.bannerUrl)}
+                  alt=""
+                  className="mx-auto h-full w-auto max-w-full object-contain"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-guild-900 via-guild-850 to-guild-900" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-guild-950/95 via-transparent to-guild-950/30" />
+            </div>
+            <div className="relative flex flex-wrap items-center gap-4 p-5 pt-0 -mt-8 sm:-mt-10">
               {b.avatarUrl ? (
                 <Avatar
                   src={resolveMediaUrl(b.avatarUrl)}
                   name={b.nickname || "Player"}
-                  className="h-16 w-16 shrink-0 rounded-2xl ring-2 ring-gold-500/50"
+                  className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-2xl ring-2 ring-gold-500/50 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.9)]"
                   fallbackClassName="gold-gradient-bg text-2xl text-guild-950 gold-glow"
                 />
               ) : null}
