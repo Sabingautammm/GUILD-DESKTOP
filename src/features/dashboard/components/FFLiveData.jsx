@@ -56,7 +56,7 @@ const tierDisplay = (tier, sub) => {
   return `${tier} ${sub}`;
 };
 
-function TierCard({ title, tier, sub, points, stars, marks, progress, seasonId, unit }) {
+function TierCard({ title, tier, sub, points, stars, marks, progress, seasonId, unit, badge }) {
   const tierColor =
     tier === "Grandmaster" ? "text-gold-300" : tier === "Master" ? "text-violet-300" : "text-guild-200";
   const value = points != null && Number.isFinite(Number(points)) ? Number(points) : marks;
@@ -64,7 +64,24 @@ function TierCard({ title, tier, sub, points, stars, marks, progress, seasonId, 
     <div className="rounded-xl border border-guild-700 bg-guild-900 p-4 space-y-2">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-guild-500">{title}</p>
       <div className="flex items-end justify-between gap-2">
-        <p className={`text-lg font-display font-bold ${tierColor}`}>{tierDisplay(tier, sub)}</p>
+        <div className="flex items-center gap-3">
+          {badge && badge.url ? (
+            <img
+              src={resolveMediaUrl(badge.url)}
+              alt={badge.icon || tierDisplay(tier, sub)}
+              className="h-10 w-10 rounded-md object-contain"
+              onError={(e) => {
+                if (badge.fallbackUrl) {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = resolveMediaUrl(badge.fallbackUrl);
+                } else {
+                  e.currentTarget.style.display = "none";
+                }
+              }}
+            />
+          ) : null}
+          <p className={`text-lg font-display font-bold ${tierColor}`}>{tierDisplay(tier, sub)}</p>
+        </div>
         {Number.isFinite(Number(value)) && (
           <p className="text-sm font-mono text-gold-400">{Number(value).toLocaleString()} {unit || (marks != null ? "marks" : "pts")}</p>
         )}
@@ -370,6 +387,7 @@ export default function FFLiveData({ region, uid }) {
               progress={rank.br?.progress}
               seasonId={rank.br?.seasonId}
               unit="pts"
+              badge={rank.br?.badge}
             />
             <TierCard
               title="Clash Squad Rank"
@@ -379,6 +397,8 @@ export default function FFLiveData({ region, uid }) {
               marks={rank.cs?.marks}
               stars={rank.cs?.stars}
               progress={rank.cs?.progress}
+              seasonId={rank.cs?.seasonId}
+              badge={rank.cs?.badge}
             />
           </div>
 
