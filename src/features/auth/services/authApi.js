@@ -8,6 +8,16 @@ export function googleLogin(token) {
   });
 }
 
+// Google OAuth via authorization-code exchange (desktop/loopback flow):
+// the app's local server captures the code from the browser redirect and the
+// backend swaps it for tokens using GOOGLE_CLIENT_SECRET.
+export function googleLoginCode(code, redirectUri) {
+  return apiFetch("/auth/google", {
+    method: "POST",
+    body: { code, redirectUri },
+  });
+}
+
 export function logout() {
   return apiFetch("/auth/logout", { method: "POST" });
 }
