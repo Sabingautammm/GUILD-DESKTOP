@@ -11,6 +11,13 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
 
+/* global __BUILD_ID__ */
+// Prove which bundle is running: printed once + shown in the window title.
+console.info("%c[GUILD] frontend build:", "color:#e3a012;font-weight:bold", __BUILD_ID__);
+if (typeof document !== "undefined") {
+  document.title = `GUILD · ${__BUILD_ID__.slice(6, 25)}`;
+}
+
 // When no real VITE_GOOGLE_CLIENT_ID is configured, the backend accepts a mock
 // token (NODE_ENV=development) so the whole onboarding flow can be tested
 // end-to-end without Google credentials.
