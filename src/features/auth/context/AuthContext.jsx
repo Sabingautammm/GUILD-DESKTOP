@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { getCurrentUser, logout as logoutApi, googleLogin as googleLoginApi } from "../services/authApi";
+import { clearStoredTokens } from "../../../services/api/client";
 
 const AuthContext = createContext(null);
 
@@ -62,6 +63,7 @@ export function AuthProvider({ children }) {
     } catch {
       // ignore
     }
+    clearStoredTokens();
     setUser(null);
     setMembership(null);
     setGuild(null);

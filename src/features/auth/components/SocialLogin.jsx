@@ -44,8 +44,14 @@ function isMobileDevice() {
 }
 
 // True when running inside the Tauri desktop shell (WebView2 on Windows).
+// Tauri 2 ALWAYS injects window.__TAURI_INTERNALS__ (the IPC bridge), while
+// window.__TAURI__ exists only when app.withGlobalTauri is enabled in
+// tauri.conf.json. Checking only __TAURI__ made this return false in packaged
+// builds — GSI then loaded inside the WebView and Google blocked the OAuth,
+// showing its own "sign in" page instead of the system-browser loopback flow.
 function isTauri() {
-  return typeof window !== "undefined" && window.__TAURI__ !== undefined;
+  if (typeof window === "undefined") return false;
+  return window.__TAURI_INTERNALS__ !== undefined || window.__TAURI__ !== undefined;
 }
 
 function generateState() {

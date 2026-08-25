@@ -21,6 +21,51 @@ export class ApiError extends Error {
   }
 }
 
+// ---- Native session tokens (Bearer fallback) ----
+// Inside the Tauri WebView2 shell, the backend's httpOnly cookies are
+// third-party (tauri.localhost -> onrender.com) and are frequently blocked by
+// tracking prevention — leaving the user logged out even after a successful
+// Google exchange. The backend therefore also returns raw tokens when we send
+// X-Client-Type: native; we persist them here and attach Authorization on
+// every call. On the normal web origin cookies keep working as before.
+const TOKEN_STORAGE_KEY = "guild_auth_tokens";
+
+function readStoredTokens() {
+  try {
+    const raw = localStorage.getItem(TOKEN_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredTokens(tokens) {
+  try {
+    if (!tokens || (!tokens.accessToken && !tokens.refreshToken)) {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    } else {
+      localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokens));
+    }
+  } catch {
+    // storage unavailable — cookie flow still applies
+  }
+}
+
+export function clearStoredTokens() {
+  writeStoredTokens(null);
+}
+
+// Capture native tokens from any API response that carries them
+// (/auth/google, /auth/refresh). Silently ignores everything else.
+function captureTokens(data) {
+  if (data && typeof data === "object" && data.accessToken) {
+    writeStoredTokens({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken || null,
+    });
+  }
+}
+
 // Honeypot: timestamp when page loaded (bots often submit immediately)
 const PAGE_LOAD_TIME = Date.now();
 
@@ -82,8 +127,13 @@ export async function apiFetch(path, options = {}) {
   // FormData bodies must not set a Content-Type header — the browser needs to
   // insert the multipart boundary itself. Plain objects are JSON-encoded.
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const storedTokens = readStoredTokens();
   const requestHeaders = {
     ...(!isFormData && { "Content-Type": "application/json" }),
+    // Identify as a native client so the backend returns raw tokens in the
+    // body for /auth/google and /auth/refresh.
+    "X-Client-Type": "native",
+    ...(storedTokens?.accessToken && { Authorization: `Bearer ${storedTokens.accessToken}` }),
     ...headers,
   };
   const requestBody = isFormData
@@ -119,16 +169,56 @@ export async function apiFetch(path, options = {}) {
     }
   }
 
-  if (!response.ok) {
-    const body = data ?? {};
-    throw new ApiError(
-      body.message ?? defaultMessageForStatus(response.status),
-      response.status,
-      body.errors
-    );
+  if (response.ok) {
+    captureTokens(data);
+    return data;
   }
 
-  return data;
+  // Access token expired? Try one silent refresh with the stored refresh
+  // token, then retry the original request once. Never recurse on /auth/*.
+  if (
+    response.status === 401 &&
+    storedTokens?.refreshToken &&
+    !path.startsWith("/auth/")
+  ) {
+    clearTimeout(timeoutId);
+    try {
+      const refreshed = await refreshNativeSession(storedTokens.refreshToken);
+      if (refreshed) {
+        return apiFetch(path, options);
+      }
+    } catch {
+      // fall through to the original error
+    }
+  }
+
+  const errBody = data ?? {};
+  throw new ApiError(
+    errBody.message ?? defaultMessageForStatus(response.status),
+    response.status,
+    errBody.errors
+  );
+}
+
+// Exchange the stored refresh token for a fresh pair. Returns true on success.
+async function refreshNativeSession(refreshToken) {
+  try {
+    const resp = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Client-Type": "native" },
+      body: JSON.stringify({ refreshToken }),
+      credentials: "include",
+    });
+    const data = await resp.json().catch(() => null);
+    if (!resp.ok || !data?.accessToken) {
+      writeStoredTokens(null);
+      return false;
+    }
+    writeStoredTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // Multipart file upload with a longer timeout (videos can take a while).
