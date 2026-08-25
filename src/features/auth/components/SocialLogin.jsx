@@ -291,7 +291,10 @@ export default function SocialLogin() {
       console.warn("[SocialLogin] Desktop Google sign-in failed:", err);
       busyRef.current = false;
       setIsSubmitting(false);
-      toast.error(err?.message || "Google sign-in failed. Try again.");
+      // Surface the REAL failure reason — the old generic fallback hid
+      // diagnosable errors (state mismatch, missing code, port bind, etc.).
+      const reason = err?.message || (typeof err === "string" ? err : JSON.stringify(err)) || "unknown error";
+      toast.error(`Google sign-in failed: ${reason}`);
     } finally {
       cleanups.forEach((unlisten) => {
         try {
