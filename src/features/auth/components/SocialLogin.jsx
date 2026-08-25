@@ -7,6 +7,7 @@ import { ApiError } from "../../../services/api/client";
 import { useToast } from "../../../components/toast/ToastProvider";
 import { useAuth } from "../context/AuthContext";
 import { start, cancel, onUrl, onInvalidUrl } from "@fabianlars/tauri-plugin-oauth";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
 
@@ -238,10 +239,11 @@ export default function SocialLogin() {
       });
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
-      // Open Google's account chooser in the system default browser. Tauri
-      // intercepts window.open and launches the browser; the user logs in there
-      // and Google redirects back to the loopback server below.
-      window.open(authUrl, "_blank");
+      // Open Google's account chooser in the SYSTEM default browser via the
+      // opener plugin. Plain window.open does NOT escape the Tauri WebView
+      // (no shell/opener plugin = no external launch), so without this the
+      // browser never opens and the flow spins until it fails.
+      await openUrl(authUrl);
 
       // Wait for Google to redirect the browser back to the loopback server.
       const redirectedUrl = await new Promise((resolve, reject) => {
