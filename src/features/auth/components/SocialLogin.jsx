@@ -75,23 +75,21 @@ export default function SocialLogin() {
   const gsiInitializedRef = useRef(false);
 
   // Shared tail for every sign-in path: post to the backend, refresh identity,
-  // and land on the home page. Takes the API call itself so the caller controls
-  // the payload (idToken vs authorization code).
+  // and route to onboarding or home. Takes the API call itself so the caller
+  // controls the payload (idToken vs authorization code).
+  // NOTE: no toast.promise wrapper — its rethrow-on-error + our empty catch
+  // silently swallowed post-success control flow. Direct await + explicit
+  // toasts keep the critical path deterministic.
   const completeLogin = useCallback(
     async (loginPromise) => {
       if (busyRef.current) return;
       busyRef.current = true;
       setIsSubmitting(true);
+      console.debug("[completeLogin] start");
       try {
-        await toast.promise(
-          Promise.resolve(loginPromise),
-          {
-            loading: "Connecting to Google…",
-            success: "Signed in with Google",
-            error: (err) => (err instanceof ApiError ? err.message : "Google sign-in failed."),
-          }
-        );
-        // TEMP DEBUG: refresh() swallows its own errors — trace explicitly.
+        await loginPromise;
+        toast.success("Signed in with Google");
+
         console.debug("[completeLogin] calling refresh()…");
         let authSnapshot = null;
         try {
@@ -104,16 +102,18 @@ export default function SocialLogin() {
         } catch (refreshErr) {
           console.error("[completeLogin] refresh() threw:", refreshErr);
         }
+
         // Deterministic post-login destination: fresh users go straight to
-        // UID/region onboarding. (The AppRoutes guard stays as a backstop —
-        // the declarative <Navigate> alone was losing this race.)
+        // UID/region onboarding; everyone else lands on home.
         const needsOnboardingNow =
           authSnapshot &&
           !authSnapshot.user?.onboardingCompleted &&
           !authSnapshot.membership;
+        console.debug("[completeLogin] navigating…", { needsOnboardingNow });
         navigate(needsOnboardingNow ? "/enter-uid-region" : "/");
-      } catch {
-        // toast already surfaced the error
+      } catch (err) {
+        console.error("[completeLogin] login failed:", err);
+        toast.error(err instanceof ApiError ? err.message : "Google sign-in failed.");
       } finally {
         busyRef.current = false;
         setIsSubmitting(false);
