@@ -283,7 +283,12 @@ export default function SocialLogin() {
         throw new Error("Sign-in verification failed. Please try again.");
       }
 
-      await cancel(serverPort);
+      // NOTE: do NOT call cancel(serverPort) here. The plugin's accept loop
+      // breaks (stops its own listener) right after delivering the first
+      // valid redirect URL, and its cancel() works by TCP self-connecting to
+      // the port — which now refuses (os error 10061) and would abort the
+      // login before the token exchange. The finally block below keeps a
+      // guarded cancel() purely for early-error cleanup paths.
       serverPort = null;
 
       await completeLogin(googleLoginCode(code, OAUTH_REDIRECT_URI));
