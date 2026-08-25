@@ -1,4 +1,4 @@
-import { lazy, Suspense, Component } from "react";
+import { lazy, Suspense, Component, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
@@ -98,6 +98,17 @@ function AppRoutes() {
   const { isAuthenticated, isAdmin, isLoading, user, membership } = useAuth();
   // Redirect to Enter UID/Region page if user needs to complete initial profile setup
   const needsUidRegion = isAuthenticated && !user?.onboardingCompleted && !membership;
+
+  // Debug: trace the exact auth state driving the onboarding redirect.
+  useEffect(() => {
+    console.log("[AppRoutes] auth state:", {
+      isAuthenticated,
+      isLoading,
+      onboardingCompleted: user?.onboardingCompleted,
+      hasMembership: !!membership,
+      needsUidRegion,
+    });
+  }, [isAuthenticated, isLoading, user?.onboardingCompleted, membership, needsUidRegion]);
 
   if (isLoading) {
     return <AppLoadingSkeleton />;

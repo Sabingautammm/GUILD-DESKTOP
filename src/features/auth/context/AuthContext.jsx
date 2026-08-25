@@ -30,12 +30,16 @@ export function AuthProvider({ children }) {
       setGuild(data.guild);
       setOnboarding(data.onboarding || {});
       setIsAuthenticated(true);
+      // Return the fresh snapshot so callers (post-login redirect) can make
+      // routing decisions without racing React's state commit.
+      return data;
     } catch (err) {
       setUser(null);
       setMembership(null);
       setGuild(null);
       setOnboarding({ needsOnboarding: false, profileCompleted: false });
       setIsAuthenticated(false);
+      return null;
     } finally {
       setIsLoading(false);
     }

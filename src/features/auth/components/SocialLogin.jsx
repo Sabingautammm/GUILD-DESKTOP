@@ -91,8 +91,27 @@ export default function SocialLogin() {
             error: (err) => (err instanceof ApiError ? err.message : "Google sign-in failed."),
           }
         );
-        await refresh();
-        navigate("/");
+        // TEMP DEBUG: refresh() swallows its own errors — trace explicitly.
+        console.debug("[completeLogin] calling refresh()…");
+        let authSnapshot = null;
+        try {
+          authSnapshot = await refresh();
+          console.debug("[completeLogin] refresh() OK:", {
+            authenticated: !!authSnapshot,
+            onboardingCompleted: authSnapshot?.user?.onboardingCompleted,
+            hasMembership: !!authSnapshot?.membership,
+          });
+        } catch (refreshErr) {
+          console.error("[completeLogin] refresh() threw:", refreshErr);
+        }
+        // Deterministic post-login destination: fresh users go straight to
+        // UID/region onboarding. (The AppRoutes guard stays as a backstop —
+        // the declarative <Navigate> alone was losing this race.)
+        const needsOnboardingNow =
+          authSnapshot &&
+          !authSnapshot.user?.onboardingCompleted &&
+          !authSnapshot.membership;
+        navigate(needsOnboardingNow ? "/enter-uid-region" : "/");
       } catch {
         // toast already surfaced the error
       } finally {
