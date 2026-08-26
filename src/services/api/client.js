@@ -120,8 +120,6 @@ function addBotProtectionFields(body) {
 
 export async function apiFetch(path, options = {}) {
   const { timeoutMs = 10000, headers, body, ...rest } = options;
-  // TEMP DEBUG: trace every API call until login flow is stable
-  console.debug(`[api] → ${rest.method || "GET"} ${path}`);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   let response;
@@ -173,7 +171,6 @@ export async function apiFetch(path, options = {}) {
 
   if (response.ok) {
     captureTokens(data);
-    console.debug(`[api] ← ${response.status} ${path} ${data?.accessToken ? "(tokens captured)" : ""}`);
     return data;
   }
 
@@ -196,7 +193,6 @@ export async function apiFetch(path, options = {}) {
   }
 
   const errBody = data ?? {};
-  console.debug(`[api] ← ${response.status} ${path} ERROR`, errBody);
   throw new ApiError(
     errBody.message ?? defaultMessageForStatus(response.status),
     response.status,

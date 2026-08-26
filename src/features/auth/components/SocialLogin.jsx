@@ -11,13 +11,6 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() || "";
 
-/* global __BUILD_ID__ */
-// Prove which bundle is running: printed once + shown in the window title.
-console.info("%c[GUILD] frontend build:", "color:#e3a012;font-weight:bold", __BUILD_ID__);
-if (typeof document !== "undefined") {
-  document.title = `GUILD · ${__BUILD_ID__.slice(6, 25)}`;
-}
-
 // When no real VITE_GOOGLE_CLIENT_ID is configured, the backend accepts a mock
 // token (NODE_ENV=development) so the whole onboarding flow can be tested
 // end-to-end without Google credentials.
@@ -77,42 +70,29 @@ export default function SocialLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gsiButtonReady, setGsiButtonReady] = useState(false);
   const [gsiInitError, setGsiInitError] = useState(false);
-  // On-screen trace — survives console filters/copy issues.
-  const [traceLines, setTraceLines] = useState([]);
   const googleBtnRef = useRef(null);
   const busyRef = useRef(false);
   const gsiInitializedRef = useRef(false);
 
-  const traceStep = useCallback((msg) => {
-    const stamp = new Date().toLocaleTimeString();
-    setTraceLines((prev) => [...prev.slice(-8), `${stamp} ${msg}`]);
-    console.warn(`🚨 ${msg}`);
-  }, []);
-
   // Shared tail for every sign-in path: post to the backend, refresh identity,
   // and route to onboarding or home. Takes the API call itself so the caller
   // controls the payload (idToken vs authorization code).
-  // NOTE: no toast.promise wrapper â€” its rethrow-on-error + our empty catch
+  // NOTE: no toast.promise wrapper — its rethrow-on-error + our empty catch
   // silently swallowed post-success control flow. Direct await + explicit
   // toasts keep the critical path deterministic.
   const completeLogin = useCallback(
     async (loginPromise) => {
-      if (busyRef.current) { traceStep("SKIP: busyRef already true"); return; }
+      if (busyRef.current) return;
       busyRef.current = true;
       setIsSubmitting(true);
-      traceStep("completeLogin start");
       try {
         await loginPromise;
-        traceStep("login POST 200 OK");
         toast.success("Signed in with Google");
 
-        traceStep("calling refresh()...");
         let authSnapshot = null;
         try {
           authSnapshot = await refresh();
-          traceStep(`refresh OK (authed=${!!authSnapshot}, obCompleted=${authSnapshot?.user?.onboardingCompleted}, member=${!!authSnapshot?.membership})`);
         } catch (refreshErr) {
-          traceStep(`refresh THREW: ${refreshErr?.message}`);
           console.error("[completeLogin] refresh() threw:", refreshErr);
         }
 
@@ -122,10 +102,8 @@ export default function SocialLogin() {
           authSnapshot &&
           !authSnapshot.user?.onboardingCompleted &&
           !authSnapshot.membership;
-        traceStep(`navigating -> ${needsOnboardingNow ? "/enter-uid-region" : "/"}`);
         navigate(needsOnboardingNow ? "/enter-uid-region" : "/");
       } catch (err) {
-        traceStep(`LOGIN FAILED: ${err?.message || err}`);
         console.error("[completeLogin] login failed:", err);
         toast.error(err instanceof ApiError ? err.message : "Google sign-in failed.");
       } finally {
@@ -133,7 +111,7 @@ export default function SocialLogin() {
         setIsSubmitting(false);
       }
     },
-    [navigate, refresh, toast, traceStep]
+    [navigate, refresh, toast]
   );
 
   const handleCredentialResponse = useCallback(
@@ -250,17 +228,15 @@ export default function SocialLogin() {
   // back to http://127.0.0.1:53856 with an authorization code. The code is then
   // exchanged by the backend, which sets the session cookies in the app.
   const handleDesktopGoogleSignIn = useCallback(async () => {
-    if (busyRef.current || !GOOGLE_CLIENT_ID) { traceStep(`desktop handler SKIP (busy=${busyRef.current}, hasClientId=${!!GOOGLE_CLIENT_ID})`); return; }
+    if (busyRef.current || !GOOGLE_CLIENT_ID) return;
     busyRef.current = true;
     setIsSubmitting(true);
-    traceStep("desktop handler: clicked");
 
     let cleanups = [];
     let serverPort = null;
 
     try {
       serverPort = await start({ ports: [OAUTH_REDIRECT_PORT] });
-      traceStep(`loopback server started on port ${serverPort}`);
 
       const state = generateState();
       const params = new URLSearchParams({
@@ -279,7 +255,6 @@ export default function SocialLogin() {
       // (no shell/opener plugin = no external launch), so without this the
       // browser never opens and the flow spins until it fails.
       await openUrl(authUrl);
-      traceStep("browser opened, waiting for redirect...");
 
       // Wait for Google to redirect the browser back to the loopback server.
       const redirectedUrl = await new Promise((resolve, reject) => {
@@ -311,7 +286,6 @@ export default function SocialLogin() {
       const parsed = new URL(redirectedUrl);
       const returnedState = parsed.searchParams.get("state");
       const code = parsed.searchParams.get("code");
-      traceStep(`redirect received (code=${code ? "yes" : "NO"}, stateMatch=${returnedState === state})`);
 
       if (!code) {
         throw new Error(parsed.searchParams.get("error") || "No sign-in code returned from Google.");
@@ -444,16 +418,6 @@ export default function SocialLogin() {
       <p className="text-center text-[11px] text-guild-600 px-4">
         By continuing you agree to the GUILD terms. Leaders verify ownership after signing in.
       </p>
-
-      {/* TEMP DEBUG overlay — remove once login flow is stable */}
-      {traceLines.length > 0 && (
-        <pre
-          className="fixed bottom-2 left-2 z-[9999] max-w-[70vw] max-h-[40vh] overflow-auto rounded bg-black/85 p-2 text-[10px] leading-4 text-green-300 pointer-events-none"
-          data-testid="login-trace"
-        >
-          {traceLines.join("\n")}
-        </pre>
-      )}
     </div>
   );
 }
