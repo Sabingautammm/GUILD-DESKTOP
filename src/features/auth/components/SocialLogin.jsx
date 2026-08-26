@@ -328,6 +328,14 @@ export default function SocialLogin() {
       // guarded cancel() purely for early-error cleanup paths.
       serverPort = null;
 
+      // RELEASE the busy lock BEFORE calling completeLogin: the desktop
+      // handler has held busyRef since the initial click, and completeLogin
+      // guards on the same flag â€” passing the API promise as an argument
+      // fires the POST first, then completeLogin saw busyRef=true and
+      // silently returned ("SKIP: busyRef already true"), killing every
+      // otherwise-successful sign-in right after token capture.
+      busyRef.current = false;
+
       await completeLogin(googleLoginCode(code, OAUTH_REDIRECT_URI));
     } catch (err) {
       console.warn("[SocialLogin] Desktop Google sign-in failed:", err);
