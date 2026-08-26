@@ -1,6 +1,21 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "../features/auth/components/LoginForm";
+import { useAuth } from "../features/auth/context/AuthContext";
 
 export default function AuthPage() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Safety net: the moment a session exists, leave the login page —
+  // independent of however the sign-in flow resolved internally.
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.warn("[AuthPage] authenticated -> leaving login page");
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   return (
     <div className="min-h-[80vh] w-full flex items-center justify-center bg-transparent px-4 py-8 sm:px-6">
       <div className="relative w-full max-w-md overflow-hidden rounded-3xl card-surface ring-1 ring-gold-500/20 shadow-2xl">

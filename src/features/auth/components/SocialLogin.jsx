@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { FaGoogle } from "react-icons/fa";
 import { FiLoader } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,7 @@ function isMobileDevice() {
 // Tauri 2 ALWAYS injects window.__TAURI_INTERNALS__ (the IPC bridge), while
 // window.__TAURI__ exists only when app.withGlobalTauri is enabled in
 // tauri.conf.json. Checking only __TAURI__ made this return false in packaged
-// builds — GSI then loaded inside the WebView and Google blocked the OAuth,
+// builds â€” GSI then loaded inside the WebView and Google blocked the OAuth,
 // showing its own "sign in" page instead of the system-browser loopback flow.
 function isTauri() {
   if (typeof window === "undefined") return false;
@@ -84,7 +84,7 @@ export default function SocialLogin() {
   // Shared tail for every sign-in path: post to the backend, refresh identity,
   // and route to onboarding or home. Takes the API call itself so the caller
   // controls the payload (idToken vs authorization code).
-  // NOTE: no toast.promise wrapper — its rethrow-on-error + our empty catch
+  // NOTE: no toast.promise wrapper â€” its rethrow-on-error + our empty catch
   // silently swallowed post-success control flow. Direct await + explicit
   // toasts keep the critical path deterministic.
   const completeLogin = useCallback(
@@ -92,16 +92,16 @@ export default function SocialLogin() {
       if (busyRef.current) return;
       busyRef.current = true;
       setIsSubmitting(true);
-      console.debug("[completeLogin] start");
+      console.warn("🚨 [completeLogin] start");
       try {
         await loginPromise;
         toast.success("Signed in with Google");
 
-        console.debug("[completeLogin] calling refresh()…");
+        console.warn("🚨 [completeLogin] calling refresh()...");
         let authSnapshot = null;
         try {
           authSnapshot = await refresh();
-          console.debug("[completeLogin] refresh() OK:", {
+          console.warn("🚨 [completeLogin] refresh() OK:", {
             authenticated: !!authSnapshot,
             onboardingCompleted: authSnapshot?.user?.onboardingCompleted,
             hasMembership: !!authSnapshot?.membership,
@@ -116,7 +116,7 @@ export default function SocialLogin() {
           authSnapshot &&
           !authSnapshot.user?.onboardingCompleted &&
           !authSnapshot.membership;
-        console.debug("[completeLogin] navigating…", { needsOnboardingNow });
+        console.warn("🚨 [completeLogin] navigating...", { needsOnboardingNow });
         navigate(needsOnboardingNow ? "/enter-uid-region" : "/");
       } catch (err) {
         console.error("[completeLogin] login failed:", err);
@@ -139,7 +139,7 @@ export default function SocialLogin() {
   cbRef.current = handleCredentialResponse;
 
   const initializeGSI = useCallback(async () => {
-    // In the Tauri shell we never load GSI into the WebView — login happens in
+    // In the Tauri shell we never load GSI into the WebView â€” login happens in
     // the system browser instead (handleDesktopGoogleSignIn).
     if (!GOOGLE_CLIENT_ID || gsiInitializedRef.current || isTauri()) return;
 
@@ -213,14 +213,14 @@ export default function SocialLogin() {
 
       // The GSI callback already routes through cbRef.current
       // (handleCredentialResponse), which performs the actual login. We only
-      // need prompt() to confirm the popup was displayed — if it wasn't,
+      // need prompt() to confirm the popup was displayed â€” if it wasn't,
       // reject immediately so the button never hangs in a loading state.
       await new Promise((resolve, reject) => {
         window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
             reject(new Error("not-displayed"));
           } else if (notification.getMomentType() === "display") {
-            // Popup shown — the credential callback will fire and complete
+            // Popup shown â€” the credential callback will fire and complete
             // the login via handleCredentialResponse. Resolve here; spinner
             // state is managed by handleCredentialResponse's busyRef.
             resolve();
@@ -312,7 +312,7 @@ export default function SocialLogin() {
       // NOTE: do NOT call cancel(serverPort) here. The plugin's accept loop
       // breaks (stops its own listener) right after delivering the first
       // valid redirect URL, and its cancel() works by TCP self-connecting to
-      // the port — which now refuses (os error 10061) and would abort the
+      // the port â€” which now refuses (os error 10061) and would abort the
       // login before the token exchange. The finally block below keeps a
       // guarded cancel() purely for early-error cleanup paths.
       serverPort = null;
@@ -322,7 +322,7 @@ export default function SocialLogin() {
       console.warn("[SocialLogin] Desktop Google sign-in failed:", err);
       busyRef.current = false;
       setIsSubmitting(false);
-      // Surface the REAL failure reason — the old generic fallback hid
+      // Surface the REAL failure reason â€” the old generic fallback hid
       // diagnosable errors (state mismatch, missing code, port bind, etc.).
       const reason = err?.message || (typeof err === "string" ? err : JSON.stringify(err)) || "unknown error";
       toast.error(`Google sign-in failed: ${reason}`);
@@ -371,7 +371,7 @@ export default function SocialLogin() {
           </button>
         ) : (
           <>
-            {/* GSI button container — always mounted so renderButton always has
+            {/* GSI button container â€” always mounted so renderButton always has
                 a target. Hidden (but present) until GSI finishes initializing;
                 the custom popup button shows below while it loads or if GSI
                 fails. */}
